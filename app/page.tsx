@@ -5,8 +5,10 @@ import { supabase } from '../utils/supabase'
 export default function Home() {
   const [email, setEmail] = useState('')
   const [status, setStatus] = useState('')
-  const [user, setUser] = useState(null)
-  const [challenges, setChallenges] = useState([]) // The new state to hold your logic puzzles
+  
+  // The TypeScript Fixes: We explicitly tell TS to allow complex objects and arrays here
+  const [user, setUser] = useState<any>(null)
+  const [challenges, setChallenges] = useState<any[]>([])
 
   // Listen for login, and fetch challenges if approved
   useEffect(() => {
