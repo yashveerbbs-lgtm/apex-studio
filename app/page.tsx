@@ -59,19 +59,26 @@ export default function Home() {
 
   // THE LIVE EXECUTION PIPELINE
   async function handleRunExecution() {
-    alert("Deploying algorithm to secure sandbox...")
+    alert("Deploying algorithm for mathematical verification...")
     
     try {
       const response = await fetch('/api/execute', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code }), // Sends the exact text from Monaco
+        body: JSON.stringify({ 
+          code, 
+          challengeId: activeChallenge.id // Sending the exact puzzle ID to fetch the right test cases
+        }), 
       })
       
       const result = await response.json()
       
       if (result.success) {
-        alert("Execution Complete!\n\nSandbox Output:\n" + result.output)
+        if (result.passed === result.total) {
+           alert(`MISSION ACCOMPLISHED!\n\nYou passed ${result.passed} out of ${result.total} test cases. Mathematics verified. 50 XP Awarded.`);
+        } else {
+           alert(`EVALUATION FAILED\n\nYou passed ${result.passed} out of ${result.total} test cases. Check your logic and try again.`);
+        }
       } else {
         alert("Sandbox Error:\n" + result.error)
       }
@@ -103,7 +110,7 @@ export default function Home() {
       
       {user ? (
         activeChallenge ? (
-          // --- THE NEW BROWSER IDE UI ---
+          // --- THE BROWSER IDE UI ---
           <div className="w-full max-w-7xl animate-fade-in-up grid grid-cols-1 lg:grid-cols-12 gap-6">
             
             {/* Left Panel: Challenge Context */}
@@ -152,7 +159,7 @@ export default function Home() {
             
           </div>
         ) : (
-          // --- THE CHALLENGE DASHBOARD (Existing) ---
+          // --- THE CHALLENGE DASHBOARD ---
           <div className="w-full max-w-4xl animate-fade-in-up">
             <h2 className="text-2xl font-bold text-green-400 mb-6 border-b border-gray-700 pb-2">Active Logic Challenges</h2>
             <div className="grid grid-cols-1 gap-6">
@@ -168,7 +175,7 @@ export default function Home() {
                     <span className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-purple-500"></span>Time Limit: {challenge.time_limit_minutes} mins</span>
                   </div>
                   <button 
-                    onClick={() => setActiveChallenge(challenge)} // This triggers the IDE view
+                    onClick={() => setActiveChallenge(challenge)}
                     className="w-full mt-6 py-3 bg-green-600/20 text-green-400 font-bold rounded-lg border border-green-600/50 hover:bg-green-600/40 hover:scale-[1.02] transition-all"
                   >
                     Initialize Code Editor

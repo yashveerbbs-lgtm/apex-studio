@@ -1,35 +1,60 @@
 import { NextResponse } from 'next/server'
 import vm from 'vm'
+import { createClient } from '@supabase/supabase-js'
+
+// 1. Initialize Master Admin Client (Bypasses RLS to read hidden answers)
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+)
 
 export async function POST(req: Request) {
   try {
-    const { code } = await req.json()
+    const { code, challengeId } = await req.json()
 
-    // 1. Create a secure container to catch the console output
-    const output: string[] = []
-    const sandbox = {
-      console: {
-        log: (...args: any[]) => output.push(args.join(' '))
+    if (!challengeId) return NextResponse.json({ success: false, error: 'Missing Challenge ID' })
+
+    // 2. Fetch the hidden test cases for this specific puzzle
+    const { data: testCases, error } = await supabaseAdmin
+      .from('test_cases')
+      .select('*')
+      .eq('challenge_id', challengeId)
+
+    if (error || !testCases || testCases.length === 0) {
+      return NextResponse.json({ success: false, error: 'Failed to retrieve test cases.' })
+    }
+
+    let passed = 0
+    const total = testCases.length
+
+    // 3. The Verification Loop
+    for (const testCase of testCases) {
+      try {
+        const sandbox: any = {}
+        vm.createContext(sandbox)
+
+        // Inject the candidate's code and trigger their 'solve' function with the raw input
+        const executionScript = `
+          ${code}
+          // The platform automatically calls the candidate's function
+          const result = solve(${testCase.input_data});
+          result; // Return the result to the VM
+        `
+        
+        // Execute securely
+        const output = vm.runInContext(executionScript, sandbox, { timeout: 2000 })
+        
+        // Mathematically verify the answer
+        if (String(output).trim() === String(testCase.expected_output).trim()) {
+          passed++
+        }
+      } catch (execError: any) {
+         console.error("Test Case Failed:", execError.message)
       }
     }
 
-    // 2. Initialize the isolated Virtual Machine environment
-    vm.createContext(sandbox)
-
-    // 3. Execute the code with a strict 2-second kill switch
-    try {
-      vm.runInContext(code, sandbox, { timeout: 2000 })
-    } catch (execError: any) {
-      // Catch infinite loops or syntax errors gracefully
-      return NextResponse.json({ success: false, error: execError.message })
-    }
-
-    // 4. Return the raw output back to the Next.js frontend
-    return NextResponse.json({ 
-      success: true, 
-      output: output.join('\n') || 'Execution complete, but no output was logged.',
-      exitCode: 0
-    })
+    // 4. Return Final Score
+    return NextResponse.json({ success: true, passed, total })
 
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
