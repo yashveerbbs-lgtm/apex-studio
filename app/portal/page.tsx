@@ -155,20 +155,24 @@ export default function Portal() {
       </header>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* CARD 1: REPOS (Still a placeholder) */}
         <div className="p-6 bg-gray-900 border border-gray-800 rounded-xl hover:border-gray-600 transition">
           <h3 className="text-xl font-bold mb-2">Active Software Repos</h3>
           <p className="text-gray-400 text-sm mb-4">Access restricted codebases and engineering pipelines.</p>
           <button className="text-blue-400 text-sm font-bold uppercase tracking-wider hover:text-blue-300">View Repos →</button>
         </div>
-        <div className="p-6 bg-gray-900 border border-gray-800 rounded-xl hover:border-gray-600 transition">
+        
+        {/* CARD 2: 3D PIPELINE (Now a live link) */}
+        <div className="p-6 bg-gray-900 border border-gray-800 rounded-xl hover:border-gray-600 transition group">
           <h3 className="text-xl font-bold mb-2">3D & Assets Pipeline</h3>
           <p className="text-gray-400 text-sm mb-4">Download models, textures, and client design files.</p>
-          <button className="text-blue-400 text-sm font-bold uppercase tracking-wider hover:text-blue-300">Access Drive →</button>
+          <a href="/portal/drive" className="text-blue-400 text-sm font-bold uppercase tracking-wider group-hover:text-blue-300 inline-block transition">Access Drive →</a>
         </div>
+        
+        {/* CARD 3: MY TASKS (Now a live link) */}
         <div className="p-6 bg-gray-900 border border-gray-800 rounded-xl hover:border-gray-600 transition group">
           <h3 className="text-xl font-bold mb-2">My Tasks</h3>
           <p className="text-gray-400 text-sm mb-4">View your assigned sprint deliverables and deadlines.</p>
-          {/* THE UPDATED ROUTING LINK IS RIGHT HERE */}
           <a href="/portal/tasks" className="text-blue-400 text-sm font-bold uppercase tracking-wider group-hover:text-blue-300 inline-block transition">Open Board →</a>
         </div>
       </div>

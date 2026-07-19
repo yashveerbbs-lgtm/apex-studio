@@ -1,79 +1,82 @@
-import { NextResponse } from 'next/server'
-import vm from 'vm'
-import { createClient } from '@supabase/supabase-js'
-
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+import { NextResponse } from 'next/server';
+import { generateDynamicTestCases } from './generator';
 
 export async function POST(req: Request) {
   try {
-    const { code, challengeId, userId, email } = await req.json()
+    const { code, language } = await req.json();
 
-    if (!challengeId) return NextResponse.json({ success: false, error: 'Missing Challenge ID' })
-
-    // 1. DYNAMIC REWARD: Fetch the exact points for this specific challenge
-    const { data: challenge } = await supabaseAdmin
-      .from('challenges')
-      .select('points')
-      .eq('id', challengeId)
-      .single()
-
-    const challengePoints = challenge?.points || 0
-
-    const { data: testCases, error } = await supabaseAdmin
-      .from('test_cases')
-      .select('*')
-      .eq('challenge_id', challengeId)
-
-    if (error || !testCases || testCases.length === 0) {
-      return NextResponse.json({ success: false, error: 'Failed to retrieve test cases.' })
+    if (!code) {
+      return NextResponse.json({ success: false, error: "No code provided." }, { status: 400 });
     }
 
-    let passed = 0
-    const total = testCases.length
+    // 1. Generate the dynamic test cases
+    const dynamicTestCases = generateDynamicTestCases();
+    let passedCount = 0;
+    const totalTests = dynamicTestCases.length;
+    let results = [];
 
-    for (const testCase of testCases) {
+    // 2. Loop through tests and send them to the secure Execution Engine
+    for (const testCase of dynamicTestCases) {
       try {
-        const sandbox: any = {}
-        vm.createContext(sandbox)
-
-        const executionScript = `
-          ${code}
-          const result = solve(${testCase.input_data});
-          result;
-        `
-        
-        const output = vm.runInContext(executionScript, sandbox, { timeout: 2000 })
-        
-        if (String(output).trim() === String(testCase.expected_output).trim()) {
-          passed++
+        // Append the specific function call to the user's code based on the language
+        let executableCode = code;
+        if (language === 'javascript' || language === 'typescript') {
+          executableCode += `\nconsole.log(calculateVelocity(${testCase.input.join(', ')}));`;
+        } else if (language === 'python') {
+          executableCode += `\nprint(calculate_velocity(${testCase.input.join(', ')}))`;
+        } else {
+           return NextResponse.json({ success: false, error: "Unsupported language" }, { status: 400 });
         }
-      } catch (execError: any) {
-         console.error("Test Case Failed:", execError.message)
+
+        // Send the payload to the secure execution sandbox (e.g., Piston API)
+        const executeResponse = await fetch('https://emkc.org/api/v2/piston/execute', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            language: language === 'python' ? 'python' : 'javascript',
+            version: language === 'python' ? '3.10.0' : '18.15.0',
+            files: [{ content: executableCode }]
+          })
+        });
+
+        const executeData = await executeResponse.json();
+        
+        // Extract the console output from the sandbox
+        const output = executeData.run?.stdout?.trim();
+        const errorOutput = executeData.run?.stderr?.trim();
+
+        // Check if their calculated output matches the procedurally generated absolute answer
+        const passed = output === String(testCase.expectedOutput);
+        if (passed) passedCount++;
+
+        results.push({
+          input: testCase.input,
+          expected: testCase.expectedOutput,
+          actual: errorOutput || output || "No output",
+          passed
+        });
+
+      } catch (err: any) {
+        results.push({
+          input: testCase.input,
+          expected: testCase.expectedOutput,
+          actual: "Network/Execution Error",
+          error: err.message,
+          passed: false
+        });
       }
     }
 
-    // 2. THE DYNAMIC XP ENGINE
-    if (passed === total && userId) {
-       const { data: profile } = await supabaseAdmin.from('profiles').select('xp_balance').eq('id', userId).single()
-       
-       const currentXp = profile?.xp_balance || 0
-       // Apply the dynamic points instead of a hardcoded 50
-       const newXp = currentXp + challengePoints 
+    const allPassed = passedCount === totalTests;
 
-       await supabaseAdmin.from('profiles').upsert({ 
-         id: userId, 
-         email: email,
-         xp_balance: newXp 
-       })
-    }
-
-    // Pass the awarded points back to the frontend for the alert message
-    return NextResponse.json({ success: true, passed, total, pointsAwarded: challengePoints })
+    return NextResponse.json({ 
+      success: true, 
+      passed: allPassed, 
+      score: `${passedCount}/${totalTests}`,
+      results 
+    });
 
   } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 })
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }

@@ -8,7 +8,32 @@ export default function TaskBoard() {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
+    // 1. Fetch the initial data when the page loads
     fetchUserDataAndTasks()
+
+    // 2. THE MULTIPLAYER PROTOCOL (WEBSOCKETS)
+    // Listen for any live changes to the 'tasks' table
+    const channel = supabase
+      .channel('schema-db-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*', // Listens for Inserts, Updates, and Deletes
+          schema: 'public',
+          table: 'tasks'
+        },
+        (payload) => {
+          console.log("Realtime Database Payload Received:", payload)
+          // When someone else updates a task, instantly re-fetch the board to sync screens
+          fetchUserDataAndTasks()
+        }
+      )
+      .subscribe()
+
+    // 3. Cleanup the connection when the user leaves the page
+    return () => {
+      supabase.removeChannel(channel)
+    }
   }, [])
 
   async function fetchUserDataAndTasks() {
@@ -36,12 +61,15 @@ export default function TaskBoard() {
       .update({ status: newStatus })
       .eq('id', taskId)
 
-    if (!error) {
-      setTasks(tasks.map(t => t.id === taskId ? { ...t, status: newStatus } : t))
+    // Note: We don't need to manually update the local state anymore,
+    // because the WebSocket listener above will detect this database change
+    // and instantly refresh the board for us (and everyone else)!
+    if (error) {
+      console.error("Error updating task:", error)
     }
   }
 
-  if (isLoading) return <div className="min-h-screen bg-[#0a0a0a] text-green-400 flex justify-center items-center font-mono">Loading Board...</div>
+  if (isLoading) return <div className="min-h-screen bg-[#0a0a0a] text-green-400 flex justify-center items-center font-mono animate-pulse">Syncing Arena...</div>
 
   // Filter tasks by status for the Kanban columns
   const todoTasks = tasks.filter(t => t.status === 'TODO')
@@ -55,7 +83,12 @@ export default function TaskBoard() {
           <a href="/portal" className="text-gray-500 hover:text-white text-sm font-bold uppercase tracking-widest mb-4 inline-block transition">← Back to Portal</a>
           <h1 className="text-3xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-blue-700 uppercase">Active Sprints</h1>
         </div>
-        <p className="text-sm font-mono text-gray-400">OPERATIVE: {user?.email}</p>
+        <div className="flex flex-col items-end">
+           <p className="text-sm font-mono text-gray-400">OPERATIVE: {user?.email}</p>
+           <p className="text-xs font-mono text-green-500 mt-1 flex items-center gap-2">
+             <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span> LIVE SYNC ACTIVE
+           </p>
+        </div>
       </header>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
