@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server'
 import vm from 'vm'
 import { createClient } from '@supabase/supabase-js'
 
-// 1. Initialize Master Admin Client (Bypasses RLS to read hidden answers)
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -10,11 +9,19 @@ const supabaseAdmin = createClient(
 
 export async function POST(req: Request) {
   try {
-    const { code, challengeId } = await req.json()
+    const { code, challengeId, userId, email } = await req.json()
 
     if (!challengeId) return NextResponse.json({ success: false, error: 'Missing Challenge ID' })
 
-    // 2. Fetch the hidden test cases for this specific puzzle
+    // 1. DYNAMIC REWARD: Fetch the exact points for this specific challenge
+    const { data: challenge } = await supabaseAdmin
+      .from('challenges')
+      .select('points')
+      .eq('id', challengeId)
+      .single()
+
+    const challengePoints = challenge?.points || 0
+
     const { data: testCases, error } = await supabaseAdmin
       .from('test_cases')
       .select('*')
@@ -27,24 +34,19 @@ export async function POST(req: Request) {
     let passed = 0
     const total = testCases.length
 
-    // 3. The Verification Loop
     for (const testCase of testCases) {
       try {
         const sandbox: any = {}
         vm.createContext(sandbox)
 
-        // Inject the candidate's code and trigger their 'solve' function with the raw input
         const executionScript = `
           ${code}
-          // The platform automatically calls the candidate's function
           const result = solve(${testCase.input_data});
-          result; // Return the result to the VM
+          result;
         `
         
-        // Execute securely
         const output = vm.runInContext(executionScript, sandbox, { timeout: 2000 })
         
-        // Mathematically verify the answer
         if (String(output).trim() === String(testCase.expected_output).trim()) {
           passed++
         }
@@ -53,8 +55,23 @@ export async function POST(req: Request) {
       }
     }
 
-    // 4. Return Final Score
-    return NextResponse.json({ success: true, passed, total })
+    // 2. THE DYNAMIC XP ENGINE
+    if (passed === total && userId) {
+       const { data: profile } = await supabaseAdmin.from('profiles').select('xp_balance').eq('id', userId).single()
+       
+       const currentXp = profile?.xp_balance || 0
+       // Apply the dynamic points instead of a hardcoded 50
+       const newXp = currentXp + challengePoints 
+
+       await supabaseAdmin.from('profiles').upsert({ 
+         id: userId, 
+         email: email,
+         xp_balance: newXp 
+       })
+    }
+
+    // Pass the awarded points back to the frontend for the alert message
+    return NextResponse.json({ success: true, passed, total, pointsAwarded: challengePoints })
 
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
