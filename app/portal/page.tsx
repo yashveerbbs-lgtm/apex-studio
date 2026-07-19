@@ -56,7 +56,6 @@ export default function Portal() {
         body: JSON.stringify({ userId: user.id, email: user.email }),
       })
       
-      // UPGRADE: Read the raw response as text first to catch HTML errors
       const text = await response.text()
       
       let result;
@@ -166,10 +165,11 @@ export default function Portal() {
           <p className="text-gray-400 text-sm mb-4">Download models, textures, and client design files.</p>
           <button className="text-blue-400 text-sm font-bold uppercase tracking-wider hover:text-blue-300">Access Drive →</button>
         </div>
-        <div className="p-6 bg-gray-900 border border-gray-800 rounded-xl hover:border-gray-600 transition">
+        <div className="p-6 bg-gray-900 border border-gray-800 rounded-xl hover:border-gray-600 transition group">
           <h3 className="text-xl font-bold mb-2">My Tasks</h3>
           <p className="text-gray-400 text-sm mb-4">View your assigned sprint deliverables and deadlines.</p>
-          <button className="text-blue-400 text-sm font-bold uppercase tracking-wider hover:text-blue-300">Open Board →</button>
+          {/* THE UPDATED ROUTING LINK IS RIGHT HERE */}
+          <a href="/portal/tasks" className="text-blue-400 text-sm font-bold uppercase tracking-wider group-hover:text-blue-300 inline-block transition">Open Board →</a>
         </div>
       </div>
     </main>
