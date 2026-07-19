@@ -1,7 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { supabase } from '../utils/supabase'
-import Editor from '@monaco-editor/react' // The new VS Code engine
+import Editor from '@monaco-editor/react'
 
 export default function Home() {
   const [email, setEmail] = useState('')
@@ -9,7 +9,7 @@ export default function Home() {
   const [user, setUser] = useState<any>(null)
   const [challenges, setChallenges] = useState<any[]>([])
   
-  // NEW: State to manage the active IDE session
+  // State to manage the active IDE session
   const [activeChallenge, setActiveChallenge] = useState<any>(null)
   const [code, setCode] = useState<string>('// Initialize your algorithm here...\n\nfunction solve(data) {\n  \n}\n')
 
@@ -57,9 +57,27 @@ export default function Home() {
     }
   }
 
-  // NEW: Mock execution function
-  function handleRunExecution() {
-    alert("Pipeline engaged! Sending algorithm to backend for mathematical validation:\n\n" + code)
+  // THE LIVE EXECUTION PIPELINE
+  async function handleRunExecution() {
+    alert("Deploying algorithm to secure sandbox...")
+    
+    try {
+      const response = await fetch('/api/execute', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code }), // Sends the exact text from Monaco
+      })
+      
+      const result = await response.json()
+      
+      if (result.success) {
+        alert("Execution Complete!\n\nSandbox Output:\n" + result.output)
+      } else {
+        alert("Sandbox Error:\n" + result.error)
+      }
+    } catch (err) {
+      console.error("Pipeline failure:", err)
+    }
   }
 
   return (
