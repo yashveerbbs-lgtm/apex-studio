@@ -1,6 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
-import { supabase } from '../../../utils/supabase'
+import { supabase } from '../../utils/supabase' // 🚨 FIXED PATH HERE 🚨
 
 // 1. Define the numerical hierarchy of your gamified ranks
 const RANK_TIERS: Record<string, number> = {
