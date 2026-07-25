@@ -29,8 +29,8 @@ export default function ApexAcademy() {
   const [newImage, setNewImage] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  // DYNAMIC COURSES STATE
-  const [courses, setCourses] = useState([
+  // 🚨 DYNAMIC COURSES STATE (FIXED STRICT TYPING) 🚨
+  const [courses, setCourses] = useState<any[]>([
     { 
       id: 'nextjs-mastery', 
       title: 'Full-Stack Engineering with Next.js', 
