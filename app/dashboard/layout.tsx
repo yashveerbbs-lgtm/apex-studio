@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { supabase } from '../../utils/supabase'
-import { ShieldAlert, CheckCircle2, Lock, Scale, Zap, UserX } from 'lucide-react'
+import { ShieldAlert, CheckCircle2, Lock, Scale, Zap, UserX, Menu, X } from 'lucide-react'
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
@@ -15,6 +15,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [showClickwrap, setShowClickwrap] = useState(true) // ALWAYS default to true on load
   const [hasAgreed, setHasAgreed] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  // 🚨 MOBILE SIDEBAR STATE 🚨
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
 
   // 🚨 SECURITY CLEARANCE CHECK 🚨
   // Only emails containing these strings will ever see the God Mode button
@@ -93,24 +96,24 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     <div className="flex h-screen bg-[#050505] text-gray-400 font-mono overflow-hidden relative">
       
       {showClickwrap && (
-        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md font-sans">
-          <div className="bg-[#0a0a0a] border border-red-900/50 rounded-xl max-w-lg w-full p-8 shadow-2xl shadow-red-900/20 animate-in zoom-in duration-300">
+        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md font-sans p-4">
+          <div className="bg-[#0a0a0a] border border-red-900/50 rounded-xl max-w-lg w-full p-6 md:p-8 shadow-2xl shadow-red-900/20 animate-in zoom-in duration-300">
             
             <div className="w-16 h-16 bg-red-950/30 border border-red-900/50 rounded-full flex items-center justify-center mb-6 mx-auto">
               <Scale className="w-8 h-8 text-red-500" />
             </div>
             
-            <h2 className="text-2xl font-black text-white text-center mb-2 tracking-tight">
+            <h2 className="text-xl md:text-2xl font-black text-white text-center mb-2 tracking-tight">
               Intellectual Property Release
             </h2>
-            <p className="text-gray-400 text-center text-sm mb-8 leading-relaxed">
+            <p className="text-gray-400 text-center text-xs md:text-sm mb-8 leading-relaxed">
               Apex Studio operates proprietary commercial architecture. Before entering the ecosystem, you must agree to our standard IP & Code Contribution terms.
             </p>
 
-            <div className="bg-[#111111] border border-gray-800 p-5 rounded-lg mb-6">
+            <div className="bg-[#111111] border border-gray-800 p-4 md:p-5 rounded-lg mb-6">
               <div className="flex items-start gap-3">
                 <ShieldAlert className="w-5 h-5 text-yellow-500 shrink-0 mt-0.5" />
-                <p className="text-sm text-gray-300 leading-relaxed font-medium">
+                <p className="text-xs md:text-sm text-gray-300 leading-relaxed font-medium">
                   "I agree that all code, designs, algorithms, and digital assets I write, submit, or generate within this platform belong entirely to Apex Studio. I waive all rights to use, sell, or claim ownership over these digital assets."
                 </p>
               </div>
@@ -121,12 +124,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               onClick={() => setHasAgreed(!hasAgreed)}
               className="flex items-center gap-3 cursor-pointer mb-8 group"
             >
-              <div className="relative flex items-center justify-center">
+              <div className="relative flex items-center justify-center shrink-0">
                 <div className={`w-6 h-6 border-2 rounded transition-all flex items-center justify-center ${hasAgreed ? 'bg-cyan-600 border-cyan-500' : 'bg-[#111111] border-gray-700'}`}>
                   {hasAgreed && <CheckCircle2 className="w-4 h-4 text-white" />}
                 </div>
               </div>
-              <span className="text-sm font-bold text-gray-400 group-hover:text-gray-200 transition-colors select-none">
+              <span className="text-xs md:text-sm font-bold text-gray-400 group-hover:text-gray-200 transition-colors select-none leading-tight">
                 I have read and agree to the IP Release terms.
               </span>
             </div>
@@ -134,69 +137,88 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <button 
               onClick={handleSignAgreement}
               disabled={!hasAgreed || isSubmitting}
-              className="w-full bg-cyan-700 hover:bg-cyan-600 disabled:bg-gray-800 disabled:text-gray-500 text-white font-bold py-3.5 px-4 rounded-lg transition-all flex items-center justify-center gap-2 disabled:cursor-not-allowed uppercase tracking-widest text-xs"
+              className="w-full bg-cyan-700 hover:bg-cyan-600 disabled:bg-gray-800 disabled:text-gray-500 text-white font-bold py-3.5 px-4 rounded-lg transition-all flex items-center justify-center gap-2 disabled:cursor-not-allowed uppercase tracking-widest text-[10px] md:text-xs"
             >
               {isSubmitting ? 'Recording Signature...' : 'Accept & Enter Workspace'} 
               {!isSubmitting && <Lock className="w-4 h-4" />}
             </button>
-            <p className="text-center text-[10px] text-gray-600 mt-4 font-mono uppercase tracking-widest">
+            <p className="text-center text-[9px] md:text-[10px] text-gray-600 mt-4 font-mono uppercase tracking-widest">
               Secured via India IT Act 2000 Electronic Contract Standards
             </p>
           </div>
         </div>
       )}
 
-      <aside className={`w-64 bg-[#0a0a0a] border-r border-gray-800 flex flex-col justify-between shrink-0 transition-opacity ${showClickwrap ? 'opacity-20 pointer-events-none' : ''}`}>
+      {/* 🚨 MOBILE OVERLAY 🚨 */}
+      {isSidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black/70 backdrop-blur-sm z-30 md:hidden"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
+      {/* 🚨 RESPONSIVE SIDEBAR 🚨 */}
+      <aside className={`fixed md:static inset-y-0 left-0 z-40 w-64 bg-[#0a0a0a] border-r border-gray-800 flex flex-col justify-between shrink-0 transform transition-transform duration-300 ease-in-out md:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} ${showClickwrap ? 'opacity-20 pointer-events-none' : ''}`}>
         
         <div className="overflow-y-auto">
-          <div className="p-6">
-            <h1 className="text-2xl font-black text-cyan-400 tracking-wider">APEX STUDIO</h1>
-            <div className="flex items-center gap-2 mt-1.5">
-              <div className={`w-2 h-2 rounded-full animate-pulse ${userRole === 'ADMIN' ? 'bg-red-500' : 'bg-green-500'}`}></div>
-              <span className={`text-[10px] tracking-widest font-bold ${userRole === 'ADMIN' ? 'text-red-500' : 'text-gray-500'}`}>
-                {userRole === 'ADMIN' ? '[ SYSTEM ADMIN ]' : 'DEVELOPER ECOSYSTEM'}
-              </span>
+          <div className="p-6 flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-black text-cyan-400 tracking-wider">APEX STUDIO</h1>
+              <div className="flex items-center gap-2 mt-1.5">
+                <div className={`w-2 h-2 rounded-full animate-pulse ${userRole === 'ADMIN' ? 'bg-red-500' : 'bg-green-500'}`}></div>
+                <span className={`text-[10px] tracking-widest font-bold ${userRole === 'ADMIN' ? 'text-red-500' : 'text-gray-500'}`}>
+                  {userRole === 'ADMIN' ? '[ SYSTEM ADMIN ]' : 'DEVELOPER ECOSYSTEM'}
+                </span>
+              </div>
             </div>
+            
+            {/* Mobile Close Button */}
+            <button 
+              onClick={() => setIsSidebarOpen(false)} 
+              className="md:hidden text-gray-400 hover:text-white p-1"
+            >
+              <X className="w-5 h-5" />
+            </button>
           </div>
 
           <nav className="px-4 space-y-8 mt-2 pb-6">
             <div>
               <h2 className="text-[10px] font-bold text-gray-600 mb-3 tracking-widest uppercase">Workspace</h2>
               <div className="space-y-1">
-                <Link href="/dashboard/overview" className={getLinkStyle('/dashboard/overview')}>/ OVERVIEW</Link>
-                <Link href="/dashboard/internships" className={getLinkStyle('/dashboard/internships')}>/ INTERNSHIPS</Link>
+                <Link href="/dashboard/overview" onClick={() => setIsSidebarOpen(false)} className={getLinkStyle('/dashboard/overview')}>/ OVERVIEW</Link>
+                <Link href="/dashboard/internships" onClick={() => setIsSidebarOpen(false)} className={getLinkStyle('/dashboard/internships')}>/ INTERNSHIPS</Link>
               </div>
             </div>
             <div>
               <h2 className="text-[10px] font-bold text-gray-600 mb-3 tracking-widest uppercase">Apex Divisions</h2>
               <div className="space-y-1">
-                <Link href="/dashboard/courses" className={getAcademyStyle('/dashboard/courses')}>/ APEX ACADEMY</Link>
-                <Link href="/dashboard/services" className={getLinkStyle('/dashboard/services')}>/ AGENCY SERVICES</Link>
-                <Link href="/dashboard/showcase" className={getLinkStyle('/dashboard/showcase')}>/ APEX SHOWCASE</Link>
+                <Link href="/dashboard/courses" onClick={() => setIsSidebarOpen(false)} className={getAcademyStyle('/dashboard/courses')}>/ APEX ACADEMY</Link>
+                <Link href="/dashboard/services" onClick={() => setIsSidebarOpen(false)} className={getLinkStyle('/dashboard/services')}>/ AGENCY SERVICES</Link>
+                <Link href="/dashboard/showcase" onClick={() => setIsSidebarOpen(false)} className={getLinkStyle('/dashboard/showcase')}>/ APEX SHOWCASE</Link>
               </div>
             </div>
             <div>
               <h2 className="text-[10px] font-bold text-gray-600 mb-3 tracking-widest uppercase">Network</h2>
               <div className="space-y-1">
-                <Link href="/dashboard/community" className={getLinkStyle('/dashboard/community')}>/ DEV LOUNGE</Link>
+                <Link href="/dashboard/community" onClick={() => setIsSidebarOpen(false)} className={getLinkStyle('/dashboard/community')}>/ DEV LOUNGE</Link>
               </div>
             </div>
             <div>
               <h2 className="text-[10px] font-bold text-gray-600 mb-3 tracking-widest uppercase">Hackathon Arena</h2>
               <div className="space-y-1">
-                <Link href="/dashboard/hackathons" className={getLinkStyle('/dashboard/hackathons')}>/ ACTIVE ARENAS</Link>
+                <Link href="/dashboard/hackathons" onClick={() => setIsSidebarOpen(false)} className={getLinkStyle('/dashboard/hackathons')}>/ ACTIVE ARENAS</Link>
               </div>
             </div>
             <div>
               <h2 className="text-[10px] font-bold text-gray-600 mb-3 tracking-widest uppercase">Proprietary Tools</h2>
               <div className="space-y-1">
-                <Link href="/dashboard/workspace" className={getLinkStyle('/dashboard/workspace')}>/ IN-HOUSE IDE & CHAT</Link>
+                <Link href="/dashboard/workspace" onClick={() => setIsSidebarOpen(false)} className={getLinkStyle('/dashboard/workspace')}>/ IN-HOUSE IDE & CHAT</Link>
               </div>
             </div>
           </nav>
         </div>
 
-        <div className="p-4 border-t border-gray-800 bg-[#0a0a0a] flex flex-col gap-2">
+        <div className="p-4 border-t border-gray-800 bg-[#0a0a0a] flex flex-col gap-2 shrink-0">
            {/* EXCLUSIVE EXECUTIVE TOGGLE BUTTON */}
            {isExecutive && (
              <button 
@@ -219,8 +241,27 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
       </aside>
 
-      <main className={`flex-1 overflow-hidden relative transition-opacity ${showClickwrap ? 'opacity-20 pointer-events-none' : ''}`}>
-        {children}
+      {/* 🚨 MAIN CONTENT WRAPPER 🚨 */}
+      <main className={`flex-1 flex flex-col overflow-hidden relative transition-opacity ${showClickwrap ? 'opacity-20 pointer-events-none' : ''}`}>
+        
+        {/* Mobile Top Header (Hamburger Menu) */}
+        <header className="md:hidden flex items-center justify-between p-4 border-b border-gray-800 bg-[#0a0a0a] shrink-0">
+          <div className="flex items-center gap-3">
+             <div className={`w-2 h-2 rounded-full animate-pulse ${userRole === 'ADMIN' ? 'bg-red-500' : 'bg-green-500'}`}></div>
+             <h1 className="text-xl font-black text-cyan-400 tracking-wider">APEX STUDIO</h1>
+          </div>
+          <button 
+            onClick={() => setIsSidebarOpen(true)} 
+            className="p-2 text-gray-400 hover:text-white transition-colors rounded bg-gray-900/50 border border-gray-800"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+        </header>
+
+        {/* Dashboard Content Area */}
+        <div className="flex-1 overflow-hidden relative">
+          {children}
+        </div>
       </main>
       
     </div>
