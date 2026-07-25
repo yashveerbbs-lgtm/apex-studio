@@ -1,10 +1,11 @@
 import { NextResponse } from 'next/server'
 import { Resend } from 'resend'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
-
 export async function POST(request: Request) {
   try {
+    // 🚨 MOVED INSIDE: This prevents the build-time crash! 🚨
+    const resend = new Resend(process.env.RESEND_API_KEY)
+
     const { email, name, tier } = await request.json()
 
     let subject = ''
@@ -26,7 +27,7 @@ export async function POST(request: Request) {
             <p style="color: #d4d4d4; font-size: 14px; line-height: 1.5;">Don't let these elite logic skills sit idle. Apex Studio partners with top-tier tech firms to recruit Pro-ranked operatives. Check out our <strong>Elite Talent Pool</strong> services to see how we can fast-track your resume to our enterprise partners.</p>
           </div>
 
-          <a href="http://localhost:3000/portal" style="display: inline-block; padding: 14px 28px; background-color: #ea580c; color: #ffffff; text-decoration: none; font-weight: bold; border-radius: 4px; text-transform: uppercase; letter-spacing: 1px;">Claim Your PDF Credential</a>
+          <a href="https://apex-studio-rouge.vercel.app/portal" style="display: inline-block; padding: 14px 28px; background-color: #ea580c; color: #ffffff; text-decoration: none; font-weight: bold; border-radius: 4px; text-transform: uppercase; letter-spacing: 1px;">Claim Your PDF Credential</a>
         </div>
       `
     } 
@@ -46,7 +47,7 @@ export async function POST(request: Request) {
             <p style="color: #d4d4d4; font-size: 14px; line-height: 1.5;">You've proven you can handle corporate deployments. Apex Studio offers <strong>Freelance Systems Architecture</strong> services. Reach out to our command team to transition from simulated internships to paid, real-world client contracts.</p>
           </div>
 
-          <a href="http://localhost:3000/portal" style="display: inline-block; padding: 14px 28px; background-color: #3b82f6; color: #ffffff; text-decoration: none; font-weight: bold; border-radius: 4px; text-transform: uppercase; letter-spacing: 1px;">View Official Letter</a>
+          <a href="https://apex-studio-rouge.vercel.app/portal" style="display: inline-block; padding: 14px 28px; background-color: #3b82f6; color: #ffffff; text-decoration: none; font-weight: bold; border-radius: 4px; text-transform: uppercase; letter-spacing: 1px;">View Official Letter</a>
         </div>
       `
     } 
@@ -66,13 +67,13 @@ export async function POST(request: Request) {
             <p style="color: #d4d4d4; font-size: 14px; line-height: 1.5;">This is just the beginning. Apex Studio provides comprehensive <strong>Full-Stack Mastery Roadmaps</strong> and 1-on-1 code mentorship. Ready to compete for the Pro tier? Dive into our advanced training modules today.</p>
           </div>
 
-          <a href="http://localhost:3000/portal" style="display: inline-block; padding: 14px 28px; background-color: #22c55e; color: #111111; text-decoration: none; font-weight: bold; border-radius: 4px; text-transform: uppercase; letter-spacing: 1px;">Download Certificate</a>
+          <a href="https://apex-studio-rouge.vercel.app/portal" style="display: inline-block; padding: 14px 28px; background-color: #22c55e; color: #111111; text-decoration: none; font-weight: bold; border-radius: 4px; text-transform: uppercase; letter-spacing: 1px;">Download Certificate</a>
         </div>
       `
     }
 
     const data = await resend.emails.send({
-      from: 'Apex Studio <onboarding@resend.dev>',
+      from: 'Apex Studio <onboarding@resend.dev>', // Update this when you attach a custom domain to Resend
       to: [email],
       subject: subject,
       html: htmlContent
