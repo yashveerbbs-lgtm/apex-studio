@@ -34,7 +34,7 @@ export default function AgencyServices() {
   const [newImage, setNewImage] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  // 🚨 DYNAMIC SERVICES STATE (FIXED STRICT TYPING) 🚨
+  // 🚨 DYNAMIC SERVICES STATE
   const [services, setServices] = useState<any[]>([
     { 
       id: 'software', 
@@ -83,7 +83,6 @@ export default function AgencyServices() {
     })
   }, [])
 
-  // 🚨 IMAGE UPLOAD LOGIC 🚨
   function handleImageProcess(file: File) {
     if (!file.type.startsWith('image/')) {
       alert('Please upload an image file.')
@@ -96,12 +95,10 @@ export default function AgencyServices() {
     reader.readAsDataURL(file)
   }
 
-  // 🚨 ADMIN ACTION: DEPLOY OR UPDATE SERVICE 🚨
   function handleDeployService(e: React.FormEvent) {
     e.preventDefault()
     
     if (editingServiceId) {
-      // Update existing service
       setServices(services.map(s => {
         if (s.id === editingServiceId) {
           return {
@@ -109,13 +106,12 @@ export default function AgencyServices() {
             title: newTitle,
             desc: newDesc,
             icon: iconMap[newIconStr],
-            image: newImage || s.image // keep old image if no new one
+            image: newImage || s.image
           }
         }
         return s
       }))
     } else {
-      // Create new service
       const newService = {
         id: `service-${Date.now()}`,
         title: newTitle,
@@ -130,13 +126,11 @@ export default function AgencyServices() {
     alert(`System Update: Service successfully saved.`)
   }
 
-  // 🚨 ADMIN ACTION: OPEN EDIT MODAL 🚨
   function openEditModal(service: any) {
     setEditingServiceId(service.id)
     setNewTitle(service.title)
     setNewDesc(service.desc)
     
-    // Find the string key for the icon
     const iconEntry = Object.entries(iconMap).find(([key, val]) => val === service.icon)
     if (iconEntry) setNewIconStr(iconEntry[0])
     
@@ -153,27 +147,47 @@ export default function AgencyServices() {
     setNewImage(null)
   }
 
-  // 🚨 ADMIN ACTION: DELETE SERVICE 🚨
   function handleDeleteService(e: React.MouseEvent, serviceId: string) {
-    e.stopPropagation() // Prevents clicking the card from opening the intake form
+    e.stopPropagation()
     if (confirm("ADMIN OVERRIDE: Permanently remove this service offering from the storefront?")) {
       setServices(services.filter(s => s.id !== serviceId))
     }
   }
 
-  // CLIENT INTAKE FORM SUBMISSION
-  async function handleSubmit(e: React.FormEvent) {
+  // 🚨 REAL SUPABASE SUBMISSION LOGIC 🚨
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setIsSubmitting(true)
+
+    // Grab all the data from the form inputs
+    const formData = new FormData(e.currentTarget)
+    const clientData = {
+      service_id: selectedService.id,
+      service_title: selectedService.title,
+      client_name: formData.get('clientName'),
+      client_email: formData.get('clientEmail'),
+      budget: formData.get('budget'),
+      vision: formData.get('vision'),
+      user_id: currentUser?.id // Links the request to the logged-in user if available
+    }
     
-    setTimeout(() => {
+    try {
+      // Send it to the new Supabase table
+      const { error } = await supabase.from('service_requests').insert([clientData])
+      
+      if (error) throw error
+
       setIsSubmitting(false)
       setIsSuccess(true)
       setTimeout(() => {
         setIsSuccess(false)
         setSelectedService(null)
       }, 4000)
-    }, 1500)
+
+    } catch (error: any) {
+      alert(`Error submitting request: ${error.message}`)
+      setIsSubmitting(false)
+    }
   }
 
   // VIEW 1: THE WARM INTAKE FORM
@@ -213,17 +227,20 @@ export default function AgencyServices() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">What should we call you?</label>
-                  <input type="text" required className="w-full bg-[#181818] border border-gray-700 rounded-lg p-3.5 text-white placeholder:text-gray-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all" placeholder="Your name or company..." />
+                  {/* Added name="clientName" */}
+                  <input type="text" name="clientName" required className="w-full bg-[#181818] border border-gray-700 rounded-lg p-3.5 text-white placeholder:text-gray-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all" placeholder="Your name or company..." />
                 </div>
                 <div className="space-y-2">
                   <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Where can we reach you?</label>
-                  <input type="email" required className="w-full bg-[#181818] border border-gray-700 rounded-lg p-3.5 text-white placeholder:text-gray-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all" placeholder="hello@yourdomain.com" />
+                  {/* Added name="clientEmail" */}
+                  <input type="email" name="clientEmail" required className="w-full bg-[#181818] border border-gray-700 rounded-lg p-3.5 text-white placeholder:text-gray-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all" placeholder="hello@yourdomain.com" />
                 </div>
               </div>
               
               <div className="space-y-2">
                 <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">What's your investment range?</label>
-                <select className="w-full bg-[#181818] border border-gray-700 rounded-lg p-3.5 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all appearance-none cursor-pointer">
+                {/* Added name="budget" */}
+                <select name="budget" className="w-full bg-[#181818] border border-gray-700 rounded-lg p-3.5 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all appearance-none cursor-pointer">
                   <option>&lt; $5,000 (Let's build a prototype)</option>
                   <option>$5,000 - $20,000 (Minimum Viable Product)</option>
                   <option>$20,000 - $50,000 (Full-scale launch)</option>
@@ -233,7 +250,8 @@ export default function AgencyServices() {
 
               <div className="space-y-2">
                 <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Tell us about your vision</label>
-                <textarea required rows={5} className="w-full bg-[#181818] border border-gray-700 rounded-lg p-3.5 text-white placeholder:text-gray-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all resize-none" placeholder="Don't hold back! The more details you share about your goals, features, and dreams for this project, the better..."></textarea>
+                {/* Added name="vision" */}
+                <textarea name="vision" required rows={5} className="w-full bg-[#181818] border border-gray-700 rounded-lg p-3.5 text-white placeholder:text-gray-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all resize-none" placeholder="Don't hold back! The more details you share about your goals, features, and dreams for this project, the better..."></textarea>
               </div>
 
               <button 
