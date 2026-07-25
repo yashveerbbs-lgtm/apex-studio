@@ -34,8 +34,8 @@ export default function AgencyServices() {
   const [newImage, setNewImage] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  // DYNAMIC SERVICES STATE
-  const [services, setServices] = useState([
+  // 🚨 DYNAMIC SERVICES STATE (FIXED STRICT TYPING) 🚨
+  const [services, setServices] = useState<any[]>([
     { 
       id: 'software', 
       title: 'Enterprise Software', 
