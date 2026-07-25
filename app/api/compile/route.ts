@@ -4,15 +4,8 @@ export async function POST(request: Request) {
   try {
     const { script, language } = await request.json();
 
-    // Tripwire: This will print in your VS Code terminal!
-    console.log("--- JDoodle API Check ---");
-    console.log("Client ID:", process.env.JDOODLE_CLIENT_ID ? "Found ✅" : "MISSING ❌");
-    console.log("Client Secret:", process.env.JDOODLE_CLIENT_SECRET ? "Found ✅" : "MISSING ❌");
-
-    // Expanded Language Map to support your new Workspace Academy courses
+    // Map our Monaco languages to JDoodle's specific compiler codes
     const langMap: any = {
-      'javascript': { lang: 'nodejs', versionIndex: '4' }, // Added for Next.js Academy
-      'go': { lang: 'go', versionIndex: '4' },             // Added for Microservices Academy
       'python': { lang: 'python3', versionIndex: '4' },
       'cpp': { lang: 'cpp17', versionIndex: '1' },
       'c': { lang: 'c', versionIndex: '5' },
@@ -23,7 +16,7 @@ export async function POST(request: Request) {
     const config = langMap[language];
     
     if (!config) {
-      return NextResponse.json({ error: `Language '${language}' is not supported.` }, { status: 400 });
+      return NextResponse.json({ error: `Language '${language}' is not supported by the backend.` }, { status: 400 });
     }
 
     const response = await fetch('https://api.jdoodle.com/v1/execute', {
@@ -38,7 +31,6 @@ export async function POST(request: Request) {
       })
     });
 
-    // JDoodle returns { output: "...", statusCode: 200, memory: "...", cpuTime: "..." }
     const data = await response.json();
     return NextResponse.json(data);
 
