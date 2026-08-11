@@ -440,7 +440,8 @@ export default function EnterpriseWorkspace() {
     setIsExecuting(true)
     setTerminalOutput((prev) => [...prev, `> Compiling ${activeFile.name}...`])
     try {
-      const response = await fetch('/api/execute', {
+      // FIX: Changed url from /api/execute to /api/compile
+      const response = await fetch('/api/compile', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ script: activeFile.content, language: activeFile.language }),
