@@ -1,6 +1,7 @@
 'use client'
 import Link from 'next/link'
 import { Terminal, Code2, Cpu, Sparkles, ChevronRight, Server, ShieldCheck, Gamepad2, ArrowRight, Database } from 'lucide-react'
+
 export default function ApexLandingPage() {
   return (
     <div className="min-h-screen bg-[#050505] text-white font-sans selection:bg-cyan-900/50">
@@ -81,9 +82,10 @@ export default function ApexLandingPage() {
               <p className="text-gray-400 text-sm leading-relaxed mb-8">
                 Custom enterprise software, AAA interactive mechanics, and scalable web infrastructure built by our elite engineering teams.
               </p>
-              <div className="text-xs font-bold text-cyan-400 uppercase tracking-widest flex items-center gap-1 group-hover:gap-2 transition-all">
+              {/* FIXED: Changed div to Link */}
+              <Link href="/auth/login" className="text-xs font-bold text-cyan-400 uppercase tracking-widest flex items-center gap-1 group-hover:gap-2 transition-all w-fit">
                 Request Build <ChevronRight className="w-4 h-4" />
-              </div>
+              </Link>
             </div>
 
             {/* Academy Card */}
@@ -95,9 +97,10 @@ export default function ApexLandingPage() {
               <p className="text-gray-400 text-sm leading-relaxed mb-8">
                 Master Next.js, Python, C++, and Go inside our proprietary cloud IDE. Write code, pass the blindfold exams, and secure internships.
               </p>
-              <div className="text-xs font-bold text-indigo-400 uppercase tracking-widest flex items-center gap-1 group-hover:gap-2 transition-all">
+              {/* FIXED: Changed div to Link */}
+              <Link href="/auth/login" className="text-xs font-bold text-indigo-400 uppercase tracking-widest flex items-center gap-1 group-hover:gap-2 transition-all w-fit">
                 Start Learning <ChevronRight className="w-4 h-4" />
-              </div>
+              </Link>
             </div>
 
             {/* Hackathon Card */}
@@ -109,9 +112,10 @@ export default function ApexLandingPage() {
               <p className="text-gray-400 text-sm leading-relaxed mb-8">
                 Compete in high-stakes algorithmic challenges and complex system builds. Prove your skills against the best and win cash bounties.
               </p>
-              <div className="text-xs font-bold text-fuchsia-400 uppercase tracking-widest flex items-center gap-1 group-hover:gap-2 transition-all">
+              {/* FIXED: Changed div to Link */}
+              <Link href="/auth/login" className="text-xs font-bold text-fuchsia-400 uppercase tracking-widest flex items-center gap-1 group-hover:gap-2 transition-all w-fit">
                 Enter Arena <ChevronRight className="w-4 h-4" />
-              </div>
+              </Link>
             </div>
 
           </div>
