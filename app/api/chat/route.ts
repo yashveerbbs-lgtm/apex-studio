@@ -18,8 +18,8 @@ export async function POST(req: Request) {
     
     User's message: ${message}`;
 
-    // The Ultimate Fix: Upgraded to the 'v1' endpoint and 'gemini-1.5-flash'
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+    // The ultimate fix: targeting the modern gemini-3.5-flash model
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${apiKey}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
