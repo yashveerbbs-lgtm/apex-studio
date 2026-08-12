@@ -10,7 +10,7 @@ export default function SparkAIAssistant() {
   const [mood, setMood] = useState<Mood>('idle')
   const [inputText, setInputText] = useState('')
   const [messages, setMessages] = useState([
-    { sender: 'spark', text: 'Hey Yashveer! Grab me, fling me across the screen, or ask me a coding question! ✨' }
+    { sender: 'spark', text: 'Hey Yash! Grab me, fling me across the screen, or ask me about the team! ✨' }
   ])
   
   const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -39,10 +39,14 @@ export default function SparkAIAssistant() {
     setMood('thinking')
 
     try {
+      // 1. Scan the DOM to see what the user is looking at!
+      const pageTitle = document.querySelector('h1')?.innerText || 'the dashboard interface'
+
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: userMessage })
+        // 2. Send both the message AND the page context to Gemini
+        body: JSON.stringify({ message: userMessage, context: pageTitle })
       })
 
       const data = await response.json()
@@ -163,10 +167,27 @@ export default function SparkAIAssistant() {
         dragConstraints={{ left: -1500, right: 0, top: -800, bottom: 0 }}
         dragElastic={0.8}
         dragTransition={{ bounceStiffness: 400, bounceDamping: 15 }}
-        onDragStart={() => setMood('dizzy')}
+        
+        // --- FUNNY FLINGING LOGIC HERE ---
+        onDragStart={() => {
+          setMood('dizzy')
+          const dragJokes = [
+            "Unhand me, cutie! 😤",
+            "AI bots are not made for flinging! 🎢",
+            "Wheeeeee! Wait, no, put me down! 🛸",
+            "Do I look like a frisbee to you?! 🥏",
+            "Hey! Watch the digital paint job! 🎨"
+          ]
+          const randomJoke = dragJokes[Math.floor(Math.random() * dragJokes.length)]
+          
+          setMessages(prev => [...prev, { sender: 'spark', text: randomJoke }])
+          if (!isOpen) setIsOpen(true)
+        }}
         onDragEnd={() => {
            setTimeout(() => setMood('idle'), 2000)
         }}
+        // ---------------------------------
+
         whileDrag={{ scale: 1.15, cursor: 'grabbing' }}
         onClick={() => { if (!isOpen) { setIsOpen(true); setMood('happy'); } }}
         className="relative cursor-grab pointer-events-auto"
