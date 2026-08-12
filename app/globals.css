@@ -1,26 +1,56 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Soft, cozy light mode background */
+  --background: #F7F9FC;
+  /* Friendly slate-700 text instead of harsh black */
+  --foreground: #334155; 
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* Prioritize rounded, friendly fonts if available */
+  --font-sans: 'Nunito', 'Quicksand', var(--font-geist-sans), sans-serif;
+  --font-mono: 'Fira Code', 'JetBrains Mono', var(--font-geist-mono), monospace;
 }
 
+/* Soft Dark Mode - deep rich slate instead of pitch black */
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #0F172A; 
+    --foreground: #F8FAFC; 
   }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+  /* Smoothly transition when switching dark/light themes */
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* =========================================
+   GAMIFIED UI CUSTOM UTILITIES
+   ========================================= */
+@layer utilities {
+  /* Base 3D press animation */
+  .btn-3d {
+    @apply transition-all active:translate-y-[4px] active:shadow-none;
+  }
+  
+  /* Green Success Button */
+  .btn-emerald {
+    @apply bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-xl
+           shadow-[0_4px_0_rgb(5,150,105)] hover:shadow-[0_2px_0_rgb(5,150,105)] 
+           hover:translate-y-[2px] btn-3d;
+  }
+  
+  /* Purple/Indigo Primary Button */
+  .btn-indigo {
+    @apply bg-indigo-500 hover:bg-indigo-600 text-white font-bold rounded-xl
+           shadow-[0_4px_0_rgb(67,56,202)] hover:shadow-[0_2px_0_rgb(67,56,202)] 
+           hover:translate-y-[2px] btn-3d;
+  }
 }

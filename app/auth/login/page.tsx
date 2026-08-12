@@ -25,24 +25,21 @@ export default function Login() {
       setError(error.message)
       setLoading(false)
     } else {
-      // 🚨 AUTO-REDIRECT FIX: Check if they came from an invite link
       const pendingInvite = sessionStorage.getItem('pendingInvite')
       
       if (pendingInvite) {
-        sessionStorage.removeItem('pendingInvite') // Clear it out so it doesn't get stuck
-        router.push(pendingInvite) // Send them directly to the Gateway!
+        sessionStorage.removeItem('pendingInvite') 
+        router.push(pendingInvite) 
       } else {
-        router.push('/dashboard/overview') // Standard login routing
+        router.push('/dashboard/overview') 
       }
     }
   }
 
   async function handleGoogleLogin() {
-    // 🚨 AUTO-REDIRECT FIX FOR GOOGLE: Grab the invite link before sending to Google
     const pendingInvite = sessionStorage.getItem('pendingInvite');
     const redirectPath = pendingInvite ? pendingInvite : '/dashboard/overview';
     
-    // Clean up the storage since Supabase will handle the redirect via URL
     if (pendingInvite) {
       sessionStorage.removeItem('pendingInvite');
     }
@@ -50,10 +47,9 @@ export default function Login() {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        // Dynamically set the return URL so Google drops them right into the squad!
         redirectTo: `${window.location.origin}${redirectPath}`,
         queryParams: {
-          prompt: 'select_account' // Forces Google to show the account chooser
+          prompt: 'select_account' 
         }
       }
     })
@@ -62,23 +58,24 @@ export default function Login() {
   }
 
   return (
-    <main className="min-h-screen bg-[#050505] flex items-center justify-center p-6 font-sans text-white">
-      <div className="w-full max-w-md bg-gray-950 border border-gray-800 p-8 rounded-xl shadow-2xl relative overflow-hidden">
+    <main className="min-h-screen bg-[#F7F9FC] flex items-center justify-center p-6 font-sans text-slate-800 transition-colors duration-500">
+      <div className="w-full max-w-md bg-white border-2 border-slate-100 p-8 rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] relative overflow-hidden">
         
-        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-600 to-orange-500"></div>
+        {/* Soft, friendly header gradient */}
+        <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-indigo-400 to-purple-400"></div>
 
-        <div className="mb-8 text-center">
-          <h1 className="text-3xl font-black uppercase tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-gray-100 to-gray-500 mb-2">
-            System Auth
+        <div className="mb-8 text-center mt-2">
+          <h1 className="text-3xl font-extrabold text-slate-800 mb-2">
+            Welcome Back! 👋
           </h1>
-          <p className="text-gray-500 font-mono text-xs uppercase tracking-widest">Operative Login Protocol</p>
+          <p className="text-slate-500 font-medium text-sm">Let's get back to learning and building.</p>
         </div>
 
         {/* GOOGLE AUTH BUTTON */}
         <button 
           onClick={handleGoogleLogin}
           type="button"
-          className="w-full mb-6 bg-white hover:bg-gray-200 text-black font-bold uppercase tracking-widest text-sm py-3 rounded flex items-center justify-center gap-3 transition-all"
+          className="w-full mb-6 bg-white hover:bg-slate-50 border-2 border-slate-200 text-slate-700 font-bold text-base py-3.5 rounded-2xl flex items-center justify-center gap-3 transition-all hover:-translate-y-1 hover:shadow-sm active:translate-y-0 active:shadow-none"
         >
           <svg className="w-5 h-5" viewBox="0 0 24 24">
             <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -86,56 +83,59 @@ export default function Login() {
             <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
             <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
           </svg>
-          Google Authentication
+          Continue with Google
         </button>
 
         <div className="flex items-center mb-6">
-          <div className="flex-1 border-t border-gray-800"></div>
-          <span className="px-3 text-xs font-mono text-gray-600 uppercase tracking-widest">Or Secure Cipher</span>
-          <div className="flex-1 border-t border-gray-800"></div>
+          <div className="flex-1 border-t-2 border-slate-100"></div>
+          <span className="px-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Or use email</span>
+          <div className="flex-1 border-t-2 border-slate-100"></div>
         </div>
 
-        <form onSubmit={handleLogin} className="space-y-6">
+        <form onSubmit={handleLogin} className="space-y-5">
           <div>
-            <label className="block text-xs font-mono text-gray-400 uppercase tracking-widest mb-2">Email Designation</label>
+            <label className="block text-sm font-bold text-slate-600 mb-2">Email Address</label>
             <input 
               type="email" 
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full bg-gray-900 border border-gray-700 text-white p-3 rounded focus:border-orange-500 focus:ring-1 focus:ring-orange-500 outline-none transition-all font-mono text-sm"
+              placeholder="you@awesome.com"
+              className="w-full bg-slate-50 border-2 border-slate-200 text-slate-800 p-3.5 rounded-xl focus:border-indigo-500 focus:bg-white focus:ring-4 focus:ring-indigo-500/20 outline-none transition-all text-sm font-medium placeholder:text-slate-400"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-mono text-gray-400 uppercase tracking-widest mb-2">Security Cipher</label>
+            <label className="block text-sm font-bold text-slate-600 mb-2">Password</label>
             <input 
               type="password" 
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="w-full bg-gray-900 border border-gray-700 text-white p-3 rounded focus:border-orange-500 focus:ring-1 focus:ring-orange-500 outline-none transition-all font-mono text-sm"
+              placeholder="••••••••"
+              className="w-full bg-slate-50 border-2 border-slate-200 text-slate-800 p-3.5 rounded-xl focus:border-indigo-500 focus:bg-white focus:ring-4 focus:ring-indigo-500/20 outline-none transition-all text-sm font-medium placeholder:text-slate-400"
             />
           </div>
 
           {error && (
-            <div className="bg-red-900/20 border border-red-900/50 text-red-500 text-xs font-mono p-3 rounded">
-              ERR: {error}
+            <div className="bg-red-50 border-2 border-red-200 text-red-600 text-sm font-medium p-4 rounded-xl flex items-center gap-2">
+              <span className="text-xl">😅</span> Oops! {error}
             </div>
           )}
 
+          {/* Gamified 3D Button */}
           <button 
             type="submit" 
             disabled={loading}
-            className="w-full bg-orange-600 hover:bg-orange-500 text-white font-bold uppercase tracking-widest text-sm py-4 rounded transition-all disabled:opacity-50 disabled:cursor-wait"
+            className="w-full bg-indigo-500 hover:bg-indigo-600 active:bg-indigo-700 text-white font-bold text-base py-4 rounded-xl transition-all disabled:opacity-50 disabled:cursor-wait shadow-[0_4px_0_rgb(67,56,202)] hover:shadow-[0_2px_0_rgb(67,56,202)] hover:translate-y-[2px] active:shadow-none active:translate-y-[4px]"
           >
-            {loading ? 'Authenticating...' : 'Initialize Connection'}
+            {loading ? 'Logging in...' : 'Log In'}
           </button>
         </form>
 
-        <div className="mt-6 text-center border-t border-gray-800 pt-6">
-          <p className="text-gray-500 font-mono text-xs uppercase">
-            No active clearance? <Link href="/auth/register" className="text-orange-500 hover:text-orange-400 border-b border-transparent hover:border-orange-500 transition-all pb-1">Enlist Here</Link>
+        <div className="mt-8 text-center">
+          <p className="text-slate-500 font-medium text-sm">
+            Don't have an account? <Link href="/auth/register" className="text-indigo-600 hover:text-indigo-500 font-bold ml-1 hover:underline underline-offset-4 transition-all">Sign Up</Link>
           </p>
         </div>
       </div>
