@@ -22,7 +22,8 @@ import {
   EyeOff,
   X,
   Zap,
-  Gem
+  Gem,
+  Sparkles
 } from 'lucide-react'
 import { supabase } from '../../../utils/supabase'
 
