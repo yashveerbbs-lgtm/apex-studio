@@ -1,13 +1,12 @@
 'use client'
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { BookOpen, MonitorPlay, Code2, Database, BrainCircuit, ChevronLeft, ChevronRight, Clock, BarChart, CheckCircle2, PlayCircle, Award, Sparkles, ShieldCheck, Plus, X, Trash2, Edit2, Image as ImageIcon } from 'lucide-react'
+import { BookOpen, MonitorPlay, Code2, Database, BrainCircuit, ChevronLeft, ChevronRight, Clock, BarChart, CheckCircle2, PlayCircle, Award, Sparkles, ShieldCheck, Plus, X, Trash2, Edit2, Image as ImageIcon, Gem } from 'lucide-react'
 import { supabase } from '../../../utils/supabase'
 
 export default function ApexAcademy() {
   const router = useRouter()
   
-  // ROLE & AUTH STATE
   const [currentUser, setCurrentUser] = useState<any>(null)
   const [userRole, setUserRole] = useState<'ADMIN' | 'INTERN'>('INTERN')
   
@@ -15,7 +14,6 @@ export default function ApexAcademy() {
   const [isEnrolling, setIsEnrolling] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
 
-  // ADMIN CREATION & EDIT STATE
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [editingCourseId, setEditingCourseId] = useState<string | null>(null)
   const [newTitle, setNewTitle] = useState('')
@@ -25,11 +23,9 @@ export default function ApexAcademy() {
   const [newTags, setNewTags] = useState('')
   const [newSyllabus, setNewSyllabus] = useState('')
   
-  // IMAGE UPLOAD STATE
   const [newImage, setNewImage] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  // 🚨 DYNAMIC COURSES STATE (FIXED STRICT TYPING) 🚨
   const [courses, setCourses] = useState<any[]>([
     { 
       id: 'nextjs-mastery', 
@@ -41,7 +37,8 @@ export default function ApexAcademy() {
       tags: ['React', 'Supabase', 'Tailwind'],
       desc: 'Master the modern web stack. Build secure, scalable, and beautifully designed enterprise applications from scratch.',
       syllabus: ['Console & Variables', 'Arrays & Objects', 'Functions & Logic', 'Component Architecture'],
-      image: null
+      image: null,
+      reward: 50
     },
     { 
       id: 'sports-analytics', 
@@ -53,7 +50,8 @@ export default function ApexAcademy() {
       tags: ['Python', 'Machine Learning', 'Pandas'],
       desc: 'Learn applied data science by building predictive machine learning models to analyze player statistics, match outcomes, and real-time cricket data.',
       syllabus: ['Python Fundamentals', 'Data cleaning with Pandas', 'Training models', 'Visualizing match trends'],
-      image: null
+      image: null,
+      reward: 75
     },
     { 
       id: 'game-engine', 
@@ -65,7 +63,8 @@ export default function ApexAcademy() {
       tags: ['C++', 'Unreal Engine', 'Physics'],
       desc: 'Dive deep into the mathematics and code behind modern 3D game engines. Build your own physics simulations and rendering pipelines.',
       syllabus: ['Vector mathematics', 'Collision detection', 'High-performance memory management', 'Rendering graphics pipelines'],
-      image: null
+      image: null,
+      reward: 100
     },
     { 
       id: 'backend-go', 
@@ -77,7 +76,8 @@ export default function ApexAcademy() {
       tags: ['Golang', 'Docker', 'APIs'],
       desc: 'Write lightning-fast backend services. Learn how to design, containerize, and orchestrate microservices used by millions.',
       syllabus: ['Go fundamentals (Goroutines)', 'Building REST APIs', 'Containerization with Docker', 'Inter-service communication'],
-      image: null
+      image: null,
+      reward: 40
     }
   ])
 
@@ -91,7 +91,6 @@ export default function ApexAcademy() {
     })
   }, [])
 
-  // 🚨 IMAGE UPLOAD LOGIC 🚨
   function handleImageProcess(file: File) {
     if (!file.type.startsWith('image/')) {
       alert('Please upload an image file.')
@@ -104,14 +103,12 @@ export default function ApexAcademy() {
     reader.readAsDataURL(file)
   }
 
-  // 🚨 ADMIN ACTION: DEPLOY OR UPDATE COURSE 🚨
   function handleDeployCourse(e: React.FormEvent) {
     e.preventDefault()
     const tagsArray = newTags.split(',').map(tag => tag.trim()).filter(tag => tag !== '')
     const syllabusArray = newSyllabus.split('\n').map(item => item.trim()).filter(item => item !== '')
 
     if (editingCourseId) {
-      // Update existing course
       setCourses(courses.map(c => {
         if (c.id === editingCourseId) {
           return {
@@ -128,7 +125,6 @@ export default function ApexAcademy() {
         return c
       }))
     } else {
-      // Create new course
       const newCourse = {
         id: `course-${Date.now()}`,
         title: newTitle,
@@ -139,16 +135,16 @@ export default function ApexAcademy() {
         tags: tagsArray.length > 0 ? tagsArray : ['General'],
         desc: newDesc,
         syllabus: syllabusArray.length > 0 ? syllabusArray : ['Course Introduction', 'Core Concepts', 'Final Project'],
-        image: newImage
+        image: newImage,
+        reward: 30
       }
       setCourses([newCourse, ...courses])
     }
 
     closeModal()
-    alert(`System Update: Course successfully saved.`)
+    alert(`Course successfully saved!`)
   }
 
-  // 🚨 ADMIN ACTION: OPEN EDIT MODAL 🚨
   function openEditModal(course: any) {
     setEditingCourseId(course.id)
     setNewTitle(course.title)
@@ -171,10 +167,9 @@ export default function ApexAcademy() {
     setNewImage(null)
   }
 
-  // 🚨 ADMIN ACTION: DELETE COURSE 🚨
   function handleDeleteCourse(e: React.MouseEvent, courseId: string) {
-    e.stopPropagation() // Prevent opening the course details
-    if (confirm("ADMIN OVERRIDE: Permanently delete this course from the Academy?")) {
+    e.stopPropagation() 
+    if (confirm("Are you sure you want to delete this course from the Academy?")) {
       setCourses(courses.filter(c => c.id !== courseId))
     }
   }
@@ -194,7 +189,6 @@ export default function ApexAcademy() {
     if (team && !teamError) {
       await supabase.from('team_members').insert([{ team_id: team.id, user_id: currentUser.id, role: 'admin' }])
 
-      // DYNAMIC LEVEL 1 INJECTION
       let lessonContent = `# Welcome to ${selectedCourse.title} 🚀\n\nYour interactive cloud environment is ready. Follow the syllabus and build directly in this workspace.\n\n### Next Steps\nCheck the company wiki for the first assignment!`
       let mainFileName = 'main.js'
       let mainFileLang = 'javascript'
@@ -235,86 +229,89 @@ export default function ApexAcademy() {
 
   if (selectedCourse) {
     return (
-      <div className="h-full bg-[#050505] text-white p-8 md:p-12 overflow-y-auto font-sans">
+      <div className="h-full bg-slate-50 text-slate-800 p-8 md:p-12 overflow-y-auto font-sans transition-colors duration-500">
         <button 
           onClick={() => { setSelectedCourse(null); setIsSuccess(false); }}
-          className="flex items-center gap-2 text-gray-500 hover:text-cyan-400 transition-colors mb-8 text-sm font-bold tracking-widest uppercase"
+          className="flex items-center gap-2 text-slate-500 hover:text-indigo-600 transition-colors mb-8 text-sm font-bold tracking-widest uppercase bg-white px-4 py-2 rounded-xl shadow-sm border-2 border-slate-100 w-fit hover:-translate-y-0.5 active:translate-y-0"
         >
           <ChevronLeft className="w-4 h-4" /> Back to Catalog
         </button>
 
         <div className="max-w-4xl mx-auto">
           {isSuccess ? (
-            <div className="bg-[#0a0a0a] border border-green-900/50 rounded-2xl p-12 shadow-2xl text-center animate-in fade-in zoom-in duration-500">
-              <div className="w-24 h-24 bg-green-900/20 rounded-full flex items-center justify-center mx-auto mb-6 border border-green-900/50">
-                <CheckCircle2 className="w-12 h-12 text-green-400" />
+            <div className="bg-white border-2 border-emerald-100 rounded-3xl p-12 shadow-xl text-center animate-in fade-in zoom-in-95 duration-500 relative overflow-hidden">
+              
+              <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-emerald-400 to-teal-400"></div>
+
+              <div className="w-24 h-24 bg-emerald-50 rounded-2xl flex items-center justify-center mx-auto mb-6 border-2 border-emerald-100 shadow-sm">
+                <CheckCircle2 className="w-12 h-12 text-emerald-500" />
               </div>
-              <h2 className="text-3xl font-bold text-white mb-4">Enrollment Confirmed!</h2>
-              <p className="text-gray-400 text-lg mb-8 max-w-lg mx-auto">
-                Welcome to <span className="text-gray-200 font-semibold">{selectedCourse.title}</span>. Your interactive cloud learning environment has been generated.
+              <h2 className="text-3xl font-extrabold text-slate-800 mb-4">Enrollment Confirmed!</h2>
+              <p className="text-slate-500 text-lg mb-8 max-w-lg mx-auto font-medium">
+                Welcome to <span className="text-indigo-600 font-bold">{selectedCourse.title}</span>. Your interactive cloud learning environment is fully provisioned.
               </p>
               
               <button 
                 onClick={() => router.push('/dashboard/workspace')}
-                className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 px-8 rounded-lg transition-all flex items-center justify-center gap-2 mx-auto shadow-lg shadow-indigo-900/20"
+                className="btn-indigo flex items-center justify-center gap-2 mx-auto px-8 py-4 text-lg"
               >
-                Go to Classroom <PlayCircle className="w-5 h-5" />
+                Enter the Workspace <PlayCircle className="w-5 h-5" />
               </button>
             </div>
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-in fade-in duration-300">
               
               <div className="lg:col-span-2 space-y-8">
-                <div className="bg-[#0a0a0a] border border-gray-800 rounded-2xl p-8 shadow-xl relative overflow-hidden">
+                <div className="bg-white border-2 border-slate-100 rounded-3xl p-8 shadow-sm relative overflow-hidden">
                   
                   {selectedCourse.image && (
                     <img 
                       src={selectedCourse.image} 
                       alt="" 
-                      className="absolute inset-0 w-full h-full object-cover opacity-10 z-0 pointer-events-none" 
+                      className="absolute inset-0 w-full h-full object-cover opacity-5 z-0 pointer-events-none" 
                     />
                   )}
 
                   <div className="relative z-10">
                     <div className="flex gap-2 mb-4">
                       {selectedCourse.tags.map((tag: string) => (
-                        <span key={tag} className="px-3 py-1 bg-cyan-900/20 border border-cyan-900/50 rounded-full text-xs font-bold text-cyan-400 uppercase tracking-widest">
+                        <span key={tag} className="px-3 py-1.5 bg-indigo-50 border-2 border-indigo-100 rounded-lg text-xs font-bold text-indigo-600 uppercase tracking-wider">
                           {tag}
                         </span>
                       ))}
                     </div>
-                    <h1 className="text-3xl md:text-4xl font-extrabold text-white mb-4 leading-tight">
+                    <h1 className="text-3xl md:text-4xl font-extrabold text-slate-800 mb-4 leading-tight">
                       {selectedCourse.title}
                     </h1>
-                    <p className="text-gray-400 text-lg leading-relaxed mb-6">
+                    <p className="text-slate-500 text-lg leading-relaxed mb-6 font-medium">
                       {selectedCourse.desc}
                     </p>
                     
-                    <div className="flex flex-wrap gap-6 border-t border-gray-800 pt-6">
-                      <div className="flex items-center gap-2 text-sm text-gray-300">
-                        <Clock className="w-4 h-4 text-cyan-500" /> {selectedCourse.duration}
+                    <div className="flex flex-wrap gap-6 border-t-2 border-slate-100 pt-6">
+                      <div className="flex items-center gap-2 text-sm text-slate-600 font-bold">
+                        <Clock className="w-5 h-5 text-indigo-400" /> {selectedCourse.duration}
                       </div>
-                      <div className="flex items-center gap-2 text-sm text-gray-300">
-                        <BarChart className="w-4 h-4 text-cyan-500" /> {selectedCourse.level}
+                      <div className="flex items-center gap-2 text-sm text-slate-600 font-bold">
+                        <BarChart className="w-5 h-5 text-emerald-400" /> {selectedCourse.level}
                       </div>
-                      <div className="flex items-center gap-2 text-sm text-gray-300">
-                        <Award className="w-4 h-4 text-cyan-500" /> Certificate Included
+                      <div className="flex items-center gap-2 text-sm text-slate-600 font-bold">
+                        <Award className="w-5 h-5 text-amber-400" /> Certificate Included
                       </div>
                     </div>
                   </div>
                 </div>
 
-                <div className="bg-[#0a0a0a] border border-gray-800 rounded-2xl p-8 shadow-xl">
-                  <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-                    <BookOpen className="w-5 h-5 text-indigo-400" /> Course Syllabus
+                <div className="bg-white border-2 border-slate-100 rounded-3xl p-8 shadow-sm">
+                  <h3 className="text-xl font-extrabold text-slate-800 mb-6 flex items-center gap-2">
+                    <BookOpen className="w-6 h-6 text-indigo-500 bg-indigo-50 p-1 rounded-lg" /> Course Syllabus
                   </h3>
                   <div className="space-y-4">
                     {selectedCourse.syllabus.map((item: string, idx: number) => (
-                      <div key={idx} className="flex gap-4 items-center p-4 bg-[#111111] rounded-xl border border-gray-800">
-                        <div className="w-8 h-8 rounded-lg bg-indigo-900/20 text-indigo-400 font-bold flex items-center justify-center shrink-0 border border-indigo-900/50">
+                      <div key={idx} className="flex gap-4 items-center p-4 bg-slate-50 rounded-2xl border-2 border-slate-100">
+                        <div className="w-10 h-10 rounded-xl bg-white text-indigo-600 font-black flex items-center justify-center shrink-0 border-2 border-indigo-100 shadow-sm">
                           {idx + 1}
                         </div>
-                        <p className="text-gray-300 font-medium">{item}</p>
+                        <p className="text-slate-700 font-bold">{item}</p>
                       </div>
                     ))}
                   </div>
@@ -322,32 +319,43 @@ export default function ApexAcademy() {
               </div>
 
               <div className="space-y-6">
-                <div className="bg-[#0a0a0a] border border-gray-800 rounded-2xl p-6 shadow-2xl sticky top-8">
-                  <div className="aspect-video bg-[#050505] rounded-xl mb-6 flex items-center justify-center border border-gray-800 group cursor-pointer overflow-hidden relative">
+                <div className="bg-white border-2 border-slate-100 rounded-3xl p-6 shadow-sm sticky top-8">
+                  <div className="aspect-video bg-slate-50 rounded-2xl mb-6 flex items-center justify-center border-2 border-slate-100 group cursor-pointer overflow-hidden relative shadow-sm">
                     {selectedCourse.image ? (
                       <img src={selectedCourse.image} className="absolute inset-0 w-full h-full object-cover opacity-50 group-hover:opacity-80 transition-opacity" />
                     ) : (
-                      <selectedCourse.icon className="absolute inset-0 opacity-5 w-full h-full" />
+                      <selectedCourse.icon className="absolute inset-0 opacity-5 w-full h-full text-indigo-900" />
                     )}
-                    <PlayCircle className="w-12 h-12 text-gray-300 group-hover:text-cyan-400 transition-colors z-10 drop-shadow-lg" />
-                    <span className="absolute bottom-3 text-[10px] font-bold text-gray-300 tracking-widest z-10 uppercase drop-shadow-md">Interactive Engine</span>
+                    <PlayCircle className="w-16 h-16 text-indigo-400 group-hover:text-indigo-600 group-hover:scale-110 transition-all z-10 drop-shadow-md bg-white rounded-full" />
+                    <span className="absolute bottom-3 text-[10px] font-bold text-slate-600 tracking-widest z-10 uppercase bg-white/90 backdrop-blur px-3 py-1 rounded-full shadow-sm">Interactive Engine</span>
                   </div>
                   
                   <div className="mb-6">
-                    <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-1">Instructors</p>
-                    <p className="text-gray-200 font-semibold">{selectedCourse.instructor}</p>
+                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1">Instructors</p>
+                    <p className="text-slate-700 font-extrabold flex items-center gap-2">
+                      {selectedCourse.instructor} <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                    </p>
+                  </div>
+
+                  {/* Gamified Reward Hint */}
+                  <div className="mb-6 bg-amber-50 border-2 border-amber-100 rounded-xl p-4 flex items-center justify-between">
+                    <div>
+                      <p className="text-[10px] font-bold text-amber-600 uppercase tracking-widest">Completion Bonus</p>
+                      <p className="text-sm font-black text-amber-700">+{selectedCourse.reward} Gems</p>
+                    </div>
+                    <Gem className="w-8 h-8 text-amber-500 fill-amber-200 animate-pulse" />
                   </div>
 
                   <button 
                     onClick={handleEnrollment}
                     disabled={isEnrolling}
-                    className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-4 px-4 rounded-xl transition-all flex items-center justify-center gap-2 disabled:opacity-50 shadow-lg shadow-indigo-900/20"
+                    className="btn-emerald w-full flex items-center justify-center gap-2 py-4 text-base disabled:opacity-50"
                   >
                     {isEnrolling ? 'Provisioning Cloud Engine...' : 'Enroll For Free'}
                   </button>
                   
-                  <p className="text-center text-xs text-gray-500 mt-4 leading-relaxed">
-                    Instantly generates a secure, pre-configured coding environment in your Apex Workspace.
+                  <p className="text-center text-xs text-slate-400 font-medium mt-4 leading-relaxed">
+                    Instantly generates a secure, pre-configured coding environment in your browser.
                   </p>
                 </div>
               </div>
@@ -360,66 +368,69 @@ export default function ApexAcademy() {
   }
 
   return (
-    <div className="h-full bg-[#050505] text-white p-8 md:p-12 overflow-y-auto font-sans relative">
+    <div className="h-full bg-slate-50 text-slate-800 p-8 md:p-12 overflow-y-auto font-sans relative transition-colors duration-500">
       
       {/* 🚨 ADMIN CREATION/EDIT MODAL 🚨 */}
       {showCreateModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm px-4">
-          <div className="bg-[#0a0a0a] border border-indigo-900/50 rounded-xl max-w-2xl w-full p-8 shadow-2xl overflow-y-auto max-h-[90vh]">
-            <div className="flex justify-between items-center mb-6 border-b border-gray-800 pb-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm px-4">
+          <div className="bg-white border-2 border-slate-100 rounded-[2rem] max-w-2xl w-full p-8 shadow-[0_8px_30px_rgb(0,0,0,0.08)] overflow-y-auto max-h-[90vh] animate-in zoom-in-95 relative overflow-hidden">
+            
+            <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-indigo-400 to-purple-400"></div>
+
+            <div className="flex justify-between items-center mb-6 border-b-2 border-slate-100 pb-4 mt-2">
               <div>
-                <h2 className="text-xl font-black text-white tracking-tight">
-                  {editingCourseId ? 'Update Course Details' : 'Deploy New Course'}
+                <h2 className="text-2xl font-black text-slate-800 tracking-tight">
+                  {editingCourseId ? 'Update Course' : 'Create New Course'}
                 </h2>
-                <p className="text-xs text-gray-500 font-mono mt-1 uppercase tracking-widest">Push curriculum to Academy</p>
+                <p className="text-xs text-slate-400 font-bold mt-1 uppercase tracking-wider">Push curriculum to Academy</p>
               </div>
-              <button onClick={closeModal} className="text-gray-500 hover:text-white transition-colors">
+              <button onClick={closeModal} className="text-slate-400 hover:text-slate-600 bg-slate-50 p-2 rounded-xl border-2 border-slate-100 transition-colors hover:-translate-y-0.5">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             <form onSubmit={handleDeployCourse} className="space-y-5">
               <div>
-                <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Course Title</label>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Course Title</label>
                 <input 
                   type="text" 
                   required 
                   value={newTitle} 
                   onChange={e => setNewTitle(e.target.value)} 
-                  className="w-full bg-[#111111] text-sm text-white border border-gray-800 rounded p-3 focus:outline-none focus:border-indigo-500" 
+                  className="w-full bg-slate-50 text-sm font-bold text-slate-800 border-2 border-slate-200 rounded-xl p-3.5 focus:outline-none focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all placeholder:text-slate-300" 
                   placeholder="e.g. Advanced System Architecture" 
                 />
               </div>
               
               <div>
-                <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Course Description</label>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Course Description</label>
                 <textarea 
                   required 
                   value={newDesc} 
                   onChange={e => setNewDesc(e.target.value)} 
-                  className="w-full bg-[#111111] text-sm text-gray-300 border border-gray-800 rounded p-3 focus:outline-none focus:border-indigo-500 h-24 resize-none" 
+                  className="w-full bg-slate-50 text-sm font-medium text-slate-800 border-2 border-slate-200 rounded-xl p-3.5 focus:outline-none focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all h-24 resize-none placeholder:text-slate-300" 
                   placeholder="What will students learn in this course?" 
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Duration</label>
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Duration</label>
                   <input 
                     type="text" 
                     required 
                     value={newDuration} 
                     onChange={e => setNewDuration(e.target.value)} 
-                    className="w-full bg-[#111111] text-sm text-white border border-gray-800 rounded p-3 focus:outline-none focus:border-indigo-500" 
+                    className="w-full bg-slate-50 text-sm font-bold text-slate-800 border-2 border-slate-200 rounded-xl p-3.5 focus:outline-none focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all placeholder:text-slate-300" 
                     placeholder="e.g. 4 Weeks" 
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Difficulty Level</label>
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Difficulty Level</label>
                   <select 
                     value={newLevel} 
                     onChange={e => setNewLevel(e.target.value)} 
-                    className="w-full bg-[#111111] text-sm text-gray-300 border border-gray-800 rounded p-3 focus:outline-none focus:border-indigo-500"
+                    className="w-full bg-slate-50 text-sm font-bold text-slate-800 border-2 border-slate-200 rounded-xl p-3.5 focus:outline-none focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all"
                   >
                     <option value="Beginner">Beginner</option>
                     <option value="Intermediate">Intermediate</option>
@@ -431,37 +442,36 @@ export default function ApexAcademy() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Tech Tags (Comma separated)</label>
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Tech Tags (Comma separated)</label>
                   <input 
                     type="text" 
                     value={newTags} 
                     onChange={e => setNewTags(e.target.value)} 
-                    className="w-full bg-[#111111] text-sm text-white border border-gray-800 rounded p-3 focus:outline-none focus:border-indigo-500" 
+                    className="w-full bg-slate-50 text-sm font-bold text-slate-800 border-2 border-slate-200 rounded-xl p-3.5 focus:outline-none focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all placeholder:text-slate-300" 
                     placeholder="e.g. React, Node, AWS" 
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Syllabus (One per line)</label>
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Syllabus (One per line)</label>
                   <textarea 
                     value={newSyllabus} 
                     onChange={e => setNewSyllabus(e.target.value)} 
-                    className="w-full bg-[#111111] text-sm text-white border border-gray-800 rounded p-3 focus:outline-none focus:border-indigo-500 h-20 resize-none" 
+                    className="w-full bg-slate-50 text-sm font-medium text-slate-800 border-2 border-slate-200 rounded-xl p-3.5 focus:outline-none focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all h-20 resize-none placeholder:text-slate-300" 
                     placeholder="Module 1&#10;Module 2&#10;Final Exam" 
                   />
                 </div>
               </div>
 
-              {/* 🚨 NEW: IMAGE UPLOAD FIELD 🚨 */}
               <div>
-                <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Course Cover Image</label>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Course Cover Image</label>
                 <div className="flex items-center gap-4">
                   {newImage && (
-                    <div className="relative w-16 h-16 rounded overflow-hidden border border-gray-700 shrink-0">
+                    <div className="relative w-16 h-16 rounded-xl overflow-hidden border-2 border-slate-200 shrink-0 shadow-sm">
                       <img src={newImage} alt="Preview" className="w-full h-full object-cover" />
                       <button 
                         type="button" 
                         onClick={() => setNewImage(null)} 
-                        className="absolute top-0 right-0 bg-red-600 p-1 text-white hover:bg-red-500 transition-colors"
+                        className="absolute top-1 right-1 bg-white p-1 rounded-md text-red-500 shadow-sm hover:scale-105 transition-transform"
                       >
                         <X className="w-3 h-3"/>
                       </button>
@@ -477,18 +487,18 @@ export default function ApexAcademy() {
                   <button 
                     type="button" 
                     onClick={() => fileInputRef.current?.click()} 
-                    className="flex items-center justify-center gap-2 bg-[#111111] border border-gray-800 text-gray-400 hover:text-cyan-400 px-4 py-3 rounded text-xs font-bold uppercase tracking-widest transition-colors w-full"
+                    className="flex items-center justify-center gap-2 bg-white border-2 border-slate-200 text-slate-500 hover:text-indigo-600 hover:border-indigo-200 px-4 py-3.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors w-full shadow-sm hover:shadow"
                   >
-                    <ImageIcon className="w-4 h-4" /> {newImage ? 'Replace Cover Image' : 'Attach Cover Image'}
+                    <ImageIcon className="w-5 h-5" /> {newImage ? 'Replace Cover Image' : 'Attach Cover Image'}
                   </button>
                 </div>
               </div>
 
               <button 
                 type="submit" 
-                className="w-full bg-indigo-700 hover:bg-indigo-600 text-white text-xs font-bold uppercase tracking-widest py-4 rounded mt-6 transition-colors shadow-lg"
+                className="btn-indigo w-full py-4 mt-6 text-sm"
               >
-                {editingCourseId ? 'Save Changes' : 'Deploy Curriculum to Academy'}
+                {editingCourseId ? 'Save Changes' : 'Publish Course'}
               </button>
             </form>
           </div>
@@ -496,22 +506,22 @@ export default function ApexAcademy() {
       )}
 
       {/* HEADER SECTION */}
-      <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 mb-12 max-w-7xl mx-auto border-b border-gray-800 pb-8">
+      <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 mb-12 max-w-7xl mx-auto border-b-2 border-slate-100 pb-8">
         <div className="max-w-4xl">
           <div className="flex items-center gap-3 mb-3">
-            <div className="flex items-center gap-2 text-indigo-400 font-bold tracking-widest text-xs uppercase">
+            <div className="flex items-center gap-2 text-indigo-600 bg-indigo-50 border-2 border-indigo-100 px-3 py-1 rounded-lg font-bold tracking-widest text-xs uppercase shadow-sm">
               <BookOpen className="w-4 h-4" /> Apex Academy
             </div>
             {userRole === 'ADMIN' && (
-              <div className="text-[9px] bg-red-950/30 text-red-400 border border-red-900/50 px-2 py-0.5 rounded font-bold uppercase tracking-widest flex items-center gap-1">
-                <ShieldCheck className="w-3 h-3" /> Admin Auth
+              <div className="text-[10px] bg-amber-50 text-amber-600 border-2 border-amber-200 px-2.5 py-1 rounded-lg font-black uppercase tracking-widest flex items-center gap-1 shadow-sm">
+                <ShieldCheck className="w-3 h-3" /> Instructor Auth
               </div>
             )}
           </div>
-          <h1 className="text-4xl md:text-5xl font-black tracking-tight text-white mb-4">
+          <h1 className="text-4xl md:text-5xl font-black tracking-tight text-slate-800 mb-4">
             Master the craft.
           </h1>
-          <p className="text-gray-400 text-lg leading-relaxed">
+          <p className="text-slate-500 text-lg leading-relaxed font-medium">
             World-class engineering, data science, and development courses. Skip the videos—learn the concepts here, and instantly build them in your cloud workspace.
           </p>
         </div>
@@ -519,9 +529,9 @@ export default function ApexAcademy() {
         {userRole === 'ADMIN' && (
           <button 
             onClick={() => setShowCreateModal(true)}
-            className="shrink-0 bg-indigo-900/30 hover:bg-indigo-900/50 text-indigo-400 border border-indigo-900/50 px-6 py-3 rounded-lg text-xs font-bold uppercase tracking-widest flex items-center gap-2 transition-colors mt-2"
+            className="shrink-0 bg-white hover:bg-slate-50 text-indigo-600 border-2 border-indigo-100 px-6 py-3.5 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-all mt-2 shadow-sm hover:shadow hover:-translate-y-0.5 active:translate-y-0"
           >
-            <Plus className="w-4 h-4" /> Deploy Course
+            <Plus className="w-5 h-5 bg-indigo-50 p-0.5 rounded-md" /> Create Course
           </button>
         )}
       </div>
@@ -532,21 +542,20 @@ export default function ApexAcademy() {
           <button
             key={course.id}
             onClick={() => setSelectedCourse(course)}
-            className="flex flex-col text-left bg-[#0a0a0a] border border-gray-800 p-7 rounded-2xl hover:border-indigo-500/50 hover:-translate-y-1 hover:shadow-2xl hover:shadow-indigo-900/10 transition-all duration-300 group relative overflow-hidden"
+            className="flex flex-col text-left bg-white border-2 border-slate-100 p-7 rounded-[2rem] hover:border-indigo-300 hover:-translate-y-1 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-all duration-300 group relative overflow-hidden"
           >
-            {/* 🚨 ADMIN EDIT & DELETE BUTTONS 🚨 */}
             {userRole === 'ADMIN' && (
               <div className="absolute top-4 right-4 z-20 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                 <div 
                   onClick={(e) => { e.stopPropagation(); openEditModal(course); }}
-                  className="text-gray-400 hover:text-blue-400 bg-black/50 hover:bg-black/80 backdrop-blur-sm p-2 rounded transition-colors"
+                  className="text-slate-400 hover:text-indigo-600 bg-white/90 backdrop-blur-sm p-2.5 rounded-xl border-2 border-slate-100 shadow-sm transition-colors hover:scale-105"
                   title="Edit Course"
                 >
                   <Edit2 className="w-4 h-4" />
                 </div>
                 <div 
                   onClick={(e) => handleDeleteCourse(e, course.id)}
-                  className="text-gray-400 hover:text-red-500 bg-black/50 hover:bg-black/80 backdrop-blur-sm p-2 rounded transition-colors"
+                  className="text-slate-400 hover:text-red-500 bg-white/90 backdrop-blur-sm p-2.5 rounded-xl border-2 border-slate-100 shadow-sm transition-colors hover:scale-105"
                   title="Delete Course"
                 >
                   <Trash2 className="w-4 h-4" />
@@ -554,44 +563,52 @@ export default function ApexAcademy() {
               </div>
             )}
 
-            {/* 🚨 DYNAMIC COURSE IMAGE 🚨 */}
             {course.image && (
               <img 
                 src={course.image} 
                 alt="" 
-                className="absolute inset-0 w-full h-full object-cover opacity-20 group-hover:opacity-30 transition-opacity z-0" 
+                className="absolute inset-0 w-full h-full object-cover opacity-5 group-hover:opacity-10 transition-opacity z-0" 
               />
             )}
 
-            <div className="flex justify-between items-start mb-6 relative z-10">
-              <div className="p-3.5 bg-[#111111] group-hover:bg-indigo-900/20 group-hover:text-indigo-400 text-gray-500 rounded-xl transition-colors border border-gray-800 group-hover:border-indigo-900/50">
+            <div className="flex justify-between items-start mb-6 relative z-10 w-full">
+              <div className="p-3.5 bg-indigo-50 group-hover:bg-indigo-500 group-hover:text-white text-indigo-500 rounded-2xl transition-colors border-2 border-indigo-100 group-hover:border-indigo-600 shadow-sm">
                 <course.icon className="w-6 h-6" />
               </div>
-              <span className="text-[10px] font-bold text-gray-400 bg-[#111111] px-3 py-1.5 rounded-full border border-gray-800 uppercase tracking-widest mr-12">
-                {course.level}
-              </span>
+              
+              {/* Gamified Reward Hint on Card */}
+              <div className="flex flex-col items-end">
+                <span className="text-[10px] font-extrabold text-slate-500 bg-slate-50 px-3 py-1.5 rounded-lg border-2 border-slate-100 uppercase tracking-widest mb-2">
+                  {course.level}
+                </span>
+                <span className="text-[10px] font-extrabold text-amber-600 bg-amber-50 px-3 py-1.5 rounded-lg border-2 border-amber-100 uppercase tracking-widest flex items-center gap-1 shadow-sm">
+                  +{course.reward} <Gem className="w-3 h-3 fill-amber-200" />
+                </span>
+              </div>
             </div>
             
-            <h3 className="text-xl font-bold text-gray-100 mb-3 line-clamp-2 leading-tight relative z-10">
+            <h3 className="text-xl font-extrabold text-slate-800 mb-3 line-clamp-2 leading-tight relative z-10">
               {course.title}
             </h3>
             
-            <p className="text-sm text-gray-400 leading-relaxed flex-1 mb-6 line-clamp-3 relative z-10">
+            <p className="text-sm text-slate-500 font-medium leading-relaxed flex-1 mb-6 line-clamp-3 relative z-10">
               {course.desc}
             </p>
             
-            <div className="w-full pt-4 border-t border-gray-800 flex items-center justify-between relative z-10">
-              <span className="text-xs text-gray-500 font-bold uppercase tracking-widest">{course.duration}</span>
-              <div className="text-xs font-bold text-indigo-400 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center gap-1 transform group-hover:translate-x-1 uppercase tracking-widest">
-                View Syllabus <ChevronRight className="w-3 h-3" />
+            <div className="w-full pt-5 border-t-2 border-slate-100 flex items-center justify-between relative z-10">
+              <span className="text-xs text-slate-400 font-bold uppercase tracking-widest flex items-center gap-1">
+                <Clock className="w-4 h-4 text-slate-300" /> {course.duration}
+              </span>
+              <div className="text-xs font-bold text-white bg-indigo-500 px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center gap-1 transform group-hover:translate-x-0 translate-x-2 uppercase tracking-widest shadow-sm">
+                Start <ChevronRight className="w-3 h-3" />
               </div>
             </div>
           </button>
         ))}
         
         {courses.length === 0 && (
-          <div className="col-span-full py-20 text-center border border-dashed border-gray-800 rounded-2xl">
-            <p className="text-sm text-gray-500 uppercase tracking-widest font-mono">No active courses in Academy</p>
+          <div className="col-span-full py-20 text-center bg-slate-50 border-2 border-dashed border-slate-200 rounded-3xl">
+            <p className="text-sm text-slate-400 uppercase tracking-widest font-bold">No active courses in Academy</p>
           </div>
         )}
       </div>
