@@ -15,8 +15,8 @@ export async function POST(req: Request) {
     Do not use markdown formatting like **bold** because it will be displayed in a small chat bubble.
     User's message: ${message}`;
 
-    // Switched to gemini-pro to ensure compatibility with your current SDK version
-    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+    // Using the modern flash model after upgrading the SDK to @latest
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
     
     const result = await model.generateContent(systemPrompt);
     const responseText = result.response.text();
