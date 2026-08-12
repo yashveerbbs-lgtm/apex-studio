@@ -26,55 +26,56 @@ export default function ApexAcademy() {
   const [newImage, setNewImage] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
+  // 🚨 SIH PIVOT: GOV-TECH CURRICULUM 🚨
   const [courses, setCourses] = useState<any[]>([
     { 
       id: 'nextjs-mastery', 
-      title: 'Full-Stack Engineering with Next.js', 
-      instructor: 'Apex Lead Architect',
+      title: 'Digital India e-Governance Portals', 
+      instructor: 'NIC Cloud Architect',
       icon: MonitorPlay, 
       level: 'Intermediate',
       duration: '8 Weeks',
       tags: ['React', 'Supabase', 'Tailwind'],
-      desc: 'Master the modern web stack. Build secure, scalable, and beautifully designed enterprise applications from scratch.',
+      desc: 'Master the modern web stack. Build secure, scalable, and fully accessible citizen portals and public utility applications from scratch.',
       syllabus: ['Console & Variables', 'Arrays & Objects', 'Functions & Logic', 'Component Architecture'],
       image: null,
       reward: 50
     },
     { 
       id: 'sports-analytics', 
-      title: 'Sports Data & Predictive AI', 
-      instructor: 'Data Science Team',
+      title: 'Civic Data & Predictive AI', 
+      instructor: 'Govt. Data Science Team',
       icon: BrainCircuit, 
       level: 'Advanced',
       duration: '10 Weeks',
       tags: ['Python', 'Machine Learning', 'Pandas'],
-      desc: 'Learn applied data science by building predictive machine learning models to analyze player statistics, match outcomes, and real-time cricket data.',
-      syllabus: ['Python Fundamentals', 'Data cleaning with Pandas', 'Training models', 'Visualizing match trends'],
+      desc: 'Learn applied data science by building predictive machine learning models to analyze demographic statistics, public health trends, and smart city data.',
+      syllabus: ['Python Fundamentals', 'Data cleaning with Pandas', 'Training models', 'Visualizing civic trends'],
       image: null,
       reward: 75
     },
     { 
       id: 'game-engine', 
-      title: '3D Game Engine Mechanics', 
-      instructor: 'Apex Interactive',
+      title: 'Defense Simulations & 3D GIS', 
+      instructor: 'MoD Technical Division',
       icon: Code2, 
       level: 'Advanced',
       duration: '12 Weeks',
       tags: ['C++', 'Unreal Engine', 'Physics'],
-      desc: 'Dive deep into the mathematics and code behind modern 3D game engines. Build your own physics simulations and rendering pipelines.',
+      desc: 'Dive deep into the mathematics and code behind modern 3D simulation engines. Build physics simulations for military training and urban planning.',
       syllabus: ['Vector mathematics', 'Collision detection', 'High-performance memory management', 'Rendering graphics pipelines'],
       image: null,
       reward: 100
     },
     { 
       id: 'backend-go', 
-      title: 'Microservices with Go', 
-      instructor: 'Infrastructure Team',
+      title: 'Gov-Cloud Microservices with Go', 
+      instructor: 'National Infrastructure Team',
       icon: Database, 
       level: 'Beginner to Pro',
       duration: '6 Weeks',
       tags: ['Golang', 'Docker', 'APIs'],
-      desc: 'Write lightning-fast backend services. Learn how to design, containerize, and orchestrate microservices used by millions.',
+      desc: 'Write lightning-fast backend services for national infrastructure. Learn how to design, containerize, and scale public APIs used by millions of citizens.',
       syllabus: ['Go fundamentals (Goroutines)', 'Building REST APIs', 'Containerization with Docker', 'Inter-service communication'],
       image: null,
       reward: 40
@@ -194,27 +195,27 @@ export default function ApexAcademy() {
       let mainFileLang = 'javascript'
       let mainFileContent = '// Write your code below!\nconsole.log("Environment Initialized");\n'
 
-      if (selectedCourse.title === 'Full-Stack Engineering with Next.js') {
+      if (selectedCourse.title === 'Digital India e-Governance Portals') {
         mainFileName = 'index.js'
-        lessonContent = `# Level 1: Console Logging 🌐\nWelcome to JavaScript, the language of the web. The most basic way to see what your code is doing is to log it to the console.\n\n### The Warm-up (Copy This)\n\`\`\`javascript\nconsole.log("Hello World");\n\`\`\`\n\n### The Test 👀\n**Your Mission:**\nUse console.log to print Hello World to the terminal.\n*Don't forget your semi-colon at the end!*`
+        lessonContent = `# Level 1: Public Portal Console 🌐\nWelcome to JavaScript, the language of the web. The most basic way to see what your code is doing is to log it to the console.\n\n### The Warm-up (Copy This)\n\`\`\`javascript\nconsole.log("Hello Citizens");\n\`\`\`\n\n### The Test 👀\n**Your Mission:**\nUse console.log to print Hello Citizens to the terminal.\n*Don't forget your semi-colon at the end!*`
       } 
-      else if (selectedCourse.title === 'Sports Data & Predictive AI') {
+      else if (selectedCourse.title === 'Civic Data & Predictive AI') {
         mainFileName = 'main.py'
         mainFileLang = 'python'
         mainFileContent = '# Write your code below!\n'
-        lessonContent = `# Level 1: The Art of the Variable 🏏\nWelcome to Python! Think of a variable like a kit bag. You can stuff whatever you want inside it.\n\n### The Warm-up (Copy This)\n\`\`\`python\ncaptain = "MS Dhoni"\nprint(captain)\n\`\`\`\n\n### The Test 👀\nDelete the code and try it from memory!\n1. Create a variable named captain.\n2. Set it to "MS Dhoni".\n3. Print it.`
+        lessonContent = `# Level 1: The Citizen Variable 📊\nWelcome to Python! Think of a variable like a secure data vault. You can store census or civic data inside it.\n\n### The Warm-up (Copy This)\n\`\`\`python\npopulation = 1500000\nprint(population)\n\`\`\`\n\n### The Test 👀\nDelete the code and try it from memory!\n1. Create a variable named population.\n2. Set it to 1500000.\n3. Print it.`
       }
-      else if (selectedCourse.title === '3D Game Engine Mechanics') {
+      else if (selectedCourse.title === 'Defense Simulations & 3D GIS') {
         mainFileName = 'main.cpp'
         mainFileLang = 'cpp'
         mainFileContent = '#include <iostream>\n\nint main() {\n    // Write your code below!\n\n    return 0;\n}'
-        lessonContent = `# Level 1: Initialization 🎮\nWelcome to C++. It is incredibly fast, powerful, and runs the world's best game engines.\n\n### The Warm-up (Copy This)\n\`\`\`cpp\nstd::cout << "Engine initialized";\n\`\`\`\n\n### The Test 👀\nInside your main function, use \`std::cout\` to print "Engine initialized" to the console. Don't forget the semicolon!`
+        lessonContent = `# Level 1: Defense Initialization 🛡️\nWelcome to C++. It is incredibly fast, powerful, and runs the world's most robust simulation engines.\n\n### The Warm-up (Copy This)\n\`\`\`cpp\nstd::cout << "Simulation initialized";\n\`\`\`\n\n### The Test 👀\nInside your main function, use \`std::cout\` to print "Simulation initialized" to the console. Don't forget the semicolon!`
       }
-      else if (selectedCourse.title === 'Microservices with Go') {
+      else if (selectedCourse.title === 'Gov-Cloud Microservices with Go') {
         mainFileName = 'main.go'
         mainFileLang = 'go'
         mainFileContent = 'package main\n\nimport "fmt"\n\nfunc main() {\n    // Write your code below!\n\n}'
-        lessonContent = `# Level 1: The Go Server 🚀\nGo is designed by Google for massive scale and concurrency.\n\n### The Warm-up (Copy This)\n\`\`\`go\nfmt.Println("Server running")\n\`\`\`\n\n### The Test 👀\nInside your main function, use \`fmt.Println\` to print "Server running" to the console.`
+        lessonContent = `# Level 1: The National Server 🚀\nGo is designed for massive scale and concurrency, perfect for government APIs.\n\n### The Warm-up (Copy This)\n\`\`\`go\nfmt.Println("National API running")\n\`\`\`\n\n### The Test 👀\nInside your main function, use \`fmt.Println\` to print "National API running" to the console.`
       }
 
       await supabase.from('workspace_nodes').insert([
@@ -248,7 +249,7 @@ export default function ApexAcademy() {
               </div>
               <h2 className="text-3xl font-extrabold text-slate-800 mb-4">Enrollment Confirmed!</h2>
               <p className="text-slate-500 text-lg mb-8 max-w-lg mx-auto font-medium">
-                Welcome to <span className="text-indigo-600 font-bold">{selectedCourse.title}</span>. Your interactive cloud learning environment is fully provisioned.
+                Welcome to <span className="text-indigo-600 font-bold">{selectedCourse.title}</span>. Your secure cloud learning environment is fully provisioned.
               </p>
               
               <button 
@@ -295,7 +296,7 @@ export default function ApexAcademy() {
                         <BarChart className="w-5 h-5 text-emerald-400" /> {selectedCourse.level}
                       </div>
                       <div className="flex items-center gap-2 text-sm text-slate-600 font-bold">
-                        <Award className="w-5 h-5 text-amber-400" /> Certificate Included
+                        <Award className="w-5 h-5 text-amber-400" /> Govt. Certification
                       </div>
                     </div>
                   </div>
@@ -380,7 +381,7 @@ export default function ApexAcademy() {
             <div className="flex justify-between items-center mb-6 border-b-2 border-slate-100 pb-4 mt-2">
               <div>
                 <h2 className="text-2xl font-black text-slate-800 tracking-tight">
-                  {editingCourseId ? 'Update Course' : 'Create New Course'}
+                  {editingCourseId ? 'Update Course' : 'Create Govt. Course'}
                 </h2>
                 <p className="text-xs text-slate-400 font-bold mt-1 uppercase tracking-wider">Push curriculum to Academy</p>
               </div>
@@ -510,7 +511,7 @@ export default function ApexAcademy() {
         <div className="max-w-4xl">
           <div className="flex items-center gap-3 mb-3">
             <div className="flex items-center gap-2 text-indigo-600 bg-indigo-50 border-2 border-indigo-100 px-3 py-1 rounded-lg font-bold tracking-widest text-xs uppercase shadow-sm">
-              <BookOpen className="w-4 h-4" /> Apex Academy
+              <BookOpen className="w-4 h-4" /> National Training Academy
             </div>
             {userRole === 'ADMIN' && (
               <div className="text-[10px] bg-amber-50 text-amber-600 border-2 border-amber-200 px-2.5 py-1 rounded-lg font-black uppercase tracking-widest flex items-center gap-1 shadow-sm">
@@ -522,7 +523,7 @@ export default function ApexAcademy() {
             Master the craft.
           </h1>
           <p className="text-slate-500 text-lg leading-relaxed font-medium">
-            World-class engineering, data science, and development courses. Skip the videos—learn the concepts here, and instantly build them in your cloud workspace.
+            World-class engineering, civic data science, and defense tech courses. Skip the videos—learn the concepts here, and instantly build them in your secure cloud workspace.
           </p>
         </div>
 

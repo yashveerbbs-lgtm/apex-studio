@@ -1,7 +1,7 @@
 'use client'
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { Users, Banknote, Code2, ChevronLeft, ChevronRight, Flame, Plus, X, Trash2, Edit2, Image as ImageIcon, Gem, Sparkles } from 'lucide-react'
+import { Users, Banknote, Code2, ChevronLeft, ChevronRight, Flame, Plus, X, Trash2, Edit2, Image as ImageIcon, Gem, Sparkles, Building2 } from 'lucide-react'
 import { supabase } from '../../../utils/supabase'
 
 export default function HackathonArena() {
@@ -11,24 +11,20 @@ export default function HackathonArena() {
   const [userRole, setUserRole] = useState<'ADMIN' | 'INTERN'>('INTERN')
   const [view, setView] = useState<'select' | 'community' | 'bounty'>('select')
 
-  // ADMIN CREATION & EDIT STATE
   const [showModal, setShowModal] = useState(false)
   const [editingArenaId, setEditingArenaId] = useState<string | null>(null)
   const [newTitle, setNewTitle] = useState('')
   const [newType, setNewType] = useState<'community' | 'bounty'>('community')
   const [newDesc, setNewDesc] = useState('')
-  const [newPrize, setNewPrize] = useState('$500 Creator Grant')
-  const [newDeadline, setNewDeadline] = useState('Ends in 48 hrs')
+  const [newPrize, setNewPrize] = useState('₹50,000 Govt Grant')
+  const [newDeadline, setNewDeadline] = useState('SIH 2026')
   
-  // IMAGE UPLOAD STATE
   const [newImage, setNewImage] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  // 🚨 LIVE DATABASE STATE 🚨
   const [arenas, setArenas] = useState<any[]>([])
 
   useEffect(() => {
-    // 1. Fetch User Profile
     supabase.auth.getUser().then(async ({ data: { user } }) => {
       if (user) {
         setCurrentUser(user)
@@ -36,12 +32,9 @@ export default function HackathonArena() {
         if (profile) setUserRole(profile.role)
       }
     })
-    
-    // 2. Fetch Live Arenas
     fetchArenas()
   }, [])
 
-  // 🚨 SUPABASE FETCH API 🚨
   async function fetchArenas() {
     const { data, error } = await supabase
       .from('hackathon_arenas')
@@ -58,13 +51,11 @@ export default function HackathonArena() {
     reader.readAsDataURL(file)
   }
 
-  // 🚨 SUPABASE INSERT & UPDATE API 🚨
   async function handleSaveArena(e: React.FormEvent) {
     e.preventDefault()
 
     if (editingArenaId) {
-      // UPDATE EXISTING ARENA
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from('hackathon_arenas')
         .update({
           title: newTitle, type: newType, desc: newDesc, deadline: newDeadline, prize: newPrize, image: newImage
@@ -72,28 +63,20 @@ export default function HackathonArena() {
         .eq('id', editingArenaId)
         .select()
         .single()
-
-      if (data) {
-        setArenas(arenas.map(a => a.id === editingArenaId ? data : a))
-      }
+      if (data) setArenas(arenas.map(a => a.id === editingArenaId ? data : a))
     } else {
-      // INSERT NEW ARENA
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from('hackathon_arenas')
         .insert([{
           title: newTitle, type: newType, desc: newDesc, deadline: newDeadline, prize: newPrize, image: newImage
         }])
         .select()
         .single()
-
-      if (data) {
-        setArenas([data, ...arenas])
-      }
+      if (data) setArenas([data, ...arenas])
     }
     closeModal()
   }
 
-  // 🚨 SUPABASE DELETE API 🚨
   async function handleDeleteArena(arenaId: string) {
     if (confirm("Are you sure you want to permanently delete this arena?")) {
       await supabase.from('hackathon_arenas').delete().eq('id', arenaId)
@@ -123,55 +106,53 @@ export default function HackathonArena() {
   return (
     <div className="h-full bg-slate-50 text-slate-800 relative font-sans flex flex-col overflow-hidden transition-colors duration-500">
       
-      {/* UNIVERSAL MODAL */}
       {showModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm px-4">
           <div className="bg-white border-2 border-slate-100 rounded-[2rem] max-w-lg w-full p-8 shadow-[0_8px_30px_rgb(0,0,0,0.08)] animate-in zoom-in-95 duration-200 relative overflow-hidden">
-            
             <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-sky-400 to-indigo-500"></div>
 
             <div className="flex justify-between items-center mb-6 mt-2 border-b-2 border-slate-100 pb-4">
               <div>
                 <h2 className="text-2xl font-black text-slate-800 tracking-tight">
-                  {editingArenaId ? 'Update Arena' : 'Deploy New Arena'}
+                  {editingArenaId ? 'Update Arena' : 'Deploy Govt. Hackathon'}
                 </h2>
-                <p className="text-xs text-slate-400 font-bold mt-1 uppercase tracking-wider">Publish to Hackathon Arena</p>
+                <p className="text-xs text-slate-400 font-bold mt-1 uppercase tracking-wider">Publish to National Dashboard</p>
               </div>
               <button onClick={closeModal} className="text-slate-400 hover:text-slate-600 bg-slate-50 hover:bg-slate-100 p-2.5 rounded-xl transition-all border-2 border-slate-200"><X className="w-5 h-5" /></button>
             </div>
 
             <form onSubmit={handleSaveArena} className="space-y-5">
               <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Arena Title</label>
-                <input type="text" required value={newTitle} onChange={e => setNewTitle(e.target.value)} className="w-full bg-slate-50 text-sm font-bold text-slate-800 border-2 border-slate-200 rounded-xl p-3.5 focus:outline-none focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all placeholder:text-slate-300" placeholder="e.g. Next.js Hackathon" />
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Problem Statement / Title</label>
+                <input type="text" required value={newTitle} onChange={e => setNewTitle(e.target.value)} className="w-full bg-slate-50 text-sm font-bold text-slate-800 border-2 border-slate-200 rounded-xl p-3.5 focus:outline-none focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all placeholder:text-slate-300" placeholder="e.g. Traffic Analytics API" />
               </div>
               
               <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Track Type</label>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Hackathon Track</label>
                 <select value={newType} onChange={e => setNewType(e.target.value as any)} className="w-full bg-slate-50 text-sm font-bold text-slate-700 border-2 border-slate-200 rounded-xl p-3.5 focus:outline-none focus:bg-white focus:border-indigo-500 transition-all">
-                  <option value="community">Community Track</option>
-                  <option value="bounty">Bounty Track (High Stakes)</option>
+                  <option value="community">Digital India OSS (Community)</option>
+                  <option value="bounty">Ministry Challenges (SIH Stakes)</option>
                 </select>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Prize / Grant</label>
-                  <input type="text" required value={newPrize} onChange={e => setNewPrize(e.target.value)} className="w-full bg-slate-50 text-sm font-bold text-slate-800 border-2 border-slate-200 rounded-xl p-3.5 focus:outline-none focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all placeholder:text-slate-300" placeholder="e.g. $500 Grant" />
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Grant / Incubation</label>
+                  <input type="text" required value={newPrize} onChange={e => setNewPrize(e.target.value)} className="w-full bg-slate-50 text-sm font-bold text-slate-800 border-2 border-slate-200 rounded-xl p-3.5 focus:outline-none focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all placeholder:text-slate-300" placeholder="e.g. ₹50,000 Grant" />
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Timeline</label>
-                  <input type="text" required value={newDeadline} onChange={e => setNewDeadline(e.target.value)} className="w-full bg-slate-50 text-sm font-bold text-slate-800 border-2 border-slate-200 rounded-xl p-3.5 focus:outline-none focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all placeholder:text-slate-300" placeholder="e.g. Ends in 48 hrs" />
+                  <input type="text" required value={newDeadline} onChange={e => setNewDeadline(e.target.value)} className="w-full bg-slate-50 text-sm font-bold text-slate-800 border-2 border-slate-200 rounded-xl p-3.5 focus:outline-none focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all placeholder:text-slate-300" placeholder="e.g. SIH 2026 Finals" />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Description & Rules</label>
-                <textarea required value={newDesc} onChange={e => setNewDesc(e.target.value)} className="w-full bg-slate-50 text-sm font-medium text-slate-800 border-2 border-slate-200 rounded-xl p-3.5 focus:outline-none focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all h-24 resize-none placeholder:text-slate-300" placeholder="Provide full context and objectives..." />
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Technical Requirements</label>
+                <textarea required value={newDesc} onChange={e => setNewDesc(e.target.value)} className="w-full bg-slate-50 text-sm font-medium text-slate-800 border-2 border-slate-200 rounded-xl p-3.5 focus:outline-none focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all h-24 resize-none placeholder:text-slate-300" placeholder="Provide full context on the ministry requirements..." />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Banner Image</label>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Department Banner</label>
                 <div className="flex items-center gap-4">
                   {newImage && (
                     <div className="w-16 h-16 rounded-xl overflow-hidden border-2 border-slate-200 relative shrink-0 shadow-sm">
@@ -181,20 +162,19 @@ export default function HackathonArena() {
                   )}
                   <input type="file" accept="image/*" ref={fileInputRef} className="hidden" onChange={e => e.target.files && handleImageProcess(e.target.files[0])} />
                   <button type="button" onClick={() => fileInputRef.current?.click()} className="flex items-center justify-center gap-2 bg-white border-2 border-slate-200 text-slate-500 hover:text-indigo-600 hover:border-indigo-200 px-4 py-3.5 rounded-xl text-xs font-bold uppercase tracking-wider w-full transition-all shadow-sm hover:shadow">
-                    <ImageIcon className="w-4 h-4" /> {newImage ? 'Replace Image' : 'Attach Banner Image'}
+                    <ImageIcon className="w-4 h-4" /> {newImage ? 'Replace Banner' : 'Attach Department Banner'}
                   </button>
                 </div>
               </div>
 
               <button type="submit" className="w-full bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-bold py-4 rounded-xl mt-6 transition-all shadow-[0_4px_0_rgb(67,56,202)] hover:shadow-[0_2px_0_rgb(67,56,202)] hover:translate-y-[2px] active:translate-y-[4px] active:shadow-none">
-                {editingArenaId ? 'Save Changes' : 'Publish Arena'}
+                {editingArenaId ? 'Save Changes' : 'Publish Problem Statement'}
               </button>
             </form>
           </div>
         </div>
       )}
 
-      {/* ADMIN DEPLOY BUTTON (ONLY SHOWS ON SELECT VIEW) */}
       {userRole === 'ADMIN' && view === 'select' && (
         <div className="absolute top-8 right-8 z-10">
           <button 
@@ -206,18 +186,18 @@ export default function HackathonArena() {
         </div>
       )}
 
-      {/* VIEW 1: ARENA SELECT */}
+      {/* 🚨 SIH SELECT VIEW 🚨 */}
       {view === 'select' && (
         <div className="flex-1 flex flex-col items-center justify-center p-8 overflow-y-auto">
           <div className="text-center mb-16 animate-in fade-in slide-in-from-bottom-4 duration-500 mt-16">
             <div className="flex justify-center mb-4">
-              <Sparkles className="w-12 h-12 text-indigo-400 fill-indigo-200" />
+              <Building2 className="w-12 h-12 text-indigo-500 bg-indigo-50 p-2 rounded-2xl shadow-sm border-2 border-indigo-100" />
             </div>
             <h1 className="text-4xl md:text-5xl font-black tracking-tight text-slate-800 mb-4">
-              Select Your Arena
+              Smart India Hackathon Hub
             </h1>
             <p className="text-slate-500 text-lg max-w-2xl mx-auto font-medium">
-              Choose your path. Build for fun and portfolio growth in the Community track, or test your absolute limits for real contractor bounties.
+              Develop open-source solutions for digital India, or compete directly on official problem statements issued by Central Ministries.
             </p>
           </div>
 
@@ -229,12 +209,12 @@ export default function HackathonArena() {
               <div className="w-16 h-16 bg-slate-50 group-hover:bg-indigo-500 border-2 border-slate-100 group-hover:border-indigo-600 rounded-2xl flex items-center justify-center mb-8 transition-colors shadow-sm">
                 <Users className="w-8 h-8 text-slate-400 group-hover:text-white transition-colors" />
               </div>
-              <h2 className="text-2xl font-black text-slate-800 mb-4">Community Builds</h2>
+              <h2 className="text-2xl font-black text-slate-800 mb-4">Digital India OSS</h2>
               <p className="text-slate-500 font-medium leading-relaxed mb-8">
-                Standard hackathons focused on learning, collaboration, and building impressive UI/UX or full-stack projects for your resume.
+                Open-source civic projects focusing on e-Governance, local administration tools, and public health dashboards. Collaborate to build national infrastructure.
               </p>
               <div className="text-sm font-bold text-indigo-500 flex items-center gap-2 bg-indigo-50 w-max px-4 py-2 rounded-xl border-2 border-indigo-100">
-                Enter Community Track <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                View Open Source Tracks <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </div>
             </button>
 
@@ -246,39 +226,39 @@ export default function HackathonArena() {
                 <Banknote className="w-8 h-8 text-slate-400 group-hover:text-white transition-colors" />
               </div>
               <h2 className="text-2xl font-black text-slate-800 mb-4 flex items-center gap-3">
-                The Bounty Arena <span className="text-2xl drop-shadow-sm">🏆</span>
+                Ministry Challenges <span className="text-2xl drop-shadow-sm">🇮🇳</span>
               </h2>
               <p className="text-slate-500 font-medium leading-relaxed mb-8">
-                Strict, automated logic tests and complex architecture challenges. Prove you are the top 1% to earn creator grants and agency contracts.
+                Official problem statements from the Ministry of Defense, Education, and Health. Build production-ready solutions to win government incubation.
               </p>
               <div className="text-sm font-bold text-rose-500 flex items-center gap-2 bg-rose-50 w-max px-4 py-2 rounded-xl border-2 border-rose-100">
-                Enter Bounty Track <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                View Problem Statements <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </div>
             </button>
           </div>
         </div>
       )}
 
-      {/* VIEW 2: COMMUNITY TRACK */}
+      {/* VIEW 2: DIGITAL INDIA OSS */}
       {view === 'community' && (
         <div className="flex-1 p-8 md:p-12 overflow-y-auto animate-in fade-in duration-300 max-w-7xl mx-auto w-full">
           <button 
             onClick={() => setView('select')} 
             className="flex items-center gap-2 text-slate-500 hover:text-indigo-600 transition-colors mb-8 text-sm font-bold tracking-wider uppercase bg-white px-4 py-2 rounded-xl shadow-sm border-2 border-slate-100 w-fit hover:-translate-y-0.5 active:translate-y-0"
           >
-            <ChevronLeft className="w-4 h-4" /> Back to Arenas
+            <ChevronLeft className="w-4 h-4" /> Back to SIH Hub
           </button>
           <div className="max-w-4xl space-y-8">
             <div>
               <h1 className="text-4xl md:text-5xl font-black text-slate-800 flex items-center gap-4 mb-4">
-                <div className="bg-indigo-50 border-2 border-indigo-100 p-2.5 rounded-2xl shadow-sm"><Users className="w-8 h-8 md:w-10 md:h-10 text-indigo-500" /></div> Community Builds
+                <div className="bg-indigo-50 border-2 border-indigo-100 p-2.5 rounded-2xl shadow-sm"><Users className="w-8 h-8 md:w-10 md:h-10 text-indigo-500" /></div> Digital India OSS
               </h1>
-              <p className="text-slate-500 font-medium text-lg leading-relaxed">Collaborative hackathons designed to help you learn, build your portfolio, and network with other engineers.</p>
+              <p className="text-slate-500 font-medium text-lg leading-relaxed">Open-source civic projects focusing on e-Governance and public infrastructure. Build alongside the community.</p>
             </div>
             <div className="space-y-6">
               {arenas.filter(a => a.type === 'community').length === 0 && (
                  <div className="text-slate-400 bg-white/50 border-2 border-slate-200 border-dashed rounded-[2rem] p-16 text-center text-sm uppercase tracking-widest font-bold">
-                   No active community arenas.
+                   No active open source tracks.
                  </div>
               )}
               {arenas.filter(a => a.type === 'community').map(arena => (
@@ -302,11 +282,9 @@ export default function HackathonArena() {
                   <p className="text-slate-500 font-medium leading-relaxed mb-6">{arena.desc}</p>
                   
                   <div className="flex items-center justify-between border-t-2 border-slate-100 pt-6">
-                    {/* GAMIFIED REWARD */}
                     <div className="flex items-center gap-1.5 text-[11px] font-black text-amber-600 bg-amber-50 px-3 py-1.5 rounded-lg border-2 border-amber-100 shadow-sm uppercase tracking-wider">
                       Participation Reward: +50 <Gem className="w-3.5 h-3.5 fill-amber-200" />
                     </div>
-
                     <button onClick={() => router.push('/dashboard/workspace')} className="bg-white hover:bg-slate-50 border-2 border-slate-200 hover:border-indigo-200 text-indigo-600 font-bold py-3 px-6 rounded-xl transition-all flex items-center gap-2 text-sm shadow-sm hover:shadow active:-translate-y-0.5 active:shadow-none">
                       Enter Workspace <ChevronRight className="w-4 h-4" />
                     </button>
@@ -318,26 +296,26 @@ export default function HackathonArena() {
         </div>
       )}
 
-      {/* VIEW 3: BOUNTY TRACK */}
+      {/* VIEW 3: MINISTRY CHALLENGES */}
       {view === 'bounty' && (
         <div className="flex-1 p-8 md:p-12 overflow-y-auto animate-in fade-in duration-300 max-w-7xl mx-auto w-full">
           <button 
             onClick={() => setView('select')} 
             className="flex items-center gap-2 text-slate-500 hover:text-rose-500 transition-colors mb-8 text-sm font-bold tracking-wider uppercase bg-white px-4 py-2 rounded-xl shadow-sm border-2 border-slate-100 w-fit hover:-translate-y-0.5 active:translate-y-0"
           >
-            <ChevronLeft className="w-4 h-4" /> Back to Arenas
+            <ChevronLeft className="w-4 h-4" /> Back to SIH Hub
           </button>
           <div className="max-w-4xl space-y-8">
             <div>
               <h1 className="text-4xl md:text-5xl font-black text-slate-800 flex items-center gap-4 mb-4">
-                <div className="bg-rose-50 border-2 border-rose-100 p-2.5 rounded-2xl shadow-sm"><Code2 className="w-8 h-8 md:w-10 md:h-10 text-rose-500" /></div> The Bounty Arena
+                <div className="bg-rose-50 border-2 border-rose-100 p-2.5 rounded-2xl shadow-sm"><Code2 className="w-8 h-8 md:w-10 md:h-10 text-rose-500" /></div> Ministry Challenges
               </h1>
-              <p className="text-slate-500 font-medium text-lg leading-relaxed">High-stakes algorithmic challenges and complex system builds. Prove your skills against the best.</p>
+              <p className="text-slate-500 font-medium text-lg leading-relaxed">Official problem statements for SIH 2026. Build production-ready architectures to secure government incubation.</p>
             </div>
             <div className="space-y-6">
               {arenas.filter(a => a.type === 'bounty').length === 0 && (
                  <div className="text-slate-400 bg-white/50 border-2 border-slate-200 border-dashed rounded-[2rem] p-16 text-center text-sm uppercase tracking-widest font-bold">
-                   No active bounty arenas.
+                   No active ministry statements.
                  </div>
               )}
               {arenas.filter(a => a.type === 'bounty').map(arena => (
@@ -355,7 +333,7 @@ export default function HackathonArena() {
                   )}
                   
                   <div className="absolute top-1/2 right-8 -translate-y-1/2 opacity-[0.03] pointer-events-none group-hover:scale-110 group-hover:rotate-12 transition-all duration-700">
-                    <Banknote className="w-64 h-64 text-slate-900" />
+                    <Building2 className="w-64 h-64 text-slate-900" />
                   </div>
                   
                   <div className="flex justify-between items-start mb-4 relative z-10">
@@ -368,17 +346,13 @@ export default function HackathonArena() {
                   <p className="text-slate-500 font-medium leading-relaxed mb-8 max-w-2xl relative z-10">{arena.desc}</p>
                   
                   <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between border-t-2 border-slate-100 pt-6 gap-4 sm:gap-0 relative z-10">
-                    
-                    {/* GAMIFIED REWARD */}
                     <div className="flex items-center gap-1.5 text-[11px] font-black text-amber-600 bg-amber-50 px-3 py-1.5 rounded-lg border-2 border-amber-100 shadow-sm uppercase tracking-wider">
-                      Winner Takes All: +500 <Gem className="w-3.5 h-3.5 fill-amber-200" />
+                      Winning Team: +500 <Gem className="w-3.5 h-3.5 fill-amber-200" />
                     </div>
-
                     <button onClick={() => router.push('/dashboard/workspace')} className="w-full sm:w-auto bg-rose-500 hover:bg-rose-600 text-white font-bold py-3.5 px-6 rounded-xl transition-all shadow-[0_4px_0_rgb(225,29,72)] hover:shadow-[0_2px_0_rgb(225,29,72)] hover:translate-y-[2px] active:translate-y-[4px] active:shadow-none flex items-center justify-center gap-2 text-sm tracking-wider uppercase">
-                      Accept Bounty & Start
+                      Accept Statement & Start
                     </button>
                   </div>
-
                 </div>
               ))}
             </div>
