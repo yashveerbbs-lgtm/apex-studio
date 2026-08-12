@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, Send, Sparkles, Zap } from 'lucide-react'
+import { usePathname } from 'next/navigation' // 🔥 The secret weapon for page awareness
 
 type Mood = 'idle' | 'happy' | 'thinking' | 'excited' | 'sleepy' | 'dizzy'
 
@@ -14,6 +15,7 @@ export default function SparkAIAssistant() {
   ])
   
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const pathname = usePathname() // Capture the exact URL route
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -39,14 +41,15 @@ export default function SparkAIAssistant() {
     setMood('thinking')
 
     try {
-      // 1. Scan the DOM to see what the user is looking at!
-      const pageTitle = document.querySelector('h1')?.innerText || 'the dashboard interface'
+      // 1. Bulletproof Context: Combine the exact URL route with the page heading
+      const pageTitle = document.querySelector('h1')?.innerText || 'Unknown Area'
+      const pageContext = `URL Route: ${pathname} | Page Heading: ${pageTitle}`
 
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        // 2. Send both the message AND the page context to Gemini
-        body: JSON.stringify({ message: userMessage, context: pageTitle })
+        // 2. Send this super-context to the backend
+        body: JSON.stringify({ message: userMessage, context: pageContext })
       })
 
       const data = await response.json()
@@ -168,7 +171,6 @@ export default function SparkAIAssistant() {
         dragElastic={0.8}
         dragTransition={{ bounceStiffness: 400, bounceDamping: 15 }}
         
-        // --- FUNNY FLINGING LOGIC HERE ---
         onDragStart={() => {
           setMood('dizzy')
           const dragJokes = [
@@ -186,7 +188,6 @@ export default function SparkAIAssistant() {
         onDragEnd={() => {
            setTimeout(() => setMood('idle'), 2000)
         }}
-        // ---------------------------------
 
         whileDrag={{ scale: 1.15, cursor: 'grabbing' }}
         onClick={() => { if (!isOpen) { setIsOpen(true); setMood('happy'); } }}
