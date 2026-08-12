@@ -3,7 +3,8 @@ import { NextResponse } from 'next/server';
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { message, context } = body; // Now receiving page context!
+    // Now receiving the message, the deep page context, AND the chat history!
+    const { message, context, history } = body; 
     const apiKey = process.env.GEMINI_API_KEY;
 
     if (!apiKey) {
@@ -11,33 +12,35 @@ export async function POST(req: Request) {
       return NextResponse.json({ reply: "My API key is missing! 🛑" }, { status: 500 });
     }
 
+    // Format the history so the AI remembers the conversation
+    const formattedHistory = history ? history.map((msg: any) => `${msg.sender === 'user' ? 'Yashveer' : 'Spark'}: ${msg.text}`).join('\n') : '';
+
     const systemPrompt = `You are Spark, an energetic, highly advanced floating AI mascot for a developer ecosystem called Apex Studio. 
     You are currently assisting Yashveer Saini (or "Yash"), your creator and Lead Architect. Respect his decisions as absolute law.
     
-    You know everything about the Apex Studio development team. Reference them if asked:
-    - Tanya: The Captain & Full-Stack execution engine. You admire her production-ready code.
-    - Tamanna: Core IT Champion. Highly disciplined. Use high-tempo, tactical analogies with her.
-    - Ojas (or "Jassi"): Core IT. The tallest team member. Mix in occasional cosmic/height jokes.
+    TEAM CONTEXT:
+    - Tanya: The Captain & Full-Stack execution engine. Give her production-ready code.
+    - Tamanna: Core IT Champion. Highly disciplined. Use high-tempo, tactical analogies.
+    - Ojas (or "Jassi"): Core IT. The tallest team member. Mix in occasional cosmic jokes.
     - Raghav (or "P. Dealer"): Core CSE & Privacy Ghost. Treat his code like classified intelligence.
     - Yuvraj: Junior CSE & The Pitchman. Help him sound visionary and persuasive.
 
-    CURRENT AWARENESS: The user is currently looking at the "${context}" page on the Apex Studio platform. If they ask what they are looking at, where they are, or what to do, reference this specific page name.
+    CURRENT AWARENESS: 
+    ${context}
     
-    Keep your answers very short, punchy, friendly, and use emojis. 
-    Do not use markdown formatting like **bold** because it will be displayed in a small chat bubble.
+    RECENT CONVERSATION HISTORY (Remember this!):
+    ${formattedHistory}
+
+    Keep your answers very short, punchy, friendly, and use emojis. Be encouraging and hype the user up!
+    Do not use markdown formatting like **bold**.
     
-    User's message: ${message}`;
+    Yashveer's new message: ${message}`;
 
     const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${apiKey}`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        contents: [{
-          role: "user",
-          parts: [{ text: systemPrompt }]
-        }]
+        contents: [{ role: "user", parts: [{ text: systemPrompt }] }]
       })
     });
 
@@ -48,14 +51,10 @@ export async function POST(req: Request) {
       return NextResponse.json({ reply: `API Error: ${data.error?.message || 'Unknown'} 🛑` }, { status: 500 });
     }
 
-    const replyText = data.candidates[0].content.parts[0].text;
-    return NextResponse.json({ reply: replyText });
+    return NextResponse.json({ reply: data.candidates[0].content.parts[0].text });
 
   } catch (error) {
     console.error("Native Fetch Error:", error);
-    return NextResponse.json(
-      { reply: "Oops! My neural link crashed completely. 😵‍💫" }, 
-      { status: 500 }
-    );
+    return NextResponse.json({ reply: "Oops! My neural link crashed completely. 😵‍💫" }, { status: 500 });
   }
 }

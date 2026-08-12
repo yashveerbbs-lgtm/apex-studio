@@ -2,25 +2,69 @@
 import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, Send, Sparkles, Zap } from 'lucide-react'
-import { usePathname } from 'next/navigation' // 🔥 The secret weapon for page awareness
+import { usePathname } from 'next/navigation'
 
 type Mood = 'idle' | 'happy' | 'thinking' | 'excited' | 'sleepy' | 'dizzy'
+type Message = { sender: 'spark' | 'user', text: string }
 
 export default function SparkAIAssistant() {
   const [isOpen, setIsOpen] = useState(false)
   const [mood, setMood] = useState<Mood>('idle')
   const [inputText, setInputText] = useState('')
-  const [messages, setMessages] = useState([
+  const [messages, setMessages] = useState<Message[]>([
     { sender: 'spark', text: 'Hey Yash! Grab me, fling me across the screen, or ask me about the team! ✨' }
   ])
   
   const messagesEndRef = useRef<HTMLDivElement>(null)
-  const pathname = usePathname() // Capture the exact URL route
+  const pathname = usePathname()
 
+  // --- MEMORY & DAILY STREAK SYSTEM ---
   useEffect(() => {
+    // 1. Load Chat History
+    const savedChat = localStorage.getItem('spark_memory')
+    if (savedChat) {
+      setMessages(JSON.parse(savedChat))
+    }
+
+    // 2. Daily Login Streak Logic
+    const lastVisit = localStorage.getItem('spark_last_visit')
+    const currentStreak = parseInt(localStorage.getItem('spark_streak') || '0')
+    const today = new Date().toDateString()
+
+    if (lastVisit !== today) {
+      let newStreak = 1
+      const yesterday = new Date(Date.now() - 86400000).toDateString()
+      if (lastVisit === yesterday) {
+        newStreak = currentStreak + 1
+      }
+      
+      localStorage.setItem('spark_last_visit', today)
+      localStorage.setItem('spark_streak', newStreak.toString())
+
+      // Congratulate them if they have a streak!
+      if (newStreak > 1) {
+        setTimeout(() => {
+          setIsOpen(true)
+          setMood('excited')
+          setMessages(prev => {
+            const newMsgs = [...prev, { sender: 'spark', text: `Welcome back to the studio! You are on a ${newStreak}-day coding streak! Absolute legend. 🔥🚀` }]
+            localStorage.setItem('spark_memory', JSON.stringify(newMsgs))
+            return newMsgs as Message[]
+          })
+        }, 2000)
+      }
+    }
+  }, [])
+
+  // Save chat to memory whenever it updates
+  useEffect(() => {
+    if (messages.length > 1) {
+      localStorage.setItem('spark_memory', JSON.stringify(messages))
+    }
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
+  // Idle Animation
   useEffect(() => {
     if (isOpen || mood !== 'idle') return
     const interval = setInterval(() => {
@@ -32,24 +76,44 @@ export default function SparkAIAssistant() {
     return () => clearInterval(interval)
   }, [isOpen, mood])
 
+  // --- DEEP PAGE SCANNER & FRIENDLY URLS ---
+  const getPageContext = () => {
+    // 1. Make URLs friendly
+    let friendlyName = "the platform"
+    if (pathname.includes('/overview')) friendlyName = "the Main Dashboard"
+    else if (pathname.includes('/internships')) friendlyName = "the Internships Pipeline"
+    else if (pathname.includes('/courses') || pathname.includes('/academy')) friendlyName = "the Apex Academy"
+    
+    // 2. Scan the screen for deep context (Workspaces, Courses, etc.)
+    const activeWorkspaces = document.querySelectorAll('.workspace-card, [class*="workspace"]').length || document.body.innerText.match(/Recent Workspaces/i) ? "They have recent workspaces open." : ""
+    const textOnScreen = document.body.innerText.substring(0, 500) // Grab some raw text to let the AI see stats
+    
+    return `Yash is currently viewing ${friendlyName}. Screen context data: ${activeWorkspaces} Visible text on screen includes: "${textOnScreen.replace(/\n/g, ' ')}"`
+  }
+
   const handleSendMessage = async () => {
     if (!inputText.trim()) return
 
     const userMessage = inputText
-    setMessages(prev => [...prev, { sender: 'user', text: userMessage }])
+    const newMessages = [...messages, { sender: 'user', text: userMessage }] as Message[]
+    setMessages(newMessages)
     setInputText('')
     setMood('thinking')
 
     try {
-      // 1. Bulletproof Context: Combine the exact URL route with the page heading
-      const pageTitle = document.querySelector('h1')?.innerText || 'Unknown Area'
-      const pageContext = `URL Route: ${pathname} | Page Heading: ${pageTitle}`
+      const pageContext = getPageContext()
+      
+      // Grab the last 6 messages for conversation memory
+      const recentHistory = newMessages.slice(-6)
 
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        // 2. Send this super-context to the backend
-        body: JSON.stringify({ message: userMessage, context: pageContext })
+        body: JSON.stringify({ 
+          message: userMessage, 
+          context: pageContext,
+          history: recentHistory 
+        })
       })
 
       const data = await response.json()
@@ -182,7 +246,11 @@ export default function SparkAIAssistant() {
           ]
           const randomJoke = dragJokes[Math.floor(Math.random() * dragJokes.length)]
           
-          setMessages(prev => [...prev, { sender: 'spark', text: randomJoke }])
+          setMessages(prev => {
+            const newMsgs = [...prev, { sender: 'spark', text: randomJoke }]
+            localStorage.setItem('spark_memory', JSON.stringify(newMsgs))
+            return newMsgs as Message[]
+          })
           if (!isOpen) setIsOpen(true)
         }}
         onDragEnd={() => {
