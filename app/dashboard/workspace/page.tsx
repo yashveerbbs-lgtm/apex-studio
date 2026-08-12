@@ -791,7 +791,7 @@ export default function EnterpriseWorkspace() {
                       minimap: { enabled: false },
                       fontSize: 14,
                       wordWrap: 'on',
-                      padding: { top: 16, bottom: 16, left: 16 },
+                      padding: { top: 16, bottom: 16 },
                       readOnly: true,
                       fontFamily: "'Nunito', sans-serif"
                     }}
