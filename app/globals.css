@@ -35,22 +35,18 @@ body {
    GAMIFIED UI CUSTOM UTILITIES
    ========================================= */
 @layer utilities {
-  /* Base 3D press animation */
-  .btn-3d {
-    @apply transition-all active:translate-y-[4px] active:shadow-none;
-  }
   
-  /* Green Success Button */
+  /* Green Success Button (Fixed: No chained classes) */
   .btn-emerald {
     @apply bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-xl
            shadow-[0_4px_0_rgb(5,150,105)] hover:shadow-[0_2px_0_rgb(5,150,105)] 
-           hover:translate-y-[2px] btn-3d;
+           hover:translate-y-[2px] transition-all active:translate-y-[4px] active:shadow-none;
   }
   
-  /* Purple/Indigo Primary Button */
+  /* Purple/Indigo Primary Button (Fixed: No chained classes) */
   .btn-indigo {
     @apply bg-indigo-500 hover:bg-indigo-600 text-white font-bold rounded-xl
            shadow-[0_4px_0_rgb(67,56,202)] hover:shadow-[0_2px_0_rgb(67,56,202)] 
-           hover:translate-y-[2px] btn-3d;
+           hover:translate-y-[2px] transition-all active:translate-y-[4px] active:shadow-none;
   }
 }
