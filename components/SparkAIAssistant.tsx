@@ -1,6 +1,6 @@
 'use client'
 import { useState, useEffect, useRef } from 'react'
-import { motion, AnimatePresence, useAnimation } from 'framer-motion'
+import { motion, AnimatePresence, useMotionValue, useAnimationFrame } from 'framer-motion'
 import { X, Send, Sparkles, Zap } from 'lucide-react'
 import { supabase } from '../utils/supabase'
 
@@ -12,20 +12,26 @@ export default function SparkAIAssistant() {
   const [inputText, setInputText] = useState('')
   const [userName, setUserName] = useState<string>('Developer')
   const [messages, setMessages] = useState([
-    { sender: 'spark', text: 'Hey there! I am Spark ✨. Drop me on anything, or ask me a question!' }
+    { sender: 'spark', text: 'Hey! Grab me, throw me, and watch me bounce! Or just ask me a question. ✨' }
   ])
   
   const messagesEndRef = useRef<HTMLDivElement>(null)
-  const controls = useAnimation()
   const mascotRef = useRef<HTMLDivElement>(null)
 
-  // 1. Fetch User Data to make it Personalized
+  // --- PHYSICS ENGINE STATE ---
+  const x = useMotionValue(0)
+  const y = useMotionValue(0)
+  const velocity = useRef({ x: 0, y: 0 })
+  const isDragging = useRef(false)
+  const lastCollisionTime = useRef(0)
+
+  // 1. Fetch User Data
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (user?.email) {
         const name = user.email.split('@')[0]
         setUserName(name.charAt(0).toUpperCase() + name.slice(1))
-        setMessages([{ sender: 'spark', text: `Welcome back to the studio, ${name}! Ready to build? 🚀` }])
+        setMessages([{ sender: 'spark', text: `Welcome back to the studio, ${name}! Ready to fling me around? 🚀` }])
       }
     })
   }, [])
@@ -35,7 +41,7 @@ export default function SparkAIAssistant() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
-  // Idle Animation
+  // Idle Animation (Random happiness)
   useEffect(() => {
     if (isOpen || mood !== 'idle') return
     const interval = setInterval(() => {
@@ -47,11 +53,84 @@ export default function SparkAIAssistant() {
     return () => clearInterval(interval)
   }, [isOpen, mood])
 
-  // 2. The Smart, Context-Aware Chat Engine
+  // ----------------------------------------------------
+  // THE CUSTOM 2D PHYSICS & COLLISION ENGINE 💥
+  // ----------------------------------------------------
+  useAnimationFrame((t, delta) => {
+    if (isDragging.current || isOpen) return // Stop physics when held or chatting
+
+    const dt = delta / 16.66 // Normalize for 60fps
+    
+    // 1. Apply Gravity and Friction
+    velocity.current.y += 0.8 * dt // Gravity pulling down
+    velocity.current.x *= 0.98     // Air friction (slows down horizontal movement)
+    velocity.current.y *= 0.98     // Air friction 
+
+    let nextX = x.get() + velocity.current.x * dt
+    let nextY = y.get() + velocity.current.y * dt
+
+    // 2. Screen Boundaries (Bounce off the walls!)
+    if (typeof window !== 'undefined') {
+      const rightBound = 10
+      const leftBound = -(window.innerWidth - 88)
+      const bottomBound = 0 // The floor (bottom-6 padding)
+      const topBound = -(window.innerHeight - 88)
+
+      if (nextX > rightBound) { nextX = rightBound; velocity.current.x *= -0.7 }
+      if (nextX < leftBound) { nextX = leftBound; velocity.current.x *= -0.7 }
+      if (nextY < topBound) { nextY = topBound; velocity.current.y *= -0.7 }
+      if (nextY > bottomBound) { 
+        nextY = bottomBound
+        velocity.current.y *= -0.6 // Bounce off the floor
+        velocity.current.x *= 0.9  // Extra friction on the floor
+      }
+
+      // 3. REAL DOM COLLISION DETECTION! 🤯
+      // Only check collisions if he is falling fast enough to care
+      if (velocity.current.y > 2 && Date.now() - lastCollisionTime.current > 100) {
+        
+        // Calculate his absolute position on the screen
+        const absX = window.innerWidth - 24 - 32 + nextX // Center X
+        const absY = window.innerHeight - 24 + nextY + 5 // Just below his feet
+        
+        // Temporarily hide Spark so the raycast doesn't hit himself
+        if (mascotRef.current) mascotRef.current.style.visibility = 'hidden'
+        const hitElement = document.elementFromPoint(absX, absY)
+        if (mascotRef.current) mascotRef.current.style.visibility = 'visible'
+
+        if (hitElement) {
+          const tag = hitElement.tagName.toLowerCase()
+          const className = hitElement.className || ''
+          
+          // Does he hit a button, a card, or a heading?
+          if (tag === 'button' || tag === 'h1' || tag === 'h2' || className.includes('bg-white')) {
+            // BOUNCE!
+            velocity.current.y *= -0.7 // Bounce up!
+            velocity.current.x *= 0.8  // Surface friction
+            nextY -= 10 // Push up to avoid getting stuck inside the div
+            lastCollisionTime.current = Date.now()
+          }
+        }
+      }
+    }
+
+    // Apply the new coordinates
+    x.set(nextX)
+    y.set(nextY)
+
+    // Stop dizzy mood when he finally settles down
+    if (mood === 'dizzy' && Math.abs(velocity.current.x) < 0.5 && Math.abs(velocity.current.y) < 0.5) {
+      setMood('idle')
+    }
+  })
+
+  // ----------------------------------------------------
+  // THE SMART NLP TEXT PARSER 🧠
+  // ----------------------------------------------------
   const handleSendMessage = () => {
     if (!inputText.trim()) return
 
-    const userQuery = inputText.toLowerCase()
+    const q = inputText.toLowerCase()
     setMessages(prev => [...prev, { sender: 'user', text: inputText }])
     setInputText('')
     setMood('thinking')
@@ -60,95 +139,42 @@ export default function SparkAIAssistant() {
       setMood('excited')
       let reply = ""
 
-      // Context-Aware Logic
-      const pageTitle = document.querySelector('h1')?.innerText || 'this page'
+      // Read DOM context for smart answers
+      const pageTitle = document.querySelector('h1')?.innerText || 'this area'
       const buttons = document.querySelectorAll('button').length
 
-      if (userQuery.includes('who am i') || userQuery.includes('my name')) {
+      // Regex matching for fuzzy logic (handles typos better!)
+      if (q.match(/(who am i|my name|who are you talking to)/)) {
         reply = `You are ${userName}! The legendary developer building this project. 😎`
-      } else if (userQuery.includes('where am i') || userQuery.includes('what page')) {
-        reply = `Looks like we're currently on the "${pageTitle}" section! I see about ${buttons} buttons you can click here.`
-      } else if (userQuery.includes('help') || userQuery.includes('what should i do')) {
-        reply = `Since we're looking at "${pageTitle}", you should probably click one of the primary buttons around here to deploy a task or accept a challenge!`
-      } else if (userQuery.includes('sih') || userQuery.includes('hackathon')) {
-        reply = `SIH is the Smart India Hackathon! We are going to win this thing. 🏆`
-      } else {
+      } 
+      else if (q.match(/what.*(look|see|page|here|this)/)) {
+        reply = `We're looking at the "${pageTitle}" interface! I'm scanning roughly ${buttons} interactable elements you can click around here.`
+      } 
+      else if (q.match(/(help|should i do|stuck|lost)/)) {
+        reply = `Since we're currently on "${pageTitle}", try clicking one of the main buttons or cards to deploy an assignment!`
+      } 
+      else if (q.match(/(physics|bounce|fling|throw|jump|fall)/)) {
+        reply = `Grab me with your mouse and THROW ME! I have a custom 60fps 2D physics engine built in. I'll bounce right off your UI! 🎢`
+      } 
+      else if (q.match(/(sih|hackathon|smart india)/)) {
+        reply = `SIH is the Smart India Hackathon! With physics and context-awareness like this, the judges will love it. 🏆`
+      } 
+      else {
         const generic = [
-          "That's a brilliant idea! Let's build it. 🚀",
-          "My neural nets agree with you.",
-          "I'm scanning the DOM... your layout looks flawless.",
+          "My neural nets agree with you entirely.",
+          "I'm scanning the DOM... your UI layout looks flawless.",
           `You got it, ${userName}! Want me to look up the docs for that?`,
-          "I can help you debug that if you want!"
+          "I'm still learning! But if you grab and throw me, I'll bounce off buttons and cards! 🚀"
         ]
         reply = generic[Math.floor(Math.random() * generic.length)]
       }
       
       setMessages(prev => [...prev, { sender: 'spark', text: reply }])
       setTimeout(() => setMood('happy'), 2000)
-    }, 1200)
+    }, 1000)
   }
 
-  // 3. The Custom Physics Engine (Gravity & Collision)
-  const handleDragEnd = (event: any, info: any) => {
-    if (!mascotRef.current) return
-
-    setMood('dizzy') // Spark gets dizzy when thrown!
-
-    // Get Spark's coordinates right when we let go
-    const dropX = info.point.x
-    const dropY = info.point.y
-    let landedOnElement = false
-    let targetYOffset = 0
-
-    // Scan the screen for elements below Spark
-    const interactables = Array.from(document.querySelectorAll('button, h1, h2, .bg-white'))
-    
-    for (const el of interactables) {
-      const rect = el.getBoundingClientRect()
-      
-      // Is the element directly below Spark's X coordinate?
-      if (dropX > rect.left && dropX < rect.right) {
-        // Is the element below Spark's current Y coordinate?
-        if (rect.top > dropY) {
-          // Calculate how far Spark needs to fall to hit the top of this element
-          // (We use relative coordinates since Framer Motion x,y are relative to start)
-          const distanceToFall = rect.top - dropY
-          targetYOffset = info.offset.y + distanceToFall - 40 // -40 so he sits ON it, not inside it
-          
-          landedOnElement = true
-          
-          // Sneaky Hackathon Feature: Spark reads what he landed on!
-          const elementText = (el as HTMLElement).innerText?.substring(0, 15)
-          if (elementText && !isOpen) {
-             setTimeout(() => {
-               setMessages(prev => [...prev, { sender: 'spark', text: `Oof! Landed on "${elementText}..."` }])
-               setIsOpen(true)
-             }, 800)
-          }
-          break // Stop at the first element we hit going down
-        }
-      }
-    }
-
-    if (landedOnElement) {
-      // 💥 Physics: Animate the fall and bounce
-      controls.start({
-        x: info.offset.x,
-        y: targetYOffset,
-        transition: { type: "spring", bounce: 0.6, duration: 0.8 }
-      })
-    } else {
-      // 🎈 No element found below? Float back to origin like a balloon
-      controls.start({
-        x: 0,
-        y: 0,
-        transition: { type: "spring", bounce: 0.4, duration: 1.5 }
-      })
-    }
-
-    setTimeout(() => setMood('idle'), 1500)
-  }
-
+  // --- EMOTION RENDERER ---
   const renderEyes = () => {
     switch (mood) {
       case 'happy':
@@ -171,13 +197,6 @@ export default function SparkAIAssistant() {
           <>
             <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 0.5, ease: "linear" }} className="w-3 h-3 border-2 border-white rounded-md" />
             <motion.div animate={{ rotate: -360 }} transition={{ repeat: Infinity, duration: 0.5, ease: "linear" }} className="w-3 h-3 border-2 border-white rounded-md" />
-          </>
-        )
-      case 'sleepy':
-        return (
-          <>
-            <div className="w-3 h-1 bg-white rounded-full" />
-            <div className="w-3 h-1 bg-white rounded-full" />
           </>
         )
       case 'idle':
@@ -260,13 +279,21 @@ export default function SparkAIAssistant() {
       {/* THE MASCOT CHARACTER (Physics Enabled!) */}
       <motion.div 
         ref={mascotRef}
+        style={{ x, y }} // Bind motion values to the div!
         drag 
-        dragElastic={0.5}
-        dragMomentum={false}
-        animate={controls}
-        onDragEnd={handleDragEnd}
+        dragMomentum={false} // We handle momentum manually now!
+        onDragStart={() => {
+          isDragging.current = true
+          setMood('dizzy')
+        }}
+        onDragEnd={(e, info) => {
+          isDragging.current = false
+          // Capture the throw velocity!
+          velocity.current.x = info.velocity.x / 40
+          velocity.current.y = info.velocity.y / 40
+        }}
         whileDrag={{ scale: 1.15, cursor: 'grabbing' }}
-        onClick={() => { if (!isOpen) { setIsOpen(true); setMood('happy'); } }}
+        onClick={() => { if (!isOpen && !isDragging.current) { setIsOpen(true); setMood('happy'); velocity.current = {x:0, y:0}; x.set(0); y.set(0); } }}
         className="relative cursor-grab pointer-events-auto"
       >
         <div className={`w-16 h-16 rounded-[2rem] shadow-[0_10px_20px_rgb(99,102,241,0.4)] border-4 border-white flex flex-col items-center justify-center gap-1.5 transition-all duration-300 ${
