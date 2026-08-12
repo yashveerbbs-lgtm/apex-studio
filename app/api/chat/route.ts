@@ -18,8 +18,8 @@ export async function POST(req: Request) {
     
     User's message: ${message}`;
 
-    // Changed the URL to explicitly use gemini-pro which is stable on v1beta
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`, {
+    // The Ultimate Fix: Upgraded to the 'v1' endpoint and 'gemini-1.5-flash'
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
