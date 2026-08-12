@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
-// Initialize the Gemini API (Requires GEMINI_API_KEY in your .env.local file)
+// Initialize the Gemini API (Requires GEMINI_API_KEY in your .env.local and Vercel)
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
 
 export async function POST(req: Request) {
@@ -15,7 +15,7 @@ export async function POST(req: Request) {
     Do not use markdown formatting like **bold** because it will be displayed in a small chat bubble.
     User's message: ${message}`;
 
-    // Changed from gemini-1.5-flash to gemini-pro to ensure compatibility
+    // Switched to gemini-pro to ensure compatibility with your current SDK version
     const model = genAI.getGenerativeModel({ model: "gemini-pro" });
     
     const result = await model.generateContent(systemPrompt);
