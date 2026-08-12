@@ -249,7 +249,8 @@ function AdminRecruiterDashboard() {
             <form onSubmit={handleSaveTask} className="space-y-5">
               <div>
                 <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Task Title / Objective</label>
-                <input type="text" required value={newTaskTitle} onChange={e => setNewTitle(e.target.value)} className="w-full bg-slate-50 text-sm font-bold text-slate-800 border-2 border-slate-200 rounded-xl p-3.5 focus:outline-none focus:bg-white focus:border-indigo-500 transition-all placeholder:text-slate-300" placeholder="e.g. Migrate Landing Page to Next.js 14" />
+                {/* BUG FIX HERE: setNewTitle -> setNewTaskTitle */}
+                <input type="text" required value={newTaskTitle} onChange={e => setNewTaskTitle(e.target.value)} className="w-full bg-slate-50 text-sm font-bold text-slate-800 border-2 border-slate-200 rounded-xl p-3.5 focus:outline-none focus:bg-white focus:border-indigo-500 transition-all placeholder:text-slate-300" placeholder="e.g. Migrate Landing Page to Next.js 14" />
               </div>
               
               <div>
