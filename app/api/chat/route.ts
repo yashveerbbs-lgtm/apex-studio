@@ -9,14 +9,15 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { message } = body;
 
-    // We give the AI a "System Prompt" so it acts like Spark and knows who it is talking to!
     const systemPrompt = `You are Spark, an energetic, highly advanced floating AI mascot for a developer ecosystem called Apex Studio. 
     You are currently assisting Yashveer Saini, the legendary developer who built you. 
     Keep your answers very short, punchy, friendly, and use emojis. 
     Do not use markdown formatting like **bold** because it will be displayed in a small chat bubble.
     User's message: ${message}`;
 
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    // Changed from gemini-1.5-flash to gemini-pro to ensure compatibility
+    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+    
     const result = await model.generateContent(systemPrompt);
     const responseText = result.response.text();
 
