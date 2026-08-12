@@ -4,9 +4,6 @@ import Link from 'next/link'
 import { supabase } from '../../../utils/supabase'
 import { Users, Search, FileCode, ChevronRight, Briefcase, Mail, Cpu, Award, Activity, CheckCircle, Terminal, Plus, X, Clock, Calendar, MessageSquare, Star, Trash2, Edit2, Image as ImageIcon, Gem, Sparkles } from 'lucide-react'
 
-// ==========================================
-// 1. SMART ROUTER
-// ==========================================
 export default function InternshipsRouter() {
   const [role, setRole] = useState<'ADMIN' | 'INTERN' | null>(null)
   const [loading, setLoading] = useState(true)
@@ -38,9 +35,6 @@ export default function InternshipsRouter() {
   return <InternTaskBoard currentUserId={currentUserId} />
 }
 
-// ==========================================
-// 2. THE ADMIN VIEW (God Mode Creation & Review)
-// ==========================================
 function AdminRecruiterDashboard() {
   const [activeTab, setActiveTab] = useState('All Candidates')
   const [searchQuery, setSearchQuery] = useState('')
@@ -48,7 +42,7 @@ function AdminRecruiterDashboard() {
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [editingTaskId, setEditingTaskId] = useState<string | null>(null)
   const [newTaskTitle, setNewTaskTitle] = useState('')
-  const [newTaskDept, setNewTaskDept] = useState('e-Governance')
+  const [newTaskDept, setNewTaskDept] = useState('Engineering')
   const [newTaskTier, setNewTaskTier] = useState('L1 Bounty')
   const [newTaskDescription, setNewTaskDescription] = useState('')
   const [newTaskDeadline, setNewTaskDeadline] = useState('')
@@ -66,15 +60,15 @@ function AdminRecruiterDashboard() {
   const [newStatus, setNewStatus] = useState('')
 
   const [candidates, setCandidates] = useState([
-    { id: 'APX-001', name: 'Sarah Jenkins', source: 'Digital India Grad', track: 'Full-Stack Next.js', score: '98%', status: 'Interviewing', skills: ['React', 'Supabase', 'TypeScript'], avatar: 'bg-indigo-100 text-indigo-600 border-indigo-200' },
-    { id: 'APX-002', name: 'Rahul_Dev', source: 'SIH Winner', track: 'Cybersecurity Analytics', score: '100%', status: 'Pending Review', skills: ['Python', 'Pandas', 'Machine Learning'], avatar: 'bg-emerald-100 text-emerald-600 border-emerald-200' },
-    { id: 'APX-004', name: 'Priya_C++', source: 'NIC Academy', track: 'Smart City Data', score: '94%', status: 'Pending Review', skills: ['C++', 'PostgreSQL', 'GIS'], avatar: 'bg-sky-100 text-sky-600 border-sky-200' }
+    { id: 'APX-001', name: 'Sarah Jenkins', source: 'Academy Graduate', track: 'Full-Stack Next.js', score: '98%', status: 'Interviewing', skills: ['React', 'Supabase', 'TypeScript'], avatar: 'bg-indigo-100 text-indigo-600 border-indigo-200' },
+    { id: 'APX-002', name: 'Rahul_Dev', source: 'Bounty Winner', track: 'Python Algorithmic Trading', score: '100%', status: 'Pending Review', skills: ['Python', 'Pandas', 'Machine Learning'], avatar: 'bg-emerald-100 text-emerald-600 border-emerald-200' },
+    { id: 'APX-004', name: 'Priya_C++', source: 'Academy Graduate', track: '3D Game Engine Mechanics', score: '94%', status: 'Pending Review', skills: ['C++', 'Unreal Engine', '3D Math'], avatar: 'bg-sky-100 text-sky-600 border-sky-200' }
   ])
 
-  const tabs = ['All Candidates', 'Academy Graduates', 'SIH Winners', 'Interviewing']
+  const tabs = ['All Candidates', 'Academy Graduates', 'Bounty Winners', 'Interviewing']
 
   const filteredCandidates = candidates.filter(c => {
-    const matchesTab = activeTab === 'All Candidates' ? true : activeTab === 'Academy Graduates' ? c.source.includes('Academy') || c.source.includes('Grad') : activeTab === 'SIH Winners' ? c.source.includes('SIH') : c.status === 'Interviewing';
+    const matchesTab = activeTab === 'All Candidates' ? true : activeTab === 'Academy Graduates' ? c.source.includes('Academy') : activeTab === 'Bounty Winners' ? c.source.includes('Bounty') : c.status === 'Interviewing';
     const matchesSearch = c.name.toLowerCase().includes(searchQuery.toLowerCase()) || c.skills.join(' ').toLowerCase().includes(searchQuery.toLowerCase())
     return matchesTab && matchesSearch
   })
@@ -101,27 +95,14 @@ function AdminRecruiterDashboard() {
 
     if (editingTaskId) {
       const { error } = await supabase.from('corporate_tasks').update({
-        title: newTaskTitle,
-        department: newTaskDept,
-        bounty_tier: newTaskTier,
-        description: newTaskDescription,
-        deadline: newTaskDeadline,
-        image_url: newImage 
+        title: newTaskTitle, department: newTaskDept, bounty_tier: newTaskTier, description: newTaskDescription, deadline: newTaskDeadline, image_url: newImage 
       }).eq('id', editingTaskId)
-
-      if (!error) alert("Gov-Tech task successfully updated!")
+      if (!error) alert("Task successfully updated!")
     } else {
       const { error } = await supabase.from('corporate_tasks').insert({
-        title: newTaskTitle,
-        department: newTaskDept,
-        bounty_tier: newTaskTier,
-        description: newTaskDescription,
-        deadline: newTaskDeadline,
-        status: 'OPEN',
-        image_url: newImage 
+        title: newTaskTitle, department: newTaskDept, bounty_tier: newTaskTier, description: newTaskDescription, deadline: newTaskDeadline, status: 'OPEN', image_url: newImage 
       })
-
-      if (!error) alert("New Gov-Tech task deployed to the national pipeline!")
+      if (!error) alert("New internship task deployed to the ecosystem!")
     }
 
     closeModal()
@@ -178,7 +159,6 @@ function AdminRecruiterDashboard() {
   return (
     <div className="h-full bg-slate-50 text-slate-800 overflow-y-auto font-sans relative transition-colors duration-500">
       
-      {/* CANDIDATE EVALUATION MODAL */}
       {showReviewModal && selectedCandidate && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm px-4">
           <div className="bg-white border-2 border-slate-100 rounded-[2rem] max-w-xl w-full p-8 shadow-[0_8px_30px_rgb(0,0,0,0.08)] overflow-y-auto max-h-[90vh] animate-in zoom-in-95 relative overflow-hidden">
@@ -230,7 +210,6 @@ function AdminRecruiterDashboard() {
         </div>
       )}
 
-      {/* 🚨 ADMIN CREATION/EDIT MODAL 🚨 */}
       {showCreateModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm px-4">
           <div className="bg-white border-2 border-slate-100 rounded-[2rem] max-w-2xl w-full p-8 shadow-[0_8px_30px_rgb(0,0,0,0.08)] overflow-y-auto max-h-[90vh] animate-in zoom-in-95 relative overflow-hidden">
@@ -239,9 +218,9 @@ function AdminRecruiterDashboard() {
             <div className="flex justify-between items-center mb-6 mt-2 border-b-2 border-slate-100 pb-4">
               <div>
                 <h2 className="text-2xl font-black text-slate-800 tracking-tight">
-                  {editingTaskId ? 'Update Govt Task' : 'Deploy New Govt Task'}
+                  {editingTaskId ? 'Update Task Details' : 'Deploy New Task'}
                 </h2>
-                <p className="text-xs text-slate-400 font-bold mt-1 uppercase tracking-wider">Push assignment to National Board</p>
+                <p className="text-xs text-slate-400 font-bold mt-1 uppercase tracking-wider">Push assignment to Intern Board</p>
               </div>
               <button onClick={closeModal} className="text-slate-400 hover:text-slate-600 bg-slate-50 hover:bg-slate-100 p-2.5 rounded-xl transition-all border-2 border-slate-200"><X className="w-5 h-5" /></button>
             </div>
@@ -249,7 +228,7 @@ function AdminRecruiterDashboard() {
             <form onSubmit={handleSaveTask} className="space-y-5">
               <div>
                 <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Task Title / Objective</label>
-                <input type="text" required value={newTaskTitle} onChange={e => setNewTaskTitle(e.target.value)} className="w-full bg-slate-50 text-sm font-bold text-slate-800 border-2 border-slate-200 rounded-xl p-3.5 focus:outline-none focus:bg-white focus:border-indigo-500 transition-all placeholder:text-slate-300" placeholder="e.g. Migrate Municipal Data to Next.js" />
+                <input type="text" required value={newTaskTitle} onChange={e => setNewTaskTitle(e.target.value)} className="w-full bg-slate-50 text-sm font-bold text-slate-800 border-2 border-slate-200 rounded-xl p-3.5 focus:outline-none focus:bg-white focus:border-indigo-500 transition-all placeholder:text-slate-300" placeholder="e.g. Migrate Landing Page to Next.js 14" />
               </div>
               
               <div>
@@ -261,10 +240,10 @@ function AdminRecruiterDashboard() {
                 <div>
                   <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Department</label>
                   <select value={newTaskDept} onChange={e => setNewTaskDept(e.target.value)} className="w-full bg-slate-50 text-sm font-bold text-slate-700 border-2 border-slate-200 rounded-xl p-3.5 focus:outline-none focus:bg-white focus:border-indigo-500 transition-all">
-                    <option value="e-Governance">e-Governance</option>
-                    <option value="Smart City Data">Smart City Data</option>
-                    <option value="Cybersecurity">Cybersecurity</option>
-                    <option value="Defense Tech">Defense Tech</option>
+                    <option value="Engineering">Engineering</option>
+                    <option value="Design (UI/UX)">Design (UI/UX)</option>
+                    <option value="Data Science">Data Science</option>
+                    <option value="3D Architecture">3D Architecture</option>
                   </select>
                 </div>
                 <div>
@@ -316,8 +295,8 @@ function AdminRecruiterDashboard() {
             <div className="inline-flex items-center gap-2 text-indigo-600 mb-4 font-black tracking-widest text-[10px] uppercase bg-indigo-50 px-3 py-1.5 rounded-lg border-2 border-indigo-100 shadow-sm">
               <ShieldCheck className="w-3 h-3" /> Admin Authorized
             </div>
-            <h1 className="text-3xl md:text-4xl font-black tracking-tight text-slate-800 mb-2">National Recruitment Command</h1>
-            <p className="text-slate-500 text-sm font-bold tracking-wide">Evaluate, interview, and onboard top developers for government deployments.</p>
+            <h1 className="text-3xl md:text-4xl font-black tracking-tight text-slate-800 mb-2">Recruitment Command</h1>
+            <p className="text-slate-500 text-sm font-bold tracking-wide">Evaluate, interview, and onboard top developers.</p>
           </div>
           <div className="flex gap-4 md:gap-8 bg-slate-50 border-2 border-slate-100 p-4 rounded-2xl items-center shadow-inner">
             <div><p className="text-[10px] text-slate-400 uppercase font-black mb-1">Total Pool</p><p className="text-2xl font-black text-slate-700">1,402</p></div>
@@ -422,9 +401,6 @@ function AdminRecruiterDashboard() {
   )
 }
 
-// ==========================================
-// 3. THE INTERN VIEW (Gamified)
-// ==========================================
 function InternTaskBoard({ currentUserId }: { currentUserId: string | null }) {
   const [tasks, setTasks] = useState<any[]>([])
   
@@ -447,12 +423,11 @@ function InternTaskBoard({ currentUserId }: { currentUserId: string | null }) {
     await fetchTasks()
   }
 
-  // Helper to visually assign Gem Rewards based on tier
   const getGemReward = (tier: string) => {
     if (tier.includes('L2')) return 100;
     if (tier.includes('L3')) return 250;
     if (tier.includes('Capstone')) return 500;
-    return 50; // L1 default
+    return 50; 
   }
 
   return (
@@ -461,14 +436,13 @@ function InternTaskBoard({ currentUserId }: { currentUserId: string | null }) {
         <div className="border-b-2 border-slate-200 pb-8 mb-8">
           <div className="flex items-center gap-3 mb-3">
             <Briefcase className="w-10 h-10 text-indigo-500 bg-indigo-50 p-2 rounded-2xl shadow-sm border-2 border-indigo-100" />
-            <h1 className="text-4xl md:text-5xl font-black tracking-tight text-slate-800">National Internship Pipeline</h1>
+            <h1 className="text-4xl md:text-5xl font-black tracking-tight text-slate-800">Internship Pipeline</h1>
           </div>
-          <p className="text-slate-500 text-lg font-medium">Claim official public sector tasks, build in our internal IDE, and earn <span className="text-amber-500 font-bold">Gems 💎</span> by deploying Gov-Tech solutions.</p>
+          <p className="text-slate-500 text-lg font-medium">Claim real client tasks, build in our internal IDE, and earn <span className="text-amber-500 font-bold">Gems 💎</span> by pushing to production.</p>
         </div>
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
           
-          {/* AVAILABLE TASKS COLUMN */}
           <div className="bg-slate-100 border-2 border-slate-200 rounded-[2rem] p-6 min-h-[60vh] flex flex-col shadow-inner">
             <h2 className="text-sm font-black text-slate-500 uppercase tracking-widest mb-6 border-b-2 border-slate-200 pb-4 flex items-center gap-2">
               <div className="w-3 h-3 bg-slate-300 rounded-full"></div> Available Tasks
@@ -489,7 +463,6 @@ function InternTaskBoard({ currentUserId }: { currentUserId: string | null }) {
                   <div className="flex justify-between items-start mb-4">
                     <div className="text-[10px] font-black text-slate-500 bg-slate-50 border-2 border-slate-100 uppercase px-3 py-1.5 rounded-lg">{task.bounty_tier}</div>
                     
-                    {/* GAMIFIED REWARD HINT */}
                     <div className="text-[11px] font-black text-amber-600 bg-amber-50 border-2 border-amber-100 px-3 py-1.5 rounded-lg flex items-center gap-1 shadow-sm">
                       +{getGemReward(task.bounty_tier || '')} <Gem className="w-3.5 h-3.5 fill-amber-200" />
                     </div>
@@ -518,7 +491,6 @@ function InternTaskBoard({ currentUserId }: { currentUserId: string | null }) {
             </div>
           </div>
 
-          {/* ACTIVE WORK COLUMN */}
           <div className="bg-indigo-50/50 border-2 border-indigo-100 rounded-[2rem] p-6 min-h-[60vh] flex flex-col shadow-inner relative overflow-hidden">
             <div className="absolute top-0 right-0 p-8 opacity-5">
                <Activity className="w-48 h-48 text-indigo-900" />
@@ -577,7 +549,6 @@ function InternTaskBoard({ currentUserId }: { currentUserId: string | null }) {
             </div>
           </div>
 
-          {/* DEPLOYED COLUMN */}
           <div className="bg-emerald-50/30 border-2 border-emerald-100 rounded-[2rem] p-6 min-h-[60vh] flex flex-col shadow-inner">
             <h2 className="text-sm font-black text-emerald-600 uppercase tracking-widest mb-6 border-b-2 border-emerald-100 pb-4 flex items-center gap-2">
               <CheckCircle className="w-4 h-4" /> Deployed
@@ -589,7 +560,6 @@ function InternTaskBoard({ currentUserId }: { currentUserId: string | null }) {
                   <div className="text-[10px] font-black text-emerald-500 mt-4 flex items-center justify-between border-t-2 border-slate-100 pt-4">
                     <span className="flex items-center gap-2 bg-emerald-50 px-2.5 py-1.5 rounded-lg border-2 border-emerald-100 shadow-sm"><div className="w-1.5 h-1.5 bg-emerald-500 rounded-full"></div> Verified by QA</span>
                     
-                    {/* GAMIFIED REWARD RECEIVED */}
                     <span className="flex items-center gap-1 text-amber-500 bg-amber-50 px-2.5 py-1.5 rounded-lg border-2 border-amber-100 shadow-sm">
                       +{getGemReward(task.bounty_tier || '')} <Gem className="w-3 h-3 fill-amber-200" />
                     </span>
@@ -603,8 +573,4 @@ function InternTaskBoard({ currentUserId }: { currentUserId: string | null }) {
       </div>
     </div>
   )
-}
-
-function ShieldCheck(props: any) {
-  return <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
 }

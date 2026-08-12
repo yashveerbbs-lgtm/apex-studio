@@ -1,7 +1,7 @@
 'use client'
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { BookOpen, MonitorPlay, Code2, Database, BrainCircuit, ChevronLeft, ChevronRight, Clock, BarChart, CheckCircle2, PlayCircle, Award, Sparkles, ShieldCheck, Plus, X, Trash2, Edit2, Image as ImageIcon, Gem, FileBadge } from 'lucide-react'
+import { BookOpen, MonitorPlay, Code2, Database, BrainCircuit, ChevronLeft, ChevronRight, Clock, BarChart, CheckCircle2, PlayCircle, Award, Sparkles, ShieldCheck, Plus, X, Trash2, Edit2, Image as ImageIcon, Gem } from 'lucide-react'
 import { supabase } from '../../../utils/supabase'
 
 export default function ApexAcademy() {
@@ -13,7 +13,6 @@ export default function ApexAcademy() {
   const [selectedCourse, setSelectedCourse] = useState<any | null>(null)
   const [isEnrolling, setIsEnrolling] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
-  const [digiLockerPushed, setDigiLockerPushed] = useState(false) // <-- Mock DigiLocker State
 
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [editingCourseId, setEditingCourseId] = useState<string | null>(null)
@@ -27,46 +26,58 @@ export default function ApexAcademy() {
   const [newImage, setNewImage] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  // 🚨 AUTHENTIC GOV-TECH CURRICULUM 🚨
   const [courses, setCourses] = useState<any[]>([
     { 
-      id: 'india-stack-api', 
-      title: 'India Stack: DigiLocker & eSign APIs', 
-      instructor: 'MeitY Integration Team',
+      id: 'nextjs-mastery', 
+      title: 'Full-Stack Engineering with Next.js', 
+      instructor: 'Apex Lead Architect',
       icon: MonitorPlay, 
       level: 'Intermediate',
-      duration: '4 Weeks',
-      tags: ['Next.js', 'OAuth', 'India Stack'],
-      desc: 'Learn to integrate the core pillars of India Stack into your Next.js applications. Build secure OAuth flows with e-Pramaan and push documents directly to DigiLocker.',
-      syllabus: ['e-Pramaan SSO Authentication', 'DigiLocker API Handshakes', 'Implementing eSign Webhooks', 'Security & Compliance Guidelines'],
+      duration: '8 Weeks',
+      tags: ['React', 'Supabase', 'Tailwind'],
+      desc: 'Master the modern web stack. Build secure, scalable, and beautifully designed enterprise applications from scratch.',
+      syllabus: ['Console & Variables', 'Arrays & Objects', 'Functions & Logic', 'Component Architecture'],
       image: null,
       reward: 50
     },
     { 
-      id: 'data-gov-in', 
-      title: 'Civic Data Science (data.gov.in)', 
-      instructor: 'MoHUA Analytics Div.',
+      id: 'sports-analytics', 
+      title: 'Sports Data & Predictive AI', 
+      instructor: 'Data Science Team',
       icon: BrainCircuit, 
       level: 'Advanced',
-      duration: '6 Weeks',
-      tags: ['Python', 'Pandas', 'Open Data'],
-      desc: 'Connect directly to the Open Government Data (OGD) platform. Fetch real-time municipal datasets, clean census data, and build predictive models for Smart City initiatives.',
-      syllabus: ['Fetching OGD API Keys', 'Parsing Demographic JSON Data', 'Predictive Modeling for Traffic', 'Visualizing Smart City Metrics'],
+      duration: '10 Weeks',
+      tags: ['Python', 'Machine Learning', 'Pandas'],
+      desc: 'Learn applied data science by building predictive machine learning models to analyze player statistics, match outcomes, and real-time cricket data.',
+      syllabus: ['Python Fundamentals', 'Data cleaning with Pandas', 'Training models', 'Visualizing match trends'],
       image: null,
       reward: 75
     },
     { 
-      id: 'rural-edu-platform', 
-      title: 'Building Gamified Education Platforms', 
-      instructor: 'Dept. of Higher Education',
+      id: 'game-engine', 
+      title: '3D Game Engine Mechanics', 
+      instructor: 'Apex Interactive',
       icon: Code2, 
-      level: 'Beginner to Pro',
-      duration: '8 Weeks',
-      tags: ['React', 'Supabase', 'Gamification'],
-      desc: 'Tackle SIH PS-25009: Learn to build a Gamified Environmental Education Platform tailored for rural schools with low-bandwidth offline-first capabilities.',
-      syllabus: ['Offline-First Architecture', 'Caching with Service Workers', 'Implementing Gamification Logic', 'Low-Bandwidth Optimizations'],
+      level: 'Advanced',
+      duration: '12 Weeks',
+      tags: ['C++', 'Unreal Engine', 'Physics'],
+      desc: 'Dive deep into the mathematics and code behind modern 3D game engines. Build your own physics simulations and rendering pipelines.',
+      syllabus: ['Vector mathematics', 'Collision detection', 'High-performance memory management', 'Rendering graphics pipelines'],
       image: null,
       reward: 100
+    },
+    { 
+      id: 'backend-go', 
+      title: 'Microservices with Go', 
+      instructor: 'Infrastructure Team',
+      icon: Database, 
+      level: 'Beginner to Pro',
+      duration: '6 Weeks',
+      tags: ['Golang', 'Docker', 'APIs'],
+      desc: 'Write lightning-fast backend services. Learn how to design, containerize, and orchestrate microservices used by millions.',
+      syllabus: ['Go fundamentals (Goroutines)', 'Building REST APIs', 'Containerization with Docker', 'Inter-service communication'],
+      image: null,
+      reward: 40
     }
   ])
 
@@ -86,7 +97,9 @@ export default function ApexAcademy() {
       return
     }
     const reader = new FileReader()
-    reader.onload = (e) => setNewImage(e.target?.result as string)
+    reader.onload = (e) => {
+      setNewImage(e.target?.result as string)
+    }
     reader.readAsDataURL(file)
   }
 
@@ -98,17 +111,38 @@ export default function ApexAcademy() {
     if (editingCourseId) {
       setCourses(courses.map(c => {
         if (c.id === editingCourseId) {
-          return { ...c, title: newTitle, level: newLevel, duration: newDuration, tags: tagsArray.length > 0 ? tagsArray : ['General'], desc: newDesc, syllabus: syllabusArray.length > 0 ? syllabusArray : ['Intro', 'Core', 'Final'], image: newImage || c.image }
+          return {
+            ...c,
+            title: newTitle,
+            level: newLevel,
+            duration: newDuration,
+            tags: tagsArray.length > 0 ? tagsArray : ['General'],
+            desc: newDesc,
+            syllabus: syllabusArray.length > 0 ? syllabusArray : ['Course Introduction', 'Core Concepts', 'Final Project'],
+            image: newImage || c.image
+          }
         }
         return c
       }))
     } else {
-      const newCourse = { id: `course-${Date.now()}`, title: newTitle, instructor: 'NIC Technical Lead', icon: BookOpen, level: newLevel, duration: newDuration, tags: tagsArray.length > 0 ? tagsArray : ['General'], desc: newDesc, syllabus: syllabusArray.length > 0 ? syllabusArray : ['Intro', 'Core', 'Final'], image: newImage, reward: 50 }
+      const newCourse = {
+        id: `course-${Date.now()}`,
+        title: newTitle,
+        instructor: 'Apex Executive Team',
+        icon: BookOpen,
+        level: newLevel,
+        duration: newDuration,
+        tags: tagsArray.length > 0 ? tagsArray : ['General'],
+        desc: newDesc,
+        syllabus: syllabusArray.length > 0 ? syllabusArray : ['Course Introduction', 'Core Concepts', 'Final Project'],
+        image: newImage,
+        reward: 30
+      }
       setCourses([newCourse, ...courses])
     }
 
     closeModal()
-    alert(`Course successfully deployed to the National Training Academy!`)
+    alert(`Course successfully saved!`)
   }
 
   function openEditModal(course: any) {
@@ -135,7 +169,7 @@ export default function ApexAcademy() {
 
   function handleDeleteCourse(e: React.MouseEvent, courseId: string) {
     e.stopPropagation() 
-    if (confirm("Are you sure you want to delete this course?")) {
+    if (confirm("Are you sure you want to delete this course from the Academy?")) {
       setCourses(courses.filter(c => c.id !== courseId))
     }
   }
@@ -155,20 +189,32 @@ export default function ApexAcademy() {
     if (team && !teamError) {
       await supabase.from('team_members').insert([{ team_id: team.id, user_id: currentUser.id, role: 'admin' }])
 
-      let lessonContent = `# Welcome to ${selectedCourse.title} 🇮🇳\n\nYour secure sandbox environment is ready. Follow the syllabus and build directly in this workspace.\n\n### Next Steps\nCheck the problem statement docs for the first assignment!`
+      let lessonContent = `# Welcome to ${selectedCourse.title} 🚀\n\nYour interactive cloud environment is ready. Follow the syllabus and build directly in this workspace.\n\n### Next Steps\nCheck the company wiki for the first assignment!`
       let mainFileName = 'main.js'
       let mainFileLang = 'javascript'
-      let mainFileContent = '// Write your code below!\nconsole.log("Gov-Cloud Initialized");\n'
+      let mainFileContent = '// Write your code below!\nconsole.log("Environment Initialized");\n'
 
-      if (selectedCourse.title.includes('DigiLocker')) {
-        mainFileName = 'auth.js'
-        lessonContent = `# Level 1: OAuth with e-Pramaan 🔐\nWelcome to the India Stack integration module. Our first step is verifying the citizen's identity.\n\n### The Warm-up (Copy This)\n\`\`\`javascript\nconsole.log("Connecting to e-Pramaan SSO...");\n\`\`\`\n\n### The Test 👀\n**Your Mission:**\nUse console.log to print "Connecting to e-Pramaan SSO..." to the terminal.`
+      if (selectedCourse.title === 'Full-Stack Engineering with Next.js') {
+        mainFileName = 'index.js'
+        lessonContent = `# Level 1: Console Logging 🌐\nWelcome to JavaScript, the language of the web. The most basic way to see what your code is doing is to log it to the console.\n\n### The Warm-up (Copy This)\n\`\`\`javascript\nconsole.log("Hello World");\n\`\`\`\n\n### The Test 👀\n**Your Mission:**\nUse console.log to print Hello World to the terminal.\n*Don't forget your semi-colon at the end!*`
       } 
-      else if (selectedCourse.title.includes('Civic Data')) {
+      else if (selectedCourse.title === 'Sports Data & Predictive AI') {
         mainFileName = 'main.py'
         mainFileLang = 'python'
-        mainFileContent = '# import pandas as pd\n'
-        lessonContent = `# Level 1: Fetching OGD Data 📊\nWelcome to Python! Let's pull some real datasets from data.gov.in.\n\n### The Warm-up (Copy This)\n\`\`\`python\napi_key = "GOV_DATA_XYZ"\nprint(api_key)\n\`\`\`\n\n### The Test 👀\nDelete the code and try it from memory!\n1. Create a variable named api_key.\n2. Set it to "GOV_DATA_XYZ".\n3. Print it.`
+        mainFileContent = '# Write your code below!\n'
+        lessonContent = `# Level 1: The Art of the Variable 🏏\nWelcome to Python! Think of a variable like a kit bag. You can stuff whatever you want inside it.\n\n### The Warm-up (Copy This)\n\`\`\`python\ncaptain = "MS Dhoni"\nprint(captain)\n\`\`\`\n\n### The Test 👀\nDelete the code and try it from memory!\n1. Create a variable named captain.\n2. Set it to "MS Dhoni".\n3. Print it.`
+      }
+      else if (selectedCourse.title === '3D Game Engine Mechanics') {
+        mainFileName = 'main.cpp'
+        mainFileLang = 'cpp'
+        mainFileContent = '#include <iostream>\n\nint main() {\n    // Write your code below!\n\n    return 0;\n}'
+        lessonContent = `# Level 1: Initialization 🎮\nWelcome to C++. It is incredibly fast, powerful, and runs the world's best game engines.\n\n### The Warm-up (Copy This)\n\`\`\`cpp\nstd::cout << "Engine initialized";\n\`\`\`\n\n### The Test 👀\nInside your main function, use \`std::cout\` to print "Engine initialized" to the console. Don't forget the semicolon!`
+      }
+      else if (selectedCourse.title === 'Microservices with Go') {
+        mainFileName = 'main.go'
+        mainFileLang = 'go'
+        mainFileContent = 'package main\n\nimport "fmt"\n\nfunc main() {\n    // Write your code below!\n\n}'
+        lessonContent = `# Level 1: The Go Server 🚀\nGo is designed by Google for massive scale and concurrency.\n\n### The Warm-up (Copy This)\n\`\`\`go\nfmt.Println("Server running")\n\`\`\`\n\n### The Test 👀\nInside your main function, use \`fmt.Println\` to print "Server running" to the console.`
       }
 
       await supabase.from('workspace_nodes').insert([
@@ -185,7 +231,7 @@ export default function ApexAcademy() {
     return (
       <div className="h-full bg-slate-50 text-slate-800 p-8 md:p-12 overflow-y-auto font-sans transition-colors duration-500">
         <button 
-          onClick={() => { setSelectedCourse(null); setIsSuccess(false); setDigiLockerPushed(false); }}
+          onClick={() => { setSelectedCourse(null); setIsSuccess(false); }}
           className="flex items-center gap-2 text-slate-500 hover:text-indigo-600 transition-colors mb-8 text-sm font-bold tracking-widest uppercase bg-white px-4 py-2 rounded-xl shadow-sm border-2 border-slate-100 w-fit hover:-translate-y-0.5 active:translate-y-0"
         >
           <ChevronLeft className="w-4 h-4" /> Back to Catalog
@@ -194,6 +240,7 @@ export default function ApexAcademy() {
         <div className="max-w-4xl mx-auto">
           {isSuccess ? (
             <div className="bg-white border-2 border-emerald-100 rounded-3xl p-12 shadow-xl text-center animate-in fade-in zoom-in-95 duration-500 relative overflow-hidden">
+              
               <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-emerald-400 to-teal-400"></div>
 
               <div className="w-24 h-24 bg-emerald-50 rounded-2xl flex items-center justify-center mx-auto mb-6 border-2 border-emerald-100 shadow-sm">
@@ -201,27 +248,15 @@ export default function ApexAcademy() {
               </div>
               <h2 className="text-3xl font-extrabold text-slate-800 mb-4">Enrollment Confirmed!</h2>
               <p className="text-slate-500 text-lg mb-8 max-w-lg mx-auto font-medium">
-                Welcome to <span className="text-indigo-600 font-bold">{selectedCourse.title}</span>. Your secure cloud learning environment is fully provisioned.
+                Welcome to <span className="text-indigo-600 font-bold">{selectedCourse.title}</span>. Your interactive cloud learning environment is fully provisioned.
               </p>
               
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                <button 
-                  onClick={() => router.push('/dashboard/workspace')}
-                  className="btn-indigo flex items-center justify-center gap-2 px-8 py-4 text-sm w-full sm:w-auto"
-                >
-                  Enter the Workspace <PlayCircle className="w-5 h-5" />
-                </button>
-                
-                {/* 🚨 AUTHENTIC MOCK: DIGILOCKER PUSH 🚨 */}
-                <button 
-                  onClick={() => setDigiLockerPushed(true)}
-                  disabled={digiLockerPushed}
-                  className={`flex items-center justify-center gap-2 px-8 py-4 text-sm font-bold uppercase tracking-wider rounded-xl transition-all border-2 w-full sm:w-auto ${digiLockerPushed ? 'bg-slate-100 text-slate-400 border-slate-200' : 'bg-white text-emerald-600 border-emerald-200 hover:bg-emerald-50 shadow-sm hover:shadow'}`}
-                >
-                  <FileBadge className="w-5 h-5" /> {digiLockerPushed ? 'Credential Pushed' : 'Push to DigiLocker'}
-                </button>
-              </div>
-              {digiLockerPushed && <p className="text-[10px] text-emerald-500 font-bold uppercase tracking-widest mt-4">API Handshake Successful. Credential stored in DigiLocker.</p>}
+              <button 
+                onClick={() => router.push('/dashboard/workspace')}
+                className="btn-indigo flex items-center justify-center gap-2 mx-auto px-8 py-4 text-lg"
+              >
+                Enter the Workspace <PlayCircle className="w-5 h-5" />
+              </button>
             </div>
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-in fade-in duration-300">
@@ -230,7 +265,11 @@ export default function ApexAcademy() {
                 <div className="bg-white border-2 border-slate-100 rounded-3xl p-8 shadow-sm relative overflow-hidden">
                   
                   {selectedCourse.image && (
-                    <img src={selectedCourse.image} alt="" className="absolute inset-0 w-full h-full object-cover opacity-5 z-0 pointer-events-none" />
+                    <img 
+                      src={selectedCourse.image} 
+                      alt="" 
+                      className="absolute inset-0 w-full h-full object-cover opacity-5 z-0 pointer-events-none" 
+                    />
                   )}
 
                   <div className="relative z-10">
@@ -255,8 +294,8 @@ export default function ApexAcademy() {
                       <div className="flex items-center gap-2 text-sm text-slate-600 font-bold">
                         <BarChart className="w-5 h-5 text-emerald-400" /> {selectedCourse.level}
                       </div>
-                      <div className="flex items-center gap-2 text-sm text-slate-600 font-bold" title="India Stack Integration">
-                        <FileBadge className="w-5 h-5 text-amber-500" /> DigiLocker Cert
+                      <div className="flex items-center gap-2 text-sm text-slate-600 font-bold">
+                        <Award className="w-5 h-5 text-amber-400" /> Certificate Included
                       </div>
                     </div>
                   </div>
@@ -288,13 +327,13 @@ export default function ApexAcademy() {
                       <selectedCourse.icon className="absolute inset-0 opacity-5 w-full h-full text-indigo-900" />
                     )}
                     <PlayCircle className="w-16 h-16 text-indigo-400 group-hover:text-indigo-600 group-hover:scale-110 transition-all z-10 drop-shadow-md bg-white rounded-full" />
-                    <span className="absolute bottom-3 text-[10px] font-bold text-slate-600 tracking-widest z-10 uppercase bg-white/90 backdrop-blur px-3 py-1 rounded-full shadow-sm">Interactive Sandbox</span>
+                    <span className="absolute bottom-3 text-[10px] font-bold text-slate-600 tracking-widest z-10 uppercase bg-white/90 backdrop-blur px-3 py-1 rounded-full shadow-sm">Interactive Engine</span>
                   </div>
                   
                   <div className="mb-6">
-                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1">Lead Instructor</p>
+                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1">Instructors</p>
                     <p className="text-slate-700 font-extrabold flex items-center gap-2">
-                      {selectedCourse.instructor} <ShieldCheck className="w-4 h-4 text-emerald-500" />
+                      {selectedCourse.instructor} <CheckCircle2 className="w-4 h-4 text-emerald-500" />
                     </p>
                   </div>
 
@@ -306,17 +345,16 @@ export default function ApexAcademy() {
                     <Gem className="w-8 h-8 text-amber-500 fill-amber-200 animate-pulse" />
                   </div>
 
-                  {/* 🚨 AUTHENTIC MOCK: E-PRAMAAN SSO LOGIN 🚨 */}
                   <button 
                     onClick={handleEnrollment}
                     disabled={isEnrolling}
-                    className="btn-emerald w-full flex items-center justify-center gap-2 py-4 text-sm disabled:opacity-50"
+                    className="btn-emerald w-full flex items-center justify-center gap-2 py-4 text-base disabled:opacity-50"
                   >
-                    {isEnrolling ? 'Verifying Citizen ID...' : 'Sign in with e-Pramaan to Enroll'}
+                    {isEnrolling ? 'Provisioning Cloud Engine...' : 'Enroll For Free'}
                   </button>
                   
                   <p className="text-center text-xs text-slate-400 font-medium mt-4 leading-relaxed">
-                    Instantly generates a secure, pre-configured Govt-Cloud coding environment in your browser.
+                    Instantly generates a secure, pre-configured coding environment in your browser.
                   </p>
                 </div>
               </div>
@@ -331,23 +369,136 @@ export default function ApexAcademy() {
   return (
     <div className="h-full bg-slate-50 text-slate-800 p-8 md:p-12 overflow-y-auto font-sans relative transition-colors duration-500">
       
+      {/* 🚨 ADMIN CREATION/EDIT MODAL 🚨 */}
       {showCreateModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm px-4">
           <div className="bg-white border-2 border-slate-100 rounded-[2rem] max-w-2xl w-full p-8 shadow-[0_8px_30px_rgb(0,0,0,0.08)] overflow-y-auto max-h-[90vh] animate-in zoom-in-95 relative overflow-hidden">
+            
             <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-indigo-400 to-purple-400"></div>
 
             <div className="flex justify-between items-center mb-6 border-b-2 border-slate-100 pb-4 mt-2">
               <div>
                 <h2 className="text-2xl font-black text-slate-800 tracking-tight">
-                  {editingCourseId ? 'Update Course' : 'Create Govt. Course'}
+                  {editingCourseId ? 'Update Course' : 'Create New Course'}
                 </h2>
                 <p className="text-xs text-slate-400 font-bold mt-1 uppercase tracking-wider">Push curriculum to Academy</p>
               </div>
-              <button onClick={closeModal} className="text-slate-400 hover:text-slate-600 bg-slate-50 p-2 rounded-xl border-2 border-slate-100 transition-colors hover:-translate-y-0.5"><X className="w-5 h-5" /></button>
+              <button onClick={closeModal} className="text-slate-400 hover:text-slate-600 bg-slate-50 p-2 rounded-xl border-2 border-slate-100 transition-colors hover:-translate-y-0.5">
+                <X className="w-5 h-5" />
+              </button>
             </div>
-            {/* Form omitted for brevity - same as original */}
+
             <form onSubmit={handleDeployCourse} className="space-y-5">
-              <button type="submit" className="btn-indigo w-full py-4 mt-6 text-sm">Save Course</button>
+              <div>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Course Title</label>
+                <input 
+                  type="text" 
+                  required 
+                  value={newTitle} 
+                  onChange={e => setNewTitle(e.target.value)} 
+                  className="w-full bg-slate-50 text-sm font-bold text-slate-800 border-2 border-slate-200 rounded-xl p-3.5 focus:outline-none focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all placeholder:text-slate-300" 
+                  placeholder="e.g. Advanced System Architecture" 
+                />
+              </div>
+              
+              <div>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Course Description</label>
+                <textarea 
+                  required 
+                  value={newDesc} 
+                  onChange={e => setNewDesc(e.target.value)} 
+                  className="w-full bg-slate-50 text-sm font-medium text-slate-800 border-2 border-slate-200 rounded-xl p-3.5 focus:outline-none focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all h-24 resize-none placeholder:text-slate-300" 
+                  placeholder="What will students learn in this course?" 
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Duration</label>
+                  <input 
+                    type="text" 
+                    required 
+                    value={newDuration} 
+                    onChange={e => setNewDuration(e.target.value)} 
+                    className="w-full bg-slate-50 text-sm font-bold text-slate-800 border-2 border-slate-200 rounded-xl p-3.5 focus:outline-none focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all placeholder:text-slate-300" 
+                    placeholder="e.g. 4 Weeks" 
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Difficulty Level</label>
+                  <select 
+                    value={newLevel} 
+                    onChange={e => setNewLevel(e.target.value)} 
+                    className="w-full bg-slate-50 text-sm font-bold text-slate-800 border-2 border-slate-200 rounded-xl p-3.5 focus:outline-none focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all"
+                  >
+                    <option value="Beginner">Beginner</option>
+                    <option value="Intermediate">Intermediate</option>
+                    <option value="Advanced">Advanced</option>
+                    <option value="Expert">Expert</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Tech Tags (Comma separated)</label>
+                  <input 
+                    type="text" 
+                    value={newTags} 
+                    onChange={e => setNewTags(e.target.value)} 
+                    className="w-full bg-slate-50 text-sm font-bold text-slate-800 border-2 border-slate-200 rounded-xl p-3.5 focus:outline-none focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all placeholder:text-slate-300" 
+                    placeholder="e.g. React, Node, AWS" 
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Syllabus (One per line)</label>
+                  <textarea 
+                    value={newSyllabus} 
+                    onChange={e => setNewSyllabus(e.target.value)} 
+                    className="w-full bg-slate-50 text-sm font-medium text-slate-800 border-2 border-slate-200 rounded-xl p-3.5 focus:outline-none focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all h-20 resize-none placeholder:text-slate-300" 
+                    placeholder="Module 1&#10;Module 2&#10;Final Exam" 
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Course Cover Image</label>
+                <div className="flex items-center gap-4">
+                  {newImage && (
+                    <div className="relative w-16 h-16 rounded-xl overflow-hidden border-2 border-slate-200 shrink-0 shadow-sm">
+                      <img src={newImage} alt="Preview" className="w-full h-full object-cover" />
+                      <button 
+                        type="button" 
+                        onClick={() => setNewImage(null)} 
+                        className="absolute top-1 right-1 bg-white p-1 rounded-md text-red-500 shadow-sm hover:scale-105 transition-transform"
+                      >
+                        <X className="w-3 h-3"/>
+                      </button>
+                    </div>
+                  )}
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    ref={fileInputRef} 
+                    className="hidden" 
+                    onChange={e => e.target.files && handleImageProcess(e.target.files[0])} 
+                  />
+                  <button 
+                    type="button" 
+                    onClick={() => fileInputRef.current?.click()} 
+                    className="flex items-center justify-center gap-2 bg-white border-2 border-slate-200 text-slate-500 hover:text-indigo-600 hover:border-indigo-200 px-4 py-3.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors w-full shadow-sm hover:shadow"
+                  >
+                    <ImageIcon className="w-5 h-5" /> {newImage ? 'Replace Cover Image' : 'Attach Cover Image'}
+                  </button>
+                </div>
+              </div>
+
+              <button 
+                type="submit" 
+                className="btn-indigo w-full py-4 mt-6 text-sm"
+              >
+                {editingCourseId ? 'Save Changes' : 'Publish Course'}
+              </button>
             </form>
           </div>
         </div>
@@ -358,45 +509,107 @@ export default function ApexAcademy() {
         <div className="max-w-4xl">
           <div className="flex items-center gap-3 mb-3">
             <div className="flex items-center gap-2 text-indigo-600 bg-indigo-50 border-2 border-indigo-100 px-3 py-1 rounded-lg font-bold tracking-widest text-xs uppercase shadow-sm">
-              <BookOpen className="w-4 h-4" /> National Training Academy
+              <BookOpen className="w-4 h-4" /> Apex Academy
             </div>
+            {userRole === 'ADMIN' && (
+              <div className="text-[10px] bg-amber-50 text-amber-600 border-2 border-amber-200 px-2.5 py-1 rounded-lg font-black uppercase tracking-widest flex items-center gap-1 shadow-sm">
+                <ShieldCheck className="w-3 h-3" /> Instructor Auth
+              </div>
+            )}
           </div>
           <h1 className="text-4xl md:text-5xl font-black tracking-tight text-slate-800 mb-4">
-            Master the India Stack.
+            Master the craft.
           </h1>
           <p className="text-slate-500 text-lg leading-relaxed font-medium">
-            Learn to build scalable, secure digital infrastructure using authentic Gov-Tech APIs. Complete courses to earn credentials verified via DigiLocker.
+            World-class engineering, data science, and development courses. Skip the videos—learn the concepts here, and instantly build them in your cloud workspace.
           </p>
         </div>
 
         {userRole === 'ADMIN' && (
-          <button onClick={() => setShowCreateModal(true)} className="shrink-0 bg-white hover:bg-slate-50 text-indigo-600 border-2 border-indigo-100 px-6 py-3.5 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-all mt-2 shadow-sm hover:shadow hover:-translate-y-0.5">
+          <button 
+            onClick={() => setShowCreateModal(true)}
+            className="shrink-0 bg-white hover:bg-slate-50 text-indigo-600 border-2 border-indigo-100 px-6 py-3.5 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-all mt-2 shadow-sm hover:shadow hover:-translate-y-0.5 active:translate-y-0"
+          >
             <Plus className="w-5 h-5 bg-indigo-50 p-0.5 rounded-md" /> Create Course
           </button>
         )}
       </div>
 
       {/* COURSE CATALOG */}
-      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6">
         {courses.map((course) => (
-          <button key={course.id} onClick={() => setSelectedCourse(course)} className="flex flex-col text-left bg-white border-2 border-slate-100 p-7 rounded-[2rem] hover:border-indigo-300 hover:-translate-y-1 hover:shadow-md transition-all duration-300 group relative">
+          <button
+            key={course.id}
+            onClick={() => setSelectedCourse(course)}
+            className="flex flex-col text-left bg-white border-2 border-slate-100 p-7 rounded-[2rem] hover:border-indigo-300 hover:-translate-y-1 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-all duration-300 group relative overflow-hidden"
+          >
+            {userRole === 'ADMIN' && (
+              <div className="absolute top-4 right-4 z-20 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div 
+                  onClick={(e) => { e.stopPropagation(); openEditModal(course); }}
+                  className="text-slate-400 hover:text-indigo-600 bg-white/90 backdrop-blur-sm p-2.5 rounded-xl border-2 border-slate-100 shadow-sm transition-colors hover:scale-105"
+                  title="Edit Course"
+                >
+                  <Edit2 className="w-4 h-4" />
+                </div>
+                <div 
+                  onClick={(e) => handleDeleteCourse(e, course.id)}
+                  className="text-slate-400 hover:text-red-500 bg-white/90 backdrop-blur-sm p-2.5 rounded-xl border-2 border-slate-100 shadow-sm transition-colors hover:scale-105"
+                  title="Delete Course"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </div>
+              </div>
+            )}
+
+            {course.image && (
+              <img 
+                src={course.image} 
+                alt="" 
+                className="absolute inset-0 w-full h-full object-cover opacity-5 group-hover:opacity-10 transition-opacity z-0" 
+              />
+            )}
+
             <div className="flex justify-between items-start mb-6 relative z-10 w-full">
-              <div className="p-3.5 bg-indigo-50 group-hover:bg-indigo-500 group-hover:text-white text-indigo-500 rounded-2xl transition-colors border-2 border-indigo-100 shadow-sm">
+              <div className="p-3.5 bg-indigo-50 group-hover:bg-indigo-500 group-hover:text-white text-indigo-500 rounded-2xl transition-colors border-2 border-indigo-100 group-hover:border-indigo-600 shadow-sm">
                 <course.icon className="w-6 h-6" />
               </div>
+              
+              {/* Gamified Reward Hint on Card */}
               <div className="flex flex-col items-end">
-                <span className="text-[10px] font-extrabold text-slate-500 bg-slate-50 px-3 py-1.5 rounded-lg border-2 border-slate-100 uppercase tracking-widest mb-2">{course.level}</span>
-                <span className="text-[10px] font-extrabold text-amber-600 bg-amber-50 px-3 py-1.5 rounded-lg border-2 border-amber-100 uppercase tracking-widest flex items-center gap-1 shadow-sm">+{course.reward} <Gem className="w-3 h-3 fill-amber-200" /></span>
+                <span className="text-[10px] font-extrabold text-slate-500 bg-slate-50 px-3 py-1.5 rounded-lg border-2 border-slate-100 uppercase tracking-widest mb-2">
+                  {course.level}
+                </span>
+                <span className="text-[10px] font-extrabold text-amber-600 bg-amber-50 px-3 py-1.5 rounded-lg border-2 border-amber-100 uppercase tracking-widest flex items-center gap-1 shadow-sm">
+                  +{course.reward} <Gem className="w-3 h-3 fill-amber-200" />
+                </span>
               </div>
             </div>
-            <h3 className="text-xl font-extrabold text-slate-800 mb-3 line-clamp-2 leading-tight">{course.title}</h3>
-            <p className="text-sm text-slate-500 font-medium leading-relaxed flex-1 mb-6 line-clamp-3">{course.desc}</p>
-            <div className="w-full pt-5 border-t-2 border-slate-100 flex items-center justify-between">
-              <span className="text-xs text-slate-400 font-bold uppercase tracking-widest flex items-center gap-1"><Clock className="w-4 h-4 text-slate-300" /> {course.duration}</span>
-              <div className="text-xs font-bold text-white bg-indigo-500 px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center gap-1 transform group-hover:translate-x-0 translate-x-2 uppercase tracking-widest shadow-sm">Start <ChevronRight className="w-3 h-3" /></div>
+            
+            <h3 className="text-xl font-extrabold text-slate-800 mb-3 line-clamp-2 leading-tight relative z-10">
+              {course.title}
+            </h3>
+            
+            <p className="text-sm text-slate-500 font-medium leading-relaxed flex-1 mb-6 line-clamp-3 relative z-10">
+              {course.desc}
+            </p>
+            
+            <div className="w-full pt-5 border-t-2 border-slate-100 flex items-center justify-between relative z-10">
+              <span className="text-xs text-slate-400 font-bold uppercase tracking-widest flex items-center gap-1">
+                <Clock className="w-4 h-4 text-slate-300" /> {course.duration}
+              </span>
+              <div className="text-xs font-bold text-white bg-indigo-500 px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center gap-1 transform group-hover:translate-x-0 translate-x-2 uppercase tracking-widest shadow-sm">
+                Start <ChevronRight className="w-3 h-3" />
+              </div>
             </div>
           </button>
         ))}
+        
+        {courses.length === 0 && (
+          <div className="col-span-full py-20 text-center bg-slate-50 border-2 border-dashed border-slate-200 rounded-3xl">
+            <p className="text-sm text-slate-400 uppercase tracking-widest font-bold">No active courses in Academy</p>
+          </div>
+        )}
       </div>
     </div>
   )

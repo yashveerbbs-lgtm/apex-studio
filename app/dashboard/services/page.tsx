@@ -29,41 +29,40 @@ export default function AgencyServices() {
   const [newImage, setNewImage] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  // 🚨 SIH PIVOT: GOV-TECH SERVICES 🚨
   const [services, setServices] = useState<any[]>([
     { 
       id: 'software', 
-      title: 'Smart City Infrastructure', 
+      title: 'Enterprise Software', 
       icon: Cpu, 
-      desc: 'Scalable, highly-secure backend architectures built for national scale, supporting municipal data pipelines, IoT sensors, and critical public infrastructure.',
+      desc: 'Custom backend architectures and scalable infrastructure, perfectly structured to support anything from local startups to major global alliances.',
       image: null
     },
     { 
       id: 'web', 
-      title: 'Citizen e-Portals', 
+      title: 'Web Platforms', 
       icon: Monitor, 
-      desc: 'High-performance, accessible web platforms that connect citizens directly to government services, subsidies, and public records with complete transparency.',
+      desc: 'High-performance web experiences and dynamic digital presentations that tell your story and truly captivate your audience.',
       image: null
     },
     { 
       id: 'app', 
-      title: 'Public Utility Apps', 
+      title: 'Mobile Applications', 
       icon: Smartphone, 
-      desc: 'Intuitive, multi-lingual mobile applications designed for public transit tracking, utility bill payments, and civic grievance reporting.',
+      desc: 'Intuitive, beautiful mobile apps that put your brand right into the hands of your community.',
       image: null
     },
     { 
       id: 'game', 
-      title: 'Defense & Training Simulations', 
+      title: 'Game Development', 
       icon: Gamepad2, 
-      desc: 'Secure, immersive virtual environments and wargaming mechanics built for military training, disaster response, and tactical simulations.',
+      desc: 'Immersive worlds and engaging mechanics that leave players completely spellbound and always coming back for more.',
       image: null
     },
     { 
       id: '3d', 
-      title: 'Urban Planning & 3D GIS', 
+      title: '3D & Spatial Modeling', 
       icon: Box, 
-      desc: 'Highly detailed 3D spatial modeling for city planning, topographical mapping, and smart grid visualization to aid policymaking.',
+      desc: 'Breathtaking 3D environments, digital graphics, and character models—from industrial concepts to fierce, realistic sports-themed warriors.',
       image: null
     }
   ])
@@ -200,8 +199,8 @@ export default function AgencyServices() {
               <selectedService.icon className="w-8 h-8" />
             </div>
             <div>
-              <h2 className="text-2xl font-black tracking-tight text-slate-800 mb-1">Commission {selectedService.title}</h2>
-              <p className="text-slate-500 font-medium text-sm">Submit your departmental requirements or problem statement below.</p>
+              <h2 className="text-2xl font-black tracking-tight text-slate-800 mb-1">Let's build your {selectedService.title}</h2>
+              <p className="text-slate-500 font-medium text-sm">We can't wait to hear what you have in mind. Tell us your story.</p>
             </div>
           </div>
 
@@ -210,36 +209,37 @@ export default function AgencyServices() {
               <div className="w-24 h-24 bg-emerald-50 border-2 border-emerald-100 rounded-full flex items-center justify-center mb-6 shadow-sm">
                 <HeartHandshake className="w-12 h-12 text-emerald-500" />
               </div>
-              <h3 className="text-3xl font-black text-slate-800 mb-3">Proposal Received</h3>
+              <h3 className="text-3xl font-black text-slate-800 mb-3">We've got it!</h3>
               <p className="text-slate-500 max-w-sm leading-relaxed font-medium">
-                Your vision is securely logged. Our national engineering division is reviewing your requirements and will reach out shortly.
+                Your vision is safely in our hands. Our engineering team is reviewing your notes, and we'll reach out very soon to chat about the next steps.
               </p>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-6 animate-in fade-in duration-300">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Department / Ministry Name</label>
-                  <input type="text" name="clientName" required className="w-full bg-slate-50 border-2 border-slate-200 rounded-xl p-3.5 text-sm font-bold text-slate-800 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all" placeholder="e.g. Ministry of Education..." />
+                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">What should we call you?</label>
+                  <input type="text" name="clientName" required className="w-full bg-slate-50 border-2 border-slate-200 rounded-xl p-3.5 text-sm font-bold text-slate-800 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all" placeholder="Your name or company..." />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Official Contact Email</label>
-                  <input type="email" name="clientEmail" required className="w-full bg-slate-50 border-2 border-slate-200 rounded-xl p-3.5 text-sm font-bold text-slate-800 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all" placeholder="official@gov.in" />
+                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Where can we reach you?</label>
+                  <input type="email" name="clientEmail" required className="w-full bg-slate-50 border-2 border-slate-200 rounded-xl p-3.5 text-sm font-bold text-slate-800 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all" placeholder="hello@yourdomain.com" />
                 </div>
               </div>
               
               <div className="space-y-2">
-                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Project Scale / Budget Allocation</label>
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">What's your investment range?</label>
                 <select name="budget" className="w-full bg-slate-50 border-2 border-slate-200 rounded-xl p-3.5 text-sm font-bold text-slate-800 focus:outline-none focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all appearance-none cursor-pointer">
-                  <option>Local / Municipal Prototype (₹5L - ₹10L)</option>
-                  <option>State-Level Deployment (₹10L - ₹50L)</option>
-                  <option>National Infrastructure (₹50L+)</option>
+                  <option>&lt; $5,000 (Let's build a prototype)</option>
+                  <option>$5,000 - $20,000 (Minimum Viable Product)</option>
+                  <option>$20,000 - $50,000 (Full-scale launch)</option>
+                  <option>$50,000+ (Enterprise ecosystem)</option>
                 </select>
               </div>
 
               <div className="space-y-2">
-                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Problem Statement Details</label>
-                <textarea name="vision" required rows={5} className="w-full bg-slate-50 border-2 border-slate-200 rounded-xl p-3.5 text-sm font-medium text-slate-800 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all resize-none" placeholder="Provide full details on the civic problem, required features, and scalability needs..."></textarea>
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Tell us about your vision</label>
+                <textarea name="vision" required rows={5} className="w-full bg-slate-50 border-2 border-slate-200 rounded-xl p-3.5 text-sm font-medium text-slate-800 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all resize-none" placeholder="Don't hold back! The more details you share about your goals, features, and dreams for this project, the better..."></textarea>
               </div>
 
               <button 
@@ -247,8 +247,8 @@ export default function AgencyServices() {
                 disabled={isSubmitting}
                 className="btn-indigo w-full py-4 text-sm mt-4 flex items-center justify-center gap-2"
               >
-                {isSubmitting ? 'Transmitting Securely...' : (
-                  <>Submit Official Proposal <Sparkles className="w-4 h-4 fill-white" /></>
+                {isSubmitting ? 'Sending your ideas...' : (
+                  <>Start the Journey <Sparkles className="w-4 h-4 fill-white" /></>
                 )}
               </button>
             </form>
@@ -269,9 +269,9 @@ export default function AgencyServices() {
             <div className="flex justify-between items-center mb-6 border-b-2 border-slate-100 pb-4 mt-2">
               <div>
                 <h2 className="text-2xl font-black text-slate-800 tracking-tight">
-                  {editingServiceId ? 'Edit Service' : 'Add Gov-Tech Service'}
+                  {editingServiceId ? 'Edit Service' : 'Add New Service'}
                 </h2>
-                <p className="text-xs text-slate-400 mt-1 uppercase tracking-wider font-bold">Publish to Government Portfolio</p>
+                <p className="text-xs text-slate-400 mt-1 uppercase tracking-wider font-bold">Publish to Storefront</p>
               </div>
               <button onClick={closeModal} className="text-slate-400 hover:text-slate-600 bg-slate-50 hover:bg-slate-100 p-2.5 rounded-xl border-2 border-slate-200 transition-all hover:-translate-y-0.5">
                 <X className="w-5 h-5" />
@@ -281,21 +281,38 @@ export default function AgencyServices() {
             <form onSubmit={handleDeployService} className="space-y-5">
               <div>
                 <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Service Name</label>
-                <input type="text" required value={newTitle} onChange={e => setNewTitle(e.target.value)} className="w-full bg-slate-50 text-sm font-bold text-slate-800 border-2 border-slate-200 rounded-xl p-3.5 focus:outline-none focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all placeholder:text-slate-400" placeholder="e.g. e-Governance APIs" />
+                <input 
+                  type="text" 
+                  required 
+                  value={newTitle} 
+                  onChange={e => setNewTitle(e.target.value)} 
+                  className="w-full bg-slate-50 text-sm font-bold text-slate-800 border-2 border-slate-200 rounded-xl p-3.5 focus:outline-none focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all placeholder:text-slate-400" 
+                  placeholder="e.g. AI Integrations" 
+                />
               </div>
               
               <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Service Pitch</label>
-                <textarea required value={newDesc} onChange={e => setNewDesc(e.target.value)} className="w-full bg-slate-50 text-sm font-medium text-slate-800 border-2 border-slate-200 rounded-xl p-3.5 focus:outline-none focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all h-24 resize-none placeholder:text-slate-400" placeholder="Craft a compelling description..." />
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Marketing Pitch</label>
+                <textarea 
+                  required 
+                  value={newDesc} 
+                  onChange={e => setNewDesc(e.target.value)} 
+                  className="w-full bg-slate-50 text-sm font-medium text-slate-800 border-2 border-slate-200 rounded-xl p-3.5 focus:outline-none focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all h-24 resize-none placeholder:text-slate-400" 
+                  placeholder="Craft a compelling description..." 
+                />
               </div>
 
               <div>
                 <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Service Icon</label>
-                <select value={newIconStr} onChange={e => setNewIconStr(e.target.value)} className="w-full bg-slate-50 text-sm font-bold text-slate-700 border-2 border-slate-200 rounded-xl p-3.5 focus:outline-none focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all appearance-none cursor-pointer">
+                <select 
+                  value={newIconStr} 
+                  onChange={e => setNewIconStr(e.target.value)} 
+                  className="w-full bg-slate-50 text-sm font-bold text-slate-700 border-2 border-slate-200 rounded-xl p-3.5 focus:outline-none focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all appearance-none cursor-pointer"
+                >
                   <option value="Cpu">CPU (Backend/Software)</option>
                   <option value="Monitor">Monitor (Web)</option>
                   <option value="Smartphone">Smartphone (Mobile)</option>
-                  <option value="Gamepad2">Gamepad (Simulations)</option>
+                  <option value="Gamepad2">Gamepad (Gaming)</option>
                   <option value="Box">Box (3D/Spatial)</option>
                   <option value="Sparkles">Sparkles (Creative/AI)</option>
                 </select>
@@ -307,17 +324,36 @@ export default function AgencyServices() {
                   {newImage && (
                     <div className="relative w-16 h-16 rounded-xl overflow-hidden border-2 border-slate-200 shrink-0 shadow-sm">
                       <img src={newImage} alt="Preview" className="w-full h-full object-cover" />
-                      <button type="button" onClick={() => setNewImage(null)} className="absolute top-1 right-1 bg-white p-1 text-red-500 rounded-md shadow-sm hover:scale-105 transition-transform"><X className="w-3 h-3"/></button>
+                      <button 
+                        type="button" 
+                        onClick={() => setNewImage(null)} 
+                        className="absolute top-1 right-1 bg-white p-1 text-red-500 rounded-md shadow-sm hover:scale-105 transition-transform"
+                      >
+                        <X className="w-3 h-3"/>
+                      </button>
                     </div>
                   )}
-                  <input type="file" accept="image/*" ref={fileInputRef} className="hidden" onChange={e => e.target.files && handleImageProcess(e.target.files[0])} />
-                  <button type="button" onClick={() => fileInputRef.current?.click()} className="flex items-center justify-center gap-2 bg-white border-2 border-slate-200 text-slate-500 hover:text-indigo-600 hover:border-indigo-200 px-4 py-3.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all shadow-sm hover:shadow w-full">
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    ref={fileInputRef} 
+                    className="hidden" 
+                    onChange={e => e.target.files && handleImageProcess(e.target.files[0])} 
+                  />
+                  <button 
+                    type="button" 
+                    onClick={() => fileInputRef.current?.click()} 
+                    className="flex items-center justify-center gap-2 bg-white border-2 border-slate-200 text-slate-500 hover:text-indigo-600 hover:border-indigo-200 px-4 py-3.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all shadow-sm hover:shadow"
+                  >
                     <ImageIcon className="w-5 h-5" /> {newImage ? 'Replace Image' : 'Attach Cover Image'}
                   </button>
                 </div>
               </div>
 
-              <button type="submit" className="btn-indigo w-full py-4 text-sm mt-6">
+              <button 
+                type="submit" 
+                className="btn-indigo w-full py-4 text-sm mt-6"
+              >
                 {editingServiceId ? 'Save Changes' : 'Publish Service'}
               </button>
             </form>
@@ -329,7 +365,7 @@ export default function AgencyServices() {
         <div className="max-w-3xl">
           <div className="flex items-center gap-3 mb-3">
             <div className="flex items-center gap-2 text-indigo-600 bg-indigo-50 border-2 border-indigo-100 px-3 py-1 rounded-lg font-black tracking-widest text-xs uppercase shadow-sm">
-              <ShieldCheck className="w-4 h-4 text-indigo-500" /> B2G Digital Infrastructure
+              <Sparkles className="w-4 h-4 fill-indigo-200" /> Welcome to Apex Studio
             </div>
             {userRole === 'ADMIN' && (
               <div className="text-[10px] bg-amber-50 text-amber-600 border-2 border-amber-200 px-2.5 py-1 rounded-lg font-black uppercase tracking-widest flex items-center gap-1 shadow-sm">
@@ -338,10 +374,10 @@ export default function AgencyServices() {
             )}
           </div>
           <h1 className="text-4xl md:text-5xl font-black tracking-tight text-slate-800 mb-4">
-            Build for the Nation.
+            Bring your vision to life.
           </h1>
           <p className="text-slate-500 text-lg font-medium leading-relaxed">
-            Apex Studio builds scalable, transparent, and secure digital infrastructure for government bodies, ministries, and smart cities. Choose a sector below to request an official build.
+            Behind every great idea is a team that cares enough to build it right. Choose a canvas below, and let's start crafting your next major project together.
           </p>
         </div>
 
@@ -364,26 +400,53 @@ export default function AgencyServices() {
           >
             {userRole === 'ADMIN' && (
               <div className="absolute top-4 right-4 z-20 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                <div onClick={(e) => { e.stopPropagation(); openEditModal(service); }} className="text-slate-400 hover:text-indigo-600 bg-white/90 backdrop-blur-sm p-2.5 rounded-xl border-2 border-slate-100 shadow-sm transition-colors hover:scale-105"><Edit2 className="w-4 h-4" /></div>
-                <div onClick={(e) => { e.stopPropagation(); handleDeleteService(e, service.id); }} className="text-slate-400 hover:text-red-500 bg-white/90 backdrop-blur-sm p-2.5 rounded-xl border-2 border-slate-100 shadow-sm transition-colors hover:scale-105"><Trash2 className="w-4 h-4" /></div>
+                <div 
+                  onClick={(e) => { e.stopPropagation(); openEditModal(service); }}
+                  className="text-slate-400 hover:text-indigo-600 bg-white/90 backdrop-blur-sm p-2.5 rounded-xl border-2 border-slate-100 shadow-sm transition-colors hover:scale-105"
+                  title="Edit Service"
+                >
+                  <Edit2 className="w-4 h-4" />
+                </div>
+                <div 
+                  onClick={(e) => handleDeleteService(e, service.id)}
+                  className="text-slate-400 hover:text-red-500 bg-white/90 backdrop-blur-sm p-2.5 rounded-xl border-2 border-slate-100 shadow-sm transition-colors hover:scale-105"
+                  title="Remove Service"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </div>
               </div>
             )}
+
             {service.image && (
-              <img src={service.image} alt="" className="absolute inset-0 w-full h-full object-cover opacity-5 group-hover:opacity-10 z-0 transition-opacity" />
+              <img 
+                src={service.image} 
+                alt="" 
+                className="absolute inset-0 w-full h-full object-cover opacity-5 group-hover:opacity-10 z-0 transition-opacity" 
+              />
             )}
+
             <div className="p-3.5 bg-indigo-50 group-hover:bg-indigo-500 group-hover:text-white text-indigo-500 rounded-2xl w-max mb-6 transition-all duration-300 shadow-sm border-2 border-indigo-100 group-hover:border-indigo-600 relative z-10">
               <service.icon className="w-7 h-7" />
             </div>
             
             <h3 className="text-xl font-extrabold text-slate-800 mb-3 relative z-10">{service.title}</h3>
-            <p className="text-sm text-slate-500 font-medium leading-relaxed flex-1 relative z-10">{service.desc}</p>
+            
+            <p className="text-sm text-slate-500 font-medium leading-relaxed flex-1 relative z-10">
+              {service.desc}
+            </p>
             
             <div className="mt-8 pt-5 border-t-2 border-slate-100 w-full text-sm font-bold text-indigo-600 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-between relative z-10">
-              <span className="uppercase tracking-wider">Request Proposal</span>
+              <span className="uppercase tracking-wider">Start building</span>
               <ChevronLeft className="w-5 h-5 rotate-180 transform group-hover:translate-x-1 transition-transform" />
             </div>
           </button>
         ))}
+        
+        {services.length === 0 && (
+          <div className="col-span-full py-20 text-center border-2 border-dashed border-slate-200 rounded-3xl bg-white/50">
+            <p className="text-sm text-slate-400 uppercase tracking-widest font-bold">Storefront is currently empty</p>
+          </div>
+        )}
       </div>
     </div>
   )
