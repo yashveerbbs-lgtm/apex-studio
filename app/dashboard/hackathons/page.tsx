@@ -1,7 +1,7 @@
 'use client'
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { Users, Banknote, Code2, ChevronLeft, ChevronRight, Flame, Plus, X, Trash2, Edit2, Image as ImageIcon } from 'lucide-react'
+import { Users, Banknote, Code2, ChevronLeft, ChevronRight, Flame, Plus, X, Trash2, Edit2, Image as ImageIcon, Gem, Sparkles } from 'lucide-react'
 import { supabase } from '../../../utils/supabase'
 
 export default function HackathonArena() {
@@ -95,7 +95,7 @@ export default function HackathonArena() {
 
   // 🚨 SUPABASE DELETE API 🚨
   async function handleDeleteArena(arenaId: string) {
-    if (confirm("ADMIN OVERRIDE: Permanently delete this arena from the database?")) {
+    if (confirm("Are you sure you want to permanently delete this arena?")) {
       await supabase.from('hackathon_arenas').delete().eq('id', arenaId)
       setArenas(arenas.filter(a => a.id !== arenaId))
     }
@@ -121,31 +121,34 @@ export default function HackathonArena() {
   }
 
   return (
-    <div className="h-full bg-[#050505] text-white relative font-sans flex flex-col overflow-hidden">
+    <div className="h-full bg-slate-50 text-slate-800 relative font-sans flex flex-col overflow-hidden transition-colors duration-500">
       
       {/* UNIVERSAL MODAL */}
       {showModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm px-4">
-          <div className="bg-[#0a0a0a] border border-cyan-900/50 rounded-xl max-w-lg w-full p-8 shadow-2xl animate-in zoom-in-95 duration-200">
-            <div className="flex justify-between items-center mb-6 border-b border-gray-800 pb-4">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm px-4">
+          <div className="bg-white border-2 border-slate-100 rounded-[2rem] max-w-lg w-full p-8 shadow-[0_8px_30px_rgb(0,0,0,0.08)] animate-in zoom-in-95 duration-200 relative overflow-hidden">
+            
+            <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-sky-400 to-indigo-500"></div>
+
+            <div className="flex justify-between items-center mb-6 mt-2 border-b-2 border-slate-100 pb-4">
               <div>
-                <h2 className="text-xl font-black text-white tracking-tight">
+                <h2 className="text-2xl font-black text-slate-800 tracking-tight">
                   {editingArenaId ? 'Update Arena' : 'Deploy New Arena'}
                 </h2>
-                <p className="text-xs text-gray-500 font-mono mt-1 uppercase tracking-widest">Publish to Hackathon Arena</p>
+                <p className="text-xs text-slate-400 font-bold mt-1 uppercase tracking-wider">Publish to Hackathon Arena</p>
               </div>
-              <button onClick={closeModal} className="text-gray-500 hover:text-white transition-colors"><X className="w-5 h-5" /></button>
+              <button onClick={closeModal} className="text-slate-400 hover:text-slate-600 bg-slate-50 hover:bg-slate-100 p-2.5 rounded-xl transition-all border-2 border-slate-200"><X className="w-5 h-5" /></button>
             </div>
 
             <form onSubmit={handleSaveArena} className="space-y-5">
               <div>
-                <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Arena Title</label>
-                <input type="text" required value={newTitle} onChange={e => setNewTitle(e.target.value)} className="w-full bg-[#111111] text-sm text-white border border-gray-800 rounded p-3 focus:outline-none focus:border-cyan-500" placeholder="e.g. Next.js Hackathon" />
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Arena Title</label>
+                <input type="text" required value={newTitle} onChange={e => setNewTitle(e.target.value)} className="w-full bg-slate-50 text-sm font-bold text-slate-800 border-2 border-slate-200 rounded-xl p-3.5 focus:outline-none focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all placeholder:text-slate-300" placeholder="e.g. Next.js Hackathon" />
               </div>
               
               <div>
-                <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Track Type</label>
-                <select value={newType} onChange={e => setNewType(e.target.value as any)} className="w-full bg-[#111111] text-sm text-gray-300 border border-gray-800 rounded p-3 focus:outline-none focus:border-cyan-500 uppercase tracking-wider font-bold">
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Track Type</label>
+                <select value={newType} onChange={e => setNewType(e.target.value as any)} className="w-full bg-slate-50 text-sm font-bold text-slate-700 border-2 border-slate-200 rounded-xl p-3.5 focus:outline-none focus:bg-white focus:border-indigo-500 transition-all">
                   <option value="community">Community Track</option>
                   <option value="bounty">Bounty Track (High Stakes)</option>
                 </select>
@@ -153,37 +156,37 @@ export default function HackathonArena() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Prize / Grant</label>
-                  <input type="text" required value={newPrize} onChange={e => setNewPrize(e.target.value)} className="w-full bg-[#111111] text-sm text-white border border-gray-800 rounded p-3 focus:outline-none focus:border-cyan-500" placeholder="e.g. $500 Grant" />
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Prize / Grant</label>
+                  <input type="text" required value={newPrize} onChange={e => setNewPrize(e.target.value)} className="w-full bg-slate-50 text-sm font-bold text-slate-800 border-2 border-slate-200 rounded-xl p-3.5 focus:outline-none focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all placeholder:text-slate-300" placeholder="e.g. $500 Grant" />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Timeline / Label</label>
-                  <input type="text" required value={newDeadline} onChange={e => setNewDeadline(e.target.value)} className="w-full bg-[#111111] text-sm text-white border border-gray-800 rounded p-3 focus:outline-none focus:border-cyan-500" placeholder="e.g. Ends in 48 hrs" />
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Timeline</label>
+                  <input type="text" required value={newDeadline} onChange={e => setNewDeadline(e.target.value)} className="w-full bg-slate-50 text-sm font-bold text-slate-800 border-2 border-slate-200 rounded-xl p-3.5 focus:outline-none focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all placeholder:text-slate-300" placeholder="e.g. Ends in 48 hrs" />
                 </div>
               </div>
 
               <div>
-                <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Description & Rules</label>
-                <textarea required value={newDesc} onChange={e => setNewDesc(e.target.value)} className="w-full bg-[#111111] text-sm text-gray-300 border border-gray-800 rounded p-3 focus:outline-none focus:border-cyan-500 h-24 resize-none" placeholder="Provide full context and objectives..." />
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Description & Rules</label>
+                <textarea required value={newDesc} onChange={e => setNewDesc(e.target.value)} className="w-full bg-slate-50 text-sm font-medium text-slate-800 border-2 border-slate-200 rounded-xl p-3.5 focus:outline-none focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all h-24 resize-none placeholder:text-slate-300" placeholder="Provide full context and objectives..." />
               </div>
 
               <div>
-                <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Banner Image</label>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Banner Image</label>
                 <div className="flex items-center gap-4">
                   {newImage && (
-                    <div className="w-16 h-16 rounded overflow-hidden border border-gray-700 relative shrink-0">
+                    <div className="w-16 h-16 rounded-xl overflow-hidden border-2 border-slate-200 relative shrink-0 shadow-sm">
                       <img src={newImage} alt="" className="w-full h-full object-cover" />
-                      <button type="button" onClick={() => setNewImage(null)} className="absolute top-0 right-0 bg-red-600 p-1 text-white"><X className="w-3 h-3"/></button>
+                      <button type="button" onClick={() => setNewImage(null)} className="absolute top-1 right-1 bg-white p-1 text-red-500 rounded-md shadow-sm hover:scale-105 transition-transform"><X className="w-3 h-3"/></button>
                     </div>
                   )}
                   <input type="file" accept="image/*" ref={fileInputRef} className="hidden" onChange={e => e.target.files && handleImageProcess(e.target.files[0])} />
-                  <button type="button" onClick={() => fileInputRef.current?.click()} className="flex items-center justify-center gap-2 bg-[#111111] border border-gray-800 text-gray-400 hover:text-cyan-400 px-4 py-3 rounded text-xs font-bold uppercase w-full">
+                  <button type="button" onClick={() => fileInputRef.current?.click()} className="flex items-center justify-center gap-2 bg-white border-2 border-slate-200 text-slate-500 hover:text-indigo-600 hover:border-indigo-200 px-4 py-3.5 rounded-xl text-xs font-bold uppercase tracking-wider w-full transition-all shadow-sm hover:shadow">
                     <ImageIcon className="w-4 h-4" /> {newImage ? 'Replace Image' : 'Attach Banner Image'}
                   </button>
                 </div>
               </div>
 
-              <button type="submit" className="w-full bg-cyan-700 hover:bg-cyan-600 text-white text-xs font-bold uppercase tracking-widest py-4 rounded mt-4 transition-colors">
+              <button type="submit" className="w-full bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-bold py-4 rounded-xl mt-6 transition-all shadow-[0_4px_0_rgb(67,56,202)] hover:shadow-[0_2px_0_rgb(67,56,202)] hover:translate-y-[2px] active:translate-y-[4px] active:shadow-none">
                 {editingArenaId ? 'Save Changes' : 'Publish Arena'}
               </button>
             </form>
@@ -196,9 +199,9 @@ export default function HackathonArena() {
         <div className="absolute top-8 right-8 z-10">
           <button 
             onClick={() => setShowModal(true)}
-            className="bg-cyan-900/30 hover:bg-cyan-900/50 text-cyan-400 border border-cyan-900/50 px-4 py-2.5 rounded text-xs font-bold uppercase tracking-widest flex items-center gap-2 transition-colors shadow-lg"
+            className="bg-white hover:bg-slate-50 text-indigo-600 border-2 border-slate-200 hover:border-indigo-200 px-5 py-3 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-all shadow-sm hover:shadow hover:-translate-y-0.5 active:translate-y-0"
           >
-            <Plus className="w-4 h-4" /> Deploy Arena
+            <Plus className="w-4 h-4 bg-indigo-50 p-0.5 rounded" /> Deploy Arena
           </button>
         </div>
       )}
@@ -207,10 +210,13 @@ export default function HackathonArena() {
       {view === 'select' && (
         <div className="flex-1 flex flex-col items-center justify-center p-8 overflow-y-auto">
           <div className="text-center mb-16 animate-in fade-in slide-in-from-bottom-4 duration-500 mt-16">
-            <h1 className="text-4xl md:text-5xl font-black tracking-tight text-white mb-4">
+            <div className="flex justify-center mb-4">
+              <Sparkles className="w-12 h-12 text-indigo-400 fill-indigo-200" />
+            </div>
+            <h1 className="text-4xl md:text-5xl font-black tracking-tight text-slate-800 mb-4">
               Select Your Arena
             </h1>
-            <p className="text-gray-400 text-lg max-w-2xl mx-auto">
+            <p className="text-slate-500 text-lg max-w-2xl mx-auto font-medium">
               Choose your path. Build for fun and portfolio growth in the Community track, or test your absolute limits for real contractor bounties.
             </p>
           </div>
@@ -218,34 +224,34 @@ export default function HackathonArena() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl w-full">
             <button 
               onClick={() => setView('community')}
-              className="text-left bg-[#0a0a0a] border border-gray-800 rounded-2xl p-8 hover:border-cyan-500/50 hover:shadow-2xl hover:shadow-cyan-900/10 transition-all duration-300 group"
+              className="text-left bg-white border-2 border-slate-100 rounded-[2rem] p-8 hover:border-indigo-300 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-300 group"
             >
-              <div className="w-16 h-16 bg-[#111111] group-hover:bg-cyan-950/50 border border-gray-800 group-hover:border-cyan-900/50 rounded-xl flex items-center justify-center mb-8 transition-colors">
-                <Users className="w-8 h-8 text-gray-500 group-hover:text-cyan-400 transition-colors" />
+              <div className="w-16 h-16 bg-slate-50 group-hover:bg-indigo-500 border-2 border-slate-100 group-hover:border-indigo-600 rounded-2xl flex items-center justify-center mb-8 transition-colors shadow-sm">
+                <Users className="w-8 h-8 text-slate-400 group-hover:text-white transition-colors" />
               </div>
-              <h2 className="text-2xl font-bold text-white mb-4">Community Builds</h2>
-              <p className="text-gray-400 leading-relaxed mb-8">
+              <h2 className="text-2xl font-black text-slate-800 mb-4">Community Builds</h2>
+              <p className="text-slate-500 font-medium leading-relaxed mb-8">
                 Standard hackathons focused on learning, collaboration, and building impressive UI/UX or full-stack projects for your resume.
               </p>
-              <div className="text-xs font-bold text-cyan-500 uppercase tracking-widest flex items-center gap-2">
+              <div className="text-sm font-bold text-indigo-500 flex items-center gap-2 bg-indigo-50 w-max px-4 py-2 rounded-xl border-2 border-indigo-100">
                 Enter Community Track <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </div>
             </button>
 
             <button 
               onClick={() => setView('bounty')}
-              className="text-left bg-[#0a0a0a] border border-gray-800 rounded-2xl p-8 hover:border-red-500/50 hover:shadow-2xl hover:shadow-red-900/10 transition-all duration-300 group"
+              className="text-left bg-white border-2 border-slate-100 rounded-[2rem] p-8 hover:border-rose-300 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-300 group"
             >
-              <div className="w-16 h-16 bg-[#111111] group-hover:bg-red-950/50 border border-gray-800 group-hover:border-red-900/50 rounded-xl flex items-center justify-center mb-8 transition-colors">
-                <Banknote className="w-8 h-8 text-gray-500 group-hover:text-red-400 transition-colors" />
+              <div className="w-16 h-16 bg-slate-50 group-hover:bg-rose-500 border-2 border-slate-100 group-hover:border-rose-600 rounded-2xl flex items-center justify-center mb-8 transition-colors shadow-sm">
+                <Banknote className="w-8 h-8 text-slate-400 group-hover:text-white transition-colors" />
               </div>
-              <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-3">
-                The Bounty Arena <span className="text-yellow-500">🏆</span>
+              <h2 className="text-2xl font-black text-slate-800 mb-4 flex items-center gap-3">
+                The Bounty Arena <span className="text-2xl drop-shadow-sm">🏆</span>
               </h2>
-              <p className="text-gray-400 leading-relaxed mb-8">
+              <p className="text-slate-500 font-medium leading-relaxed mb-8">
                 Strict, automated logic tests and complex architecture challenges. Prove you are the top 1% to earn creator grants and agency contracts.
               </p>
-              <div className="text-xs font-bold text-red-500 uppercase tracking-widest flex items-center gap-2">
+              <div className="text-sm font-bold text-rose-500 flex items-center gap-2 bg-rose-50 w-max px-4 py-2 rounded-xl border-2 border-rose-100">
                 Enter Bounty Track <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </div>
             </button>
@@ -255,41 +261,56 @@ export default function HackathonArena() {
 
       {/* VIEW 2: COMMUNITY TRACK */}
       {view === 'community' && (
-        <div className="flex-1 p-8 md:p-12 overflow-y-auto animate-in fade-in duration-300">
-          <button onClick={() => setView('select')} className="flex items-center gap-2 text-gray-500 hover:text-cyan-400 transition-colors mb-8 text-sm font-bold tracking-widest uppercase">
-            <ChevronLeft className="w-4 h-4" /> Back to Arena Select
+        <div className="flex-1 p-8 md:p-12 overflow-y-auto animate-in fade-in duration-300 max-w-7xl mx-auto w-full">
+          <button 
+            onClick={() => setView('select')} 
+            className="flex items-center gap-2 text-slate-500 hover:text-indigo-600 transition-colors mb-8 text-sm font-bold tracking-wider uppercase bg-white px-4 py-2 rounded-xl shadow-sm border-2 border-slate-100 w-fit hover:-translate-y-0.5 active:translate-y-0"
+          >
+            <ChevronLeft className="w-4 h-4" /> Back to Arenas
           </button>
           <div className="max-w-4xl space-y-8">
             <div>
-              <h1 className="text-4xl font-black text-white flex items-center gap-4 mb-4"><Users className="w-10 h-10 text-cyan-500" /> Community Builds</h1>
-              <p className="text-gray-400 text-lg leading-relaxed">Collaborative hackathons designed to help you learn, build your portfolio, and network with other engineers.</p>
+              <h1 className="text-4xl md:text-5xl font-black text-slate-800 flex items-center gap-4 mb-4">
+                <div className="bg-indigo-50 border-2 border-indigo-100 p-2.5 rounded-2xl shadow-sm"><Users className="w-8 h-8 md:w-10 md:h-10 text-indigo-500" /></div> Community Builds
+              </h1>
+              <p className="text-slate-500 font-medium text-lg leading-relaxed">Collaborative hackathons designed to help you learn, build your portfolio, and network with other engineers.</p>
             </div>
             <div className="space-y-6">
               {arenas.filter(a => a.type === 'community').length === 0 && (
-                 <div className="text-gray-500 border border-gray-800 border-dashed rounded-xl p-12 text-center text-sm uppercase tracking-widest font-bold">
-                   No active community arenas. Use Admin Deploy to create one.
+                 <div className="text-slate-400 bg-white/50 border-2 border-slate-200 border-dashed rounded-[2rem] p-16 text-center text-sm uppercase tracking-widest font-bold">
+                   No active community arenas.
                  </div>
               )}
               {arenas.filter(a => a.type === 'community').map(arena => (
-                <div key={arena.id} className="bg-[#0a0a0a] border border-cyan-900/30 rounded-xl p-8 hover:border-cyan-900/60 transition-colors shadow-lg relative group">
+                <div key={arena.id} className="bg-white border-2 border-slate-100 rounded-[2rem] p-6 md:p-8 hover:border-indigo-300 transition-colors shadow-sm hover:shadow-md relative group">
                   {userRole === 'ADMIN' && (
                     <div className="absolute top-6 right-6 z-20 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button onClick={(e) => { e.stopPropagation(); openEditModal(arena); }} className="text-gray-400 hover:text-blue-400 bg-black/80 border border-gray-700 p-2 rounded"><Edit2 className="w-4 h-4" /></button>
-                      <button onClick={(e) => { e.stopPropagation(); handleDeleteArena(arena.id); }} className="text-gray-400 hover:text-red-500 bg-black/80 border border-gray-700 p-2 rounded"><Trash2 className="w-4 h-4" /></button>
+                      <button onClick={(e) => { e.stopPropagation(); openEditModal(arena); }} className="text-slate-400 hover:text-indigo-600 bg-white/90 backdrop-blur-sm border-2 border-slate-100 p-2.5 rounded-xl shadow-sm hover:scale-105 transition-all"><Edit2 className="w-4 h-4" /></button>
+                      <button onClick={(e) => { e.stopPropagation(); handleDeleteArena(arena.id); }} className="text-slate-400 hover:text-red-500 bg-white/90 backdrop-blur-sm border-2 border-slate-100 p-2.5 rounded-xl shadow-sm hover:scale-105 transition-all"><Trash2 className="w-4 h-4" /></button>
                     </div>
                   )}
                   {arena.image && (
-                    <div className="w-full h-48 rounded-lg overflow-hidden border border-gray-800 mb-6"><img src={arena.image} alt="" className="w-full h-full object-cover" /></div>
+                    <div className="w-full h-48 md:h-64 rounded-2xl overflow-hidden border-2 border-slate-100 mb-6 group-hover:border-indigo-200 transition-colors">
+                      <img src={arena.image} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                    </div>
                   )}
-                  <div className="flex justify-between items-start mb-6">
-                    <span className="bg-cyan-950/40 text-cyan-400 border border-cyan-900/50 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest">{arena.prize}</span>
-                    <span className="text-gray-500 text-xs font-mono pr-20 group-hover:pr-24 transition-all">{arena.deadline}</span>
+                  <div className="flex justify-between items-start mb-4">
+                    <span className="bg-indigo-50 text-indigo-600 border-2 border-indigo-100 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest shadow-sm">{arena.prize}</span>
+                    <span className="text-slate-400 text-xs font-bold uppercase tracking-wider">{arena.deadline}</span>
                   </div>
-                  <h2 className="text-2xl font-bold text-white mb-4">{arena.title}</h2>
-                  <p className="text-gray-400 leading-relaxed mb-8">{arena.desc}</p>
-                  <button onClick={() => router.push('/dashboard/workspace')} className="bg-[#111111] hover:bg-cyan-950/30 border border-gray-800 hover:border-cyan-900/50 text-cyan-400 font-bold py-3 px-6 rounded transition-all flex items-center gap-2 text-sm tracking-widest">
-                    &gt;_ Enter Workspace
-                  </button>
+                  <h2 className="text-2xl font-black text-slate-800 mb-3">{arena.title}</h2>
+                  <p className="text-slate-500 font-medium leading-relaxed mb-6">{arena.desc}</p>
+                  
+                  <div className="flex items-center justify-between border-t-2 border-slate-100 pt-6">
+                    {/* GAMIFIED REWARD */}
+                    <div className="flex items-center gap-1.5 text-[11px] font-black text-amber-600 bg-amber-50 px-3 py-1.5 rounded-lg border-2 border-amber-100 shadow-sm uppercase tracking-wider">
+                      Participation Reward: +50 <Gem className="w-3.5 h-3.5 fill-amber-200" />
+                    </div>
+
+                    <button onClick={() => router.push('/dashboard/workspace')} className="bg-white hover:bg-slate-50 border-2 border-slate-200 hover:border-indigo-200 text-indigo-600 font-bold py-3 px-6 rounded-xl transition-all flex items-center gap-2 text-sm shadow-sm hover:shadow active:-translate-y-0.5 active:shadow-none">
+                      Enter Workspace <ChevronRight className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -299,45 +320,65 @@ export default function HackathonArena() {
 
       {/* VIEW 3: BOUNTY TRACK */}
       {view === 'bounty' && (
-        <div className="flex-1 p-8 md:p-12 overflow-y-auto animate-in fade-in duration-300">
-          <button onClick={() => setView('select')} className="flex items-center gap-2 text-gray-500 hover:text-red-400 transition-colors mb-8 text-sm font-bold tracking-widest uppercase">
-            <ChevronLeft className="w-4 h-4" /> Back to Arena Select
+        <div className="flex-1 p-8 md:p-12 overflow-y-auto animate-in fade-in duration-300 max-w-7xl mx-auto w-full">
+          <button 
+            onClick={() => setView('select')} 
+            className="flex items-center gap-2 text-slate-500 hover:text-rose-500 transition-colors mb-8 text-sm font-bold tracking-wider uppercase bg-white px-4 py-2 rounded-xl shadow-sm border-2 border-slate-100 w-fit hover:-translate-y-0.5 active:translate-y-0"
+          >
+            <ChevronLeft className="w-4 h-4" /> Back to Arenas
           </button>
           <div className="max-w-4xl space-y-8">
             <div>
-              <h1 className="text-4xl font-black text-white flex items-center gap-4 mb-4"><Code2 className="w-10 h-10 text-red-500" /> The Bounty Arena</h1>
-              <p className="text-gray-400 text-lg leading-relaxed">High-stakes algorithmic challenges and complex system builds. Prove your skills against the best.</p>
+              <h1 className="text-4xl md:text-5xl font-black text-slate-800 flex items-center gap-4 mb-4">
+                <div className="bg-rose-50 border-2 border-rose-100 p-2.5 rounded-2xl shadow-sm"><Code2 className="w-8 h-8 md:w-10 md:h-10 text-rose-500" /></div> The Bounty Arena
+              </h1>
+              <p className="text-slate-500 font-medium text-lg leading-relaxed">High-stakes algorithmic challenges and complex system builds. Prove your skills against the best.</p>
             </div>
             <div className="space-y-6">
               {arenas.filter(a => a.type === 'bounty').length === 0 && (
-                 <div className="text-gray-500 border border-gray-800 border-dashed rounded-xl p-12 text-center text-sm uppercase tracking-widest font-bold">
-                   No active bounty arenas. Use Admin Deploy to create one.
+                 <div className="text-slate-400 bg-white/50 border-2 border-slate-200 border-dashed rounded-[2rem] p-16 text-center text-sm uppercase tracking-widest font-bold">
+                   No active bounty arenas.
                  </div>
               )}
               {arenas.filter(a => a.type === 'bounty').map(arena => (
-                <div key={arena.id} className="bg-[#0a0a0a] border border-red-900/30 rounded-xl p-8 hover:border-red-900/60 transition-colors shadow-lg relative overflow-hidden group">
+                <div key={arena.id} className="bg-white border-2 border-slate-100 rounded-[2rem] p-6 md:p-8 hover:border-rose-300 transition-colors shadow-sm hover:shadow-md relative overflow-hidden group">
                   {userRole === 'ADMIN' && (
                     <div className="absolute top-6 right-6 z-20 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button onClick={(e) => { e.stopPropagation(); openEditModal(arena); }} className="text-gray-400 hover:text-blue-400 bg-black/80 border border-gray-700 p-2 rounded"><Edit2 className="w-4 h-4" /></button>
-                      <button onClick={(e) => { e.stopPropagation(); handleDeleteArena(arena.id); }} className="text-gray-400 hover:text-red-500 bg-black/80 border border-gray-700 p-2 rounded"><Trash2 className="w-4 h-4" /></button>
+                      <button onClick={(e) => { e.stopPropagation(); openEditModal(arena); }} className="text-slate-400 hover:text-indigo-600 bg-white/90 backdrop-blur-sm border-2 border-slate-100 p-2.5 rounded-xl shadow-sm hover:scale-105 transition-all"><Edit2 className="w-4 h-4" /></button>
+                      <button onClick={(e) => { e.stopPropagation(); handleDeleteArena(arena.id); }} className="text-slate-400 hover:text-red-500 bg-white/90 backdrop-blur-sm border-2 border-slate-100 p-2.5 rounded-xl shadow-sm hover:scale-105 transition-all"><Trash2 className="w-4 h-4" /></button>
                     </div>
                   )}
                   {arena.image && (
-                    <div className="w-full h-48 rounded-lg overflow-hidden border border-red-900/30 mb-6"><img src={arena.image} alt="" className="w-full h-full object-cover" /></div>
+                    <div className="w-full h-48 md:h-64 rounded-2xl overflow-hidden border-2 border-slate-100 mb-6 group-hover:border-rose-200 transition-colors">
+                      <img src={arena.image} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                    </div>
                   )}
-                  <div className="absolute top-1/2 right-8 -translate-y-1/2 opacity-5 pointer-events-none"><Banknote className="w-64 h-64 text-red-500" /></div>
                   
-                  <div className="flex justify-between items-start mb-6 relative z-10">
-                    <span className="flex items-center gap-1.5 bg-red-950/40 text-red-400 border border-red-900/50 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest">
-                      <Flame className="w-3 h-3" /> {arena.deadline}
-                    </span>
-                    <span className="text-green-400 font-mono font-bold text-lg pr-20 group-hover:pr-24 transition-all">{arena.prize}</span>
+                  <div className="absolute top-1/2 right-8 -translate-y-1/2 opacity-[0.03] pointer-events-none group-hover:scale-110 group-hover:rotate-12 transition-all duration-700">
+                    <Banknote className="w-64 h-64 text-slate-900" />
                   </div>
-                  <h2 className="text-2xl font-bold text-white mb-4 relative z-10">{arena.title}</h2>
-                  <p className="text-gray-400 leading-relaxed mb-8 max-w-2xl relative z-10">{arena.desc}</p>
-                  <button onClick={() => router.push('/dashboard/workspace')} className="bg-red-950 hover:bg-red-900 border border-red-900/50 text-red-400 font-bold py-3 px-6 rounded transition-all flex items-center gap-2 text-sm tracking-widest relative z-10">
-                    &lt;/&gt; Accept Bounty & Start
-                  </button>
+                  
+                  <div className="flex justify-between items-start mb-4 relative z-10">
+                    <span className="flex items-center gap-1.5 bg-rose-50 text-rose-500 border-2 border-rose-100 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest shadow-sm">
+                      <Flame className="w-3.5 h-3.5" /> {arena.deadline}
+                    </span>
+                    <span className="text-emerald-500 font-black text-lg bg-emerald-50 border-2 border-emerald-100 px-3 py-1 rounded-lg shadow-sm">{arena.prize}</span>
+                  </div>
+                  <h2 className="text-2xl font-black text-slate-800 mb-3 relative z-10">{arena.title}</h2>
+                  <p className="text-slate-500 font-medium leading-relaxed mb-8 max-w-2xl relative z-10">{arena.desc}</p>
+                  
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between border-t-2 border-slate-100 pt-6 gap-4 sm:gap-0 relative z-10">
+                    
+                    {/* GAMIFIED REWARD */}
+                    <div className="flex items-center gap-1.5 text-[11px] font-black text-amber-600 bg-amber-50 px-3 py-1.5 rounded-lg border-2 border-amber-100 shadow-sm uppercase tracking-wider">
+                      Winner Takes All: +500 <Gem className="w-3.5 h-3.5 fill-amber-200" />
+                    </div>
+
+                    <button onClick={() => router.push('/dashboard/workspace')} className="w-full sm:w-auto bg-rose-500 hover:bg-rose-600 text-white font-bold py-3.5 px-6 rounded-xl transition-all shadow-[0_4px_0_rgb(225,29,72)] hover:shadow-[0_2px_0_rgb(225,29,72)] hover:translate-y-[2px] active:translate-y-[4px] active:shadow-none flex items-center justify-center gap-2 text-sm tracking-wider uppercase">
+                      Accept Bounty & Start
+                    </button>
+                  </div>
+
                 </div>
               ))}
             </div>

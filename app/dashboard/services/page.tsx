@@ -149,7 +149,7 @@ export default function AgencyServices() {
 
   function handleDeleteService(e: React.MouseEvent, serviceId: string) {
     e.stopPropagation()
-    if (confirm("ADMIN OVERRIDE: Permanently remove this service offering from the storefront?")) {
+    if (confirm("Are you sure you want to permanently remove this service offering from the storefront?")) {
       setServices(services.filter(s => s.id !== serviceId))
     }
   }
@@ -159,7 +159,6 @@ export default function AgencyServices() {
     e.preventDefault()
     setIsSubmitting(true)
 
-    // Grab all the data from the form inputs
     const formData = new FormData(e.currentTarget)
     const clientData = {
       service_id: selectedService.id,
@@ -168,13 +167,11 @@ export default function AgencyServices() {
       client_email: formData.get('clientEmail'),
       budget: formData.get('budget'),
       vision: formData.get('vision'),
-      user_id: currentUser?.id // Links the request to the logged-in user if available
+      user_id: currentUser?.id 
     }
     
     try {
-      // Send it to the new Supabase table
       const { error } = await supabase.from('service_requests').insert([clientData])
-      
       if (error) throw error
 
       setIsSubmitting(false)
@@ -193,32 +190,35 @@ export default function AgencyServices() {
   // VIEW 1: THE WARM INTAKE FORM
   if (selectedService) {
     return (
-      <div className="h-full bg-[#1e1e1e] text-white p-8 overflow-y-auto font-sans">
+      <div className="h-full bg-slate-50 text-slate-800 p-8 overflow-y-auto font-sans transition-colors duration-500">
         <button 
           onClick={() => setSelectedService(null)}
-          className="flex items-center gap-2 text-gray-400 hover:text-blue-400 transition-colors mb-8 text-sm font-medium"
+          className="flex items-center gap-2 text-slate-500 hover:text-indigo-600 transition-colors mb-8 text-sm font-bold tracking-wider uppercase bg-white px-4 py-2 rounded-xl shadow-sm border-2 border-slate-100 w-fit hover:-translate-y-0.5 active:translate-y-0"
         >
           <ChevronLeft className="w-4 h-4" /> Back to all services
         </button>
 
-        <div className="max-w-2xl mx-auto bg-gradient-to-br from-[#252526] to-[#1e1e24] border border-gray-700/50 rounded-2xl p-8 md:p-10 shadow-2xl">
-          <div className="flex items-center gap-5 mb-8 pb-8 border-b border-gray-700/50">
-            <div className="p-4 bg-gradient-to-br from-blue-600/20 to-purple-600/20 text-blue-400 rounded-xl shadow-inner">
+        <div className="max-w-2xl mx-auto bg-white border-2 border-slate-100 rounded-[2rem] p-8 md:p-10 shadow-[0_8px_30px_rgb(0,0,0,0.08)] relative overflow-hidden">
+          
+          <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-400 to-indigo-400"></div>
+
+          <div className="flex items-center gap-5 mb-8 pb-8 border-b-2 border-slate-100 mt-2">
+            <div className="p-4 bg-indigo-50 border-2 border-indigo-100 text-indigo-600 rounded-2xl shadow-sm">
               <selectedService.icon className="w-8 h-8" />
             </div>
             <div>
-              <h2 className="text-2xl font-bold tracking-tight text-white mb-1">Let's build your {selectedService.title}</h2>
-              <p className="text-gray-400 text-sm">We can't wait to hear what you have in mind. Tell us your story.</p>
+              <h2 className="text-2xl font-black tracking-tight text-slate-800 mb-1">Let's build your {selectedService.title}</h2>
+              <p className="text-slate-500 font-medium text-sm">We can't wait to hear what you have in mind. Tell us your story.</p>
             </div>
           </div>
 
           {isSuccess ? (
             <div className="flex flex-col items-center justify-center py-12 text-center animate-in fade-in zoom-in duration-500">
-              <div className="w-20 h-20 bg-green-500/10 rounded-full flex items-center justify-center mb-6">
-                <HeartHandshake className="w-10 h-10 text-green-400" />
+              <div className="w-24 h-24 bg-emerald-50 border-2 border-emerald-100 rounded-full flex items-center justify-center mb-6 shadow-sm">
+                <HeartHandshake className="w-12 h-12 text-emerald-500" />
               </div>
-              <h3 className="text-2xl font-bold text-white mb-3">We've got it!</h3>
-              <p className="text-gray-400 max-w-sm leading-relaxed">
+              <h3 className="text-3xl font-black text-slate-800 mb-3">We've got it!</h3>
+              <p className="text-slate-500 max-w-sm leading-relaxed font-medium">
                 Your vision is safely in our hands. Our engineering team is reviewing your notes, and we'll reach out very soon to chat about the next steps.
               </p>
             </div>
@@ -226,21 +226,18 @@ export default function AgencyServices() {
             <form onSubmit={handleSubmit} className="space-y-6 animate-in fade-in duration-300">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">What should we call you?</label>
-                  {/* Added name="clientName" */}
-                  <input type="text" name="clientName" required className="w-full bg-[#181818] border border-gray-700 rounded-lg p-3.5 text-white placeholder:text-gray-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all" placeholder="Your name or company..." />
+                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">What should we call you?</label>
+                  <input type="text" name="clientName" required className="w-full bg-slate-50 border-2 border-slate-200 rounded-xl p-3.5 text-sm font-bold text-slate-800 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all" placeholder="Your name or company..." />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Where can we reach you?</label>
-                  {/* Added name="clientEmail" */}
-                  <input type="email" name="clientEmail" required className="w-full bg-[#181818] border border-gray-700 rounded-lg p-3.5 text-white placeholder:text-gray-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all" placeholder="hello@yourdomain.com" />
+                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Where can we reach you?</label>
+                  <input type="email" name="clientEmail" required className="w-full bg-slate-50 border-2 border-slate-200 rounded-xl p-3.5 text-sm font-bold text-slate-800 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all" placeholder="hello@yourdomain.com" />
                 </div>
               </div>
               
               <div className="space-y-2">
-                <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">What's your investment range?</label>
-                {/* Added name="budget" */}
-                <select name="budget" className="w-full bg-[#181818] border border-gray-700 rounded-lg p-3.5 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all appearance-none cursor-pointer">
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">What's your investment range?</label>
+                <select name="budget" className="w-full bg-slate-50 border-2 border-slate-200 rounded-xl p-3.5 text-sm font-bold text-slate-800 focus:outline-none focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all appearance-none cursor-pointer">
                   <option>&lt; $5,000 (Let's build a prototype)</option>
                   <option>$5,000 - $20,000 (Minimum Viable Product)</option>
                   <option>$20,000 - $50,000 (Full-scale launch)</option>
@@ -249,18 +246,17 @@ export default function AgencyServices() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Tell us about your vision</label>
-                {/* Added name="vision" */}
-                <textarea name="vision" required rows={5} className="w-full bg-[#181818] border border-gray-700 rounded-lg p-3.5 text-white placeholder:text-gray-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all resize-none" placeholder="Don't hold back! The more details you share about your goals, features, and dreams for this project, the better..."></textarea>
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Tell us about your vision</label>
+                <textarea name="vision" required rows={5} className="w-full bg-slate-50 border-2 border-slate-200 rounded-xl p-3.5 text-sm font-medium text-slate-800 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all resize-none" placeholder="Don't hold back! The more details you share about your goals, features, and dreams for this project, the better..."></textarea>
               </div>
 
               <button 
                 type="submit" 
                 disabled={isSubmitting}
-                className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold py-4 px-4 rounded-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50 shadow-lg shadow-blue-900/20 mt-4"
+                className="btn-indigo w-full py-4 text-sm mt-4 flex items-center justify-center gap-2"
               >
                 {isSubmitting ? 'Sending your ideas...' : (
-                  <>Start the Journey <Sparkles className="w-4 h-4" /></>
+                  <>Start the Journey <Sparkles className="w-4 h-4 fill-white" /></>
                 )}
               </button>
             </form>
@@ -272,54 +268,56 @@ export default function AgencyServices() {
 
   // VIEW 2: THE DIGITAL STOREFRONT
   return (
-    <div className="h-full bg-[#1e1e1e] text-white p-8 md:p-12 overflow-y-auto font-sans relative">
+    <div className="h-full bg-slate-50 text-slate-800 p-8 md:p-12 overflow-y-auto font-sans relative transition-colors duration-500">
       
       {/* 🚨 ADMIN CREATION & EDIT MODAL 🚨 */}
       {showCreateModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm px-4">
-          <div className="bg-[#1e1e1e] border border-blue-900/50 rounded-2xl max-w-lg w-full p-8 shadow-2xl">
-            <div className="flex justify-between items-center mb-6 border-b border-gray-800 pb-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm px-4">
+          <div className="bg-white border-2 border-slate-100 rounded-[2rem] max-w-lg w-full p-8 shadow-[0_8px_30px_rgb(0,0,0,0.08)] relative overflow-hidden animate-in zoom-in-95">
+            <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-400 to-indigo-400"></div>
+
+            <div className="flex justify-between items-center mb-6 border-b-2 border-slate-100 pb-4 mt-2">
               <div>
-                <h2 className="text-xl font-extrabold text-white tracking-tight">
-                  {editingServiceId ? 'Edit Service Details' : 'Add New Service'}
+                <h2 className="text-2xl font-black text-slate-800 tracking-tight">
+                  {editingServiceId ? 'Edit Service' : 'Add New Service'}
                 </h2>
-                <p className="text-xs text-gray-500 mt-1 uppercase tracking-wider font-semibold">Publish to Storefront</p>
+                <p className="text-xs text-slate-400 mt-1 uppercase tracking-wider font-bold">Publish to Storefront</p>
               </div>
-              <button onClick={closeModal} className="text-gray-500 hover:text-white transition-colors">
+              <button onClick={closeModal} className="text-slate-400 hover:text-slate-600 bg-slate-50 hover:bg-slate-100 p-2.5 rounded-xl border-2 border-slate-200 transition-all hover:-translate-y-0.5">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             <form onSubmit={handleDeployService} className="space-y-5">
               <div>
-                <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Service Name</label>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Service Name</label>
                 <input 
                   type="text" 
                   required 
                   value={newTitle} 
                   onChange={e => setNewTitle(e.target.value)} 
-                  className="w-full bg-[#181818] text-sm text-white border border-gray-700 rounded-lg p-3.5 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" 
+                  className="w-full bg-slate-50 text-sm font-bold text-slate-800 border-2 border-slate-200 rounded-xl p-3.5 focus:outline-none focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all placeholder:text-slate-400" 
                   placeholder="e.g. AI Integrations" 
                 />
               </div>
               
               <div>
-                <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Marketing Pitch (Description)</label>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Marketing Pitch</label>
                 <textarea 
                   required 
                   value={newDesc} 
                   onChange={e => setNewDesc(e.target.value)} 
-                  className="w-full bg-[#181818] text-sm text-gray-300 border border-gray-700 rounded-lg p-3.5 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 h-24 resize-none" 
+                  className="w-full bg-slate-50 text-sm font-medium text-slate-800 border-2 border-slate-200 rounded-xl p-3.5 focus:outline-none focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all h-24 resize-none placeholder:text-slate-400" 
                   placeholder="Craft a compelling description..." 
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Service Icon</label>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Service Icon</label>
                 <select 
                   value={newIconStr} 
                   onChange={e => setNewIconStr(e.target.value)} 
-                  className="w-full bg-[#181818] text-sm text-gray-300 border border-gray-700 rounded-lg p-3.5 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 appearance-none cursor-pointer"
+                  className="w-full bg-slate-50 text-sm font-bold text-slate-700 border-2 border-slate-200 rounded-xl p-3.5 focus:outline-none focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all appearance-none cursor-pointer"
                 >
                   <option value="Cpu">CPU (Backend/Software)</option>
                   <option value="Monitor">Monitor (Web)</option>
@@ -330,17 +328,16 @@ export default function AgencyServices() {
                 </select>
               </div>
 
-              {/* 🚨 NEW: IMAGE UPLOAD FIELD 🚨 */}
               <div>
-                <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Cover Background Image</label>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Cover Background Image</label>
                 <div className="flex items-center gap-4">
                   {newImage && (
-                    <div className="relative w-16 h-16 rounded-lg overflow-hidden border border-gray-700 shrink-0">
+                    <div className="relative w-16 h-16 rounded-xl overflow-hidden border-2 border-slate-200 shrink-0 shadow-sm">
                       <img src={newImage} alt="Preview" className="w-full h-full object-cover" />
                       <button 
                         type="button" 
                         onClick={() => setNewImage(null)} 
-                        className="absolute top-0 right-0 bg-red-600 p-1 text-white hover:bg-red-500 transition-colors"
+                        className="absolute top-1 right-1 bg-white p-1 text-red-500 rounded-md shadow-sm hover:scale-105 transition-transform"
                       >
                         <X className="w-3 h-3"/>
                       </button>
@@ -356,16 +353,16 @@ export default function AgencyServices() {
                   <button 
                     type="button" 
                     onClick={() => fileInputRef.current?.click()} 
-                    className="flex items-center justify-center gap-2 bg-[#181818] border border-gray-700 text-gray-400 hover:text-blue-400 px-4 py-3.5 rounded-lg text-xs font-bold uppercase tracking-widest transition-colors w-full"
+                    className="flex items-center justify-center gap-2 bg-white border-2 border-slate-200 text-slate-500 hover:text-indigo-600 hover:border-indigo-200 px-4 py-3.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all shadow-sm hover:shadow"
                   >
-                    <ImageIcon className="w-4 h-4" /> {newImage ? 'Replace Image' : 'Attach Cover Image'}
+                    <ImageIcon className="w-5 h-5" /> {newImage ? 'Replace Image' : 'Attach Cover Image'}
                   </button>
                 </div>
               </div>
 
               <button 
                 type="submit" 
-                className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-sm font-bold uppercase tracking-widest py-4 rounded-lg mt-6 transition-all shadow-lg shadow-blue-900/20"
+                className="btn-indigo w-full py-4 text-sm mt-6"
               >
                 {editingServiceId ? 'Save Changes' : 'Publish Service'}
               </button>
@@ -375,23 +372,23 @@ export default function AgencyServices() {
       )}
 
       {/* HEADER SECTION */}
-      <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 mb-12 max-w-7xl mx-auto">
+      <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 mb-12 max-w-7xl mx-auto border-b-2 border-slate-100 pb-8">
         <div className="max-w-3xl">
           <div className="flex items-center gap-3 mb-3">
-            <div className="flex items-center gap-2 text-blue-400 font-semibold tracking-wider text-sm uppercase">
-              <Sparkles className="w-4 h-4" /> Welcome to Apex Studio
+            <div className="flex items-center gap-2 text-indigo-600 bg-indigo-50 border-2 border-indigo-100 px-3 py-1 rounded-lg font-black tracking-widest text-xs uppercase shadow-sm">
+              <Sparkles className="w-4 h-4 fill-indigo-200" /> Welcome to Apex Studio
             </div>
             {/* 🚨 ADMIN SHIELD 🚨 */}
             {userRole === 'ADMIN' && (
-              <div className="text-[10px] bg-red-950/30 text-red-400 border border-red-900/50 px-2.5 py-0.5 rounded font-bold uppercase tracking-widest flex items-center gap-1 ml-2">
+              <div className="text-[10px] bg-amber-50 text-amber-600 border-2 border-amber-200 px-2.5 py-1 rounded-lg font-black uppercase tracking-widest flex items-center gap-1 shadow-sm">
                 <ShieldCheck className="w-3 h-3" /> Admin Auth
               </div>
             )}
           </div>
-          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-white mb-4">
+          <h1 className="text-4xl md:text-5xl font-black tracking-tight text-slate-800 mb-4">
             Bring your vision to life.
           </h1>
-          <p className="text-gray-400 text-lg leading-relaxed">
+          <p className="text-slate-500 text-lg font-medium leading-relaxed">
             Behind every great idea is a team that cares enough to build it right. Choose a canvas below, and let's start crafting your next major project together.
           </p>
         </div>
@@ -400,9 +397,9 @@ export default function AgencyServices() {
         {userRole === 'ADMIN' && (
           <button 
             onClick={() => setShowCreateModal(true)}
-            className="shrink-0 bg-blue-900/20 hover:bg-blue-900/40 text-blue-400 border border-blue-900/50 px-6 py-3 rounded-lg text-xs font-bold uppercase tracking-widest flex items-center gap-2 transition-all mt-2 shadow-lg"
+            className="shrink-0 bg-white hover:bg-slate-50 text-indigo-600 border-2 border-indigo-100 px-6 py-3.5 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-all mt-2 shadow-sm hover:shadow hover:-translate-y-0.5 active:translate-y-0"
           >
-            <Plus className="w-4 h-4" /> Add Service
+            <Plus className="w-5 h-5 bg-indigo-50 p-0.5 rounded-md" /> Add Service
           </button>
         )}
       </div>
@@ -413,21 +410,21 @@ export default function AgencyServices() {
           <button
             key={service.id}
             onClick={() => setSelectedService(service)}
-            className="flex flex-col text-left bg-gradient-to-br from-[#252526] to-[#1e1e24] border border-gray-800/80 p-8 rounded-2xl hover:border-blue-500/40 hover:-translate-y-1 hover:shadow-2xl hover:shadow-blue-900/10 transition-all duration-300 group relative overflow-hidden"
+            className="flex flex-col text-left bg-white border-2 border-slate-100 p-8 rounded-[2rem] hover:border-indigo-300 hover:-translate-y-1 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-all duration-300 group relative overflow-hidden"
           >
             {/* 🚨 ADMIN EDIT & DELETE BUTTONS 🚨 */}
             {userRole === 'ADMIN' && (
               <div className="absolute top-4 right-4 z-20 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                 <div 
                   onClick={(e) => { e.stopPropagation(); openEditModal(service); }}
-                  className="text-gray-400 hover:text-blue-400 bg-black/50 hover:bg-black/80 backdrop-blur-sm p-2 rounded-lg transition-all"
+                  className="text-slate-400 hover:text-indigo-600 bg-white/90 backdrop-blur-sm p-2.5 rounded-xl border-2 border-slate-100 shadow-sm transition-colors hover:scale-105"
                   title="Edit Service"
                 >
                   <Edit2 className="w-4 h-4" />
                 </div>
                 <div 
                   onClick={(e) => handleDeleteService(e, service.id)}
-                  className="text-gray-400 hover:text-red-400 bg-black/50 hover:bg-black/80 backdrop-blur-sm p-2 rounded-lg transition-all"
+                  className="text-slate-400 hover:text-red-500 bg-white/90 backdrop-blur-sm p-2.5 rounded-xl border-2 border-slate-100 shadow-sm transition-colors hover:scale-105"
                   title="Remove Service"
                 >
                   <Trash2 className="w-4 h-4" />
@@ -440,29 +437,30 @@ export default function AgencyServices() {
               <img 
                 src={service.image} 
                 alt="" 
-                className="absolute inset-0 w-full h-full object-cover opacity-10 group-hover:opacity-20 z-0 transition-opacity" 
+                className="absolute inset-0 w-full h-full object-cover opacity-5 group-hover:opacity-10 z-0 transition-opacity" 
               />
             )}
 
-            <div className="p-3.5 bg-[#181818] group-hover:bg-gradient-to-br group-hover:from-blue-500/20 group-hover:to-indigo-500/20 group-hover:text-blue-400 text-gray-400 rounded-xl w-max mb-6 transition-all duration-300 shadow-sm relative z-10">
+            <div className="p-3.5 bg-indigo-50 group-hover:bg-indigo-500 group-hover:text-white text-indigo-500 rounded-2xl w-max mb-6 transition-all duration-300 shadow-sm border-2 border-indigo-100 group-hover:border-indigo-600 relative z-10">
               <service.icon className="w-7 h-7" />
             </div>
             
-            <h3 className="text-xl font-bold text-gray-100 mb-3 relative z-10">{service.title}</h3>
+            <h3 className="text-xl font-extrabold text-slate-800 mb-3 relative z-10">{service.title}</h3>
             
-            <p className="text-sm text-gray-400 leading-relaxed flex-1 relative z-10">
+            <p className="text-sm text-slate-500 font-medium leading-relaxed flex-1 relative z-10">
               {service.desc}
             </p>
             
-            <div className="mt-8 text-sm font-bold text-blue-400 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center gap-2 transform group-hover:translate-x-1 relative z-10">
-              Start building <ChevronLeft className="w-4 h-4 rotate-180" />
+            <div className="mt-8 pt-5 border-t-2 border-slate-100 w-full text-sm font-bold text-indigo-600 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-between relative z-10">
+              <span className="uppercase tracking-wider">Start building</span>
+              <ChevronLeft className="w-5 h-5 rotate-180 transform group-hover:translate-x-1 transition-transform" />
             </div>
           </button>
         ))}
         
         {services.length === 0 && (
-          <div className="col-span-full py-20 text-center border border-dashed border-gray-700 rounded-2xl bg-[#252526]/50">
-            <p className="text-sm text-gray-500 uppercase tracking-widest font-bold">Storefront is currently empty</p>
+          <div className="col-span-full py-20 text-center border-2 border-dashed border-slate-200 rounded-3xl bg-white/50">
+            <p className="text-sm text-slate-400 uppercase tracking-widest font-bold">Storefront is currently empty</p>
           </div>
         )}
       </div>
