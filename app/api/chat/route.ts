@@ -18,8 +18,8 @@ export async function POST(req: Request) {
     
     User's message: ${message}`;
 
-    // Bypassing the SDK completely and calling the REST API directly
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+    // Changed the URL to explicitly use gemini-pro which is stable on v1beta
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -34,7 +34,6 @@ export async function POST(req: Request) {
 
     const data = await response.json();
 
-    // If Google sends back an error, this will catch exactly what it is
     if (!response.ok) {
       console.error("Google API Direct Error:", data);
       return NextResponse.json({ reply: `API Error: ${data.error?.message || 'Unknown'} 🛑` }, { status: 500 });
