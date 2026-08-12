@@ -225,32 +225,3 @@ export default function SparkAIAssistant() {
     </div>
   )
 }
-```eof
-
-### Step 3: Add Spark to your Dashboard Layout
-Now we just tell Next.js to render Spark across all your dashboard pages.
-
-Open your **`app/dashboard/layout.tsx`** file and update it so it looks something like this:
-
-```tsx
-import Sidebar from '@/components/Sidebar'
-import Topbar from '@/components/Topbar'
-import SparkAIAssistant from '@/components/SparkAIAssistant' // <-- Add this import
-
-export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="flex h-screen bg-slate-50 overflow-hidden">
-      <Sidebar />
-      <div className="flex-1 flex flex-col min-w-0">
-        <Topbar />
-        <main className="flex-1 overflow-hidden relative">
-          {children}
-        </main>
-      </div>
-      
-      {/* Add Spark here so he floats over the entire dashboard! */}
-      <SparkAIAssistant /> 
-      
-    </div>
-  )
-}
