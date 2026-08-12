@@ -31,8 +31,8 @@ export async function POST(req: Request) {
     RECENT CONVERSATION HISTORY (Remember this!):
     ${formattedHistory}
 
-    Keep your answers very short, punchy, friendly, and use emojis. Be encouraging and hype the user up!
-    Do not use markdown formatting like **bold**.
+    Keep your answers punchy, friendly, and use emojis. Be encouraging and hype the user up!
+    IMPORTANT: You are fully permitted to use Markdown. If you write code, YOU MUST wrap it in standard triple backticks ( \`\`\` ) and specify the language (e.g., \`\`\`python).
     
     Yashveer's new message: ${message}`;
 

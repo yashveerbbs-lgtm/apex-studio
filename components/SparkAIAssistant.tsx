@@ -1,7 +1,7 @@
 'use client'
 import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, Send, Sparkles, Zap } from 'lucide-react'
+import { X, Send, Sparkles, Zap, Copy, Check } from 'lucide-react' // Added Copy/Check icons
 import { usePathname } from 'next/navigation'
 
 type Mood = 'idle' | 'happy' | 'thinking' | 'excited' | 'sleepy' | 'dizzy'
@@ -11,6 +11,7 @@ export default function SparkAIAssistant() {
   const [isOpen, setIsOpen] = useState(false)
   const [mood, setMood] = useState<Mood>('idle')
   const [inputText, setInputText] = useState('')
+  const [copiedCode, setCopiedCode] = useState<string | null>(null) // Tracks which code block is copied
   const [messages, setMessages] = useState<Message[]>([
     { sender: 'spark', text: 'Hey Yash! Grab me, fling me across the screen, or ask me about the team! ✨' }
   ])
@@ -18,15 +19,10 @@ export default function SparkAIAssistant() {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const pathname = usePathname()
 
-  // --- MEMORY & DAILY STREAK SYSTEM ---
   useEffect(() => {
-    // 1. Load Chat History
     const savedChat = localStorage.getItem('spark_memory')
-    if (savedChat) {
-      setMessages(JSON.parse(savedChat))
-    }
+    if (savedChat) setMessages(JSON.parse(savedChat))
 
-    // 2. Daily Login Streak Logic
     const lastVisit = localStorage.getItem('spark_last_visit')
     const currentStreak = parseInt(localStorage.getItem('spark_streak') || '0')
     const today = new Date().toDateString()
@@ -34,14 +30,11 @@ export default function SparkAIAssistant() {
     if (lastVisit !== today) {
       let newStreak = 1
       const yesterday = new Date(Date.now() - 86400000).toDateString()
-      if (lastVisit === yesterday) {
-        newStreak = currentStreak + 1
-      }
+      if (lastVisit === yesterday) newStreak = currentStreak + 1
       
       localStorage.setItem('spark_last_visit', today)
       localStorage.setItem('spark_streak', newStreak.toString())
 
-      // Congratulate them if they have a streak!
       if (newStreak > 1) {
         setTimeout(() => {
           setIsOpen(true)
@@ -56,7 +49,6 @@ export default function SparkAIAssistant() {
     }
   }, [])
 
-  // Save chat to memory whenever it updates
   useEffect(() => {
     if (messages.length > 1) {
       localStorage.setItem('spark_memory', JSON.stringify(messages))
@@ -64,7 +56,6 @@ export default function SparkAIAssistant() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
-  // Idle Animation
   useEffect(() => {
     if (isOpen || mood !== 'idle') return
     const interval = setInterval(() => {
@@ -76,17 +67,15 @@ export default function SparkAIAssistant() {
     return () => clearInterval(interval)
   }, [isOpen, mood])
 
-  // --- DEEP PAGE SCANNER & FRIENDLY URLS ---
   const getPageContext = () => {
-    // 1. Make URLs friendly
     let friendlyName = "the platform"
     if (pathname.includes('/overview')) friendlyName = "the Main Dashboard"
+    else if (pathname.includes('/workspace')) friendlyName = "the IDE Workspace"
     else if (pathname.includes('/internships')) friendlyName = "the Internships Pipeline"
     else if (pathname.includes('/courses') || pathname.includes('/academy')) friendlyName = "the Apex Academy"
     
-    // 2. Scan the screen for deep context (Workspaces, Courses, etc.)
     const activeWorkspaces = document.querySelectorAll('.workspace-card, [class*="workspace"]').length || document.body.innerText.match(/Recent Workspaces/i) ? "They have recent workspaces open." : ""
-    const textOnScreen = document.body.innerText.substring(0, 500) // Grab some raw text to let the AI see stats
+    const textOnScreen = document.body.innerText.substring(0, 500)
     
     return `Yash is currently viewing ${friendlyName}. Screen context data: ${activeWorkspaces} Visible text on screen includes: "${textOnScreen.replace(/\n/g, ' ')}"`
   }
@@ -102,18 +91,12 @@ export default function SparkAIAssistant() {
 
     try {
       const pageContext = getPageContext()
-      
-      // Grab the last 6 messages for conversation memory
       const recentHistory = newMessages.slice(-6)
 
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          message: userMessage, 
-          context: pageContext,
-          history: recentHistory 
-        })
+        body: JSON.stringify({ message: userMessage, context: pageContext, history: recentHistory })
       })
 
       const data = await response.json()
@@ -128,6 +111,49 @@ export default function SparkAIAssistant() {
       setTimeout(() => setMood('idle'), 2000)
     }
   }
+
+  // --- THE MAGIC MARKDOWN RENDERER ---
+  const renderFormattedText = (text: string) => {
+    if (!text.includes('```')) return <p className="whitespace-pre-wrap">{text}</p>
+
+    const parts = text.split(/(```[\w]*\n[\s\S]*?```)/g)
+    
+    return parts.map((part, index) => {
+      if (part.startsWith('```')) {
+        const match = part.match(/```([\w]*)\n([\s\S]*?)```/)
+        const language = match ? match[1] : ''
+        const code = match ? match[2].trim() : part.replace(/```/g, '').trim()
+
+        const handleCopy = () => {
+          navigator.clipboard.writeText(code)
+          setCopiedCode(code)
+          setTimeout(() => setCopiedCode(null), 2000)
+        }
+
+        return (
+          <div key={index} className="my-2 rounded-lg overflow-hidden border border-slate-700 bg-slate-900 shadow-sm">
+            <div className="flex justify-between items-center bg-slate-800 px-3 py-1.5 border-b border-slate-700">
+              <span className="text-xs font-mono text-slate-400">{language || 'code'}</span>
+              <button 
+                onClick={handleCopy}
+                className="text-slate-400 hover:text-white transition-colors flex items-center gap-1.5 text-xs font-medium"
+              >
+                {copiedCode === code ? <Check className="w-3.5 h-3.5 text-emerald-400"/> : <Copy className="w-3.5 h-3.5"/>}
+                {copiedCode === code ? <span className="text-emerald-400">Copied!</span> : 'Copy'}
+              </button>
+            </div>
+            <div className="p-3 overflow-x-auto text-left">
+              <pre className="text-xs font-mono text-slate-50 m-0">
+                <code>{code}</code>
+              </pre>
+            </div>
+          </div>
+        )
+      }
+      return <p key={index} className="whitespace-pre-wrap">{part.replace(/\*\*(.*?)\*\*/g, '$1')}</p>
+    })
+  }
+  // -----------------------------------
 
   const renderEyes = () => {
     switch (mood) {
@@ -177,19 +203,22 @@ export default function SparkAIAssistant() {
           >
             <div className="bg-indigo-50 border-b-2 border-slate-100 p-4 flex justify-between items-center">
               <div className="flex items-center gap-2">
-                <Sparkles className="w-5 h-5 text-indigo-500" />
+                <Sparkles className="w-5 h-5 text-indigo-500"/>
                 <span className="font-black text-slate-800 tracking-tight">Spark AI</span>
               </div>
               <button onClick={() => { setIsOpen(false); setMood('idle'); }} className="text-slate-400 hover:text-rose-500 transition-colors">
-                <X className="w-5 h-5" />
+                <X className="w-5 h-5"/>
               </button>
             </div>
 
             <div className="p-4 h-64 overflow-y-auto flex flex-col gap-3 bg-slate-50/50">
               {messages.map((msg, idx) => (
                 <div key={idx} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`max-w-[80%] p-3 rounded-2xl text-sm font-medium ${msg.sender === 'user' ? 'bg-indigo-500 text-white rounded-tr-sm shadow-[0_2px_0_rgb(67,56,202)]' : 'bg-white border-2 border-slate-100 text-slate-600 rounded-tl-sm shadow-sm'}`}>
-                    {msg.text}
+                  <div className={`max-w-[85%] p-3 rounded-2xl text-sm font-medium ${msg.sender === 'user' ? 'bg-indigo-500 text-white rounded-tr-sm shadow-[0_2px_0_rgb(67,56,202)]' : 'bg-white border-2 border-slate-100 text-slate-600 rounded-tl-sm shadow-sm'}`}>
+                    
+                    {/* Render the formatted text here! */}
+                    {msg.sender === 'spark' ? renderFormattedText(msg.text) : <p className="whitespace-pre-wrap">{msg.text}</p>}
+                    
                   </div>
                 </div>
               ))}
@@ -221,7 +250,7 @@ export default function SparkAIAssistant() {
                   disabled={!inputText.trim()}
                   className="bg-indigo-500 hover:bg-indigo-600 disabled:bg-slate-200 disabled:text-slate-400 text-white p-2.5 rounded-xl transition-all shadow-[0_2px_0_rgb(67,56,202)] disabled:shadow-none active:translate-y-[2px] active:shadow-none"
                 >
-                  <Send className="w-4 h-4" />
+                  <Send className="w-4 h-4"/>
                 </button>
               </div>
             </div>
@@ -279,10 +308,10 @@ export default function SparkAIAssistant() {
         </div>
 
         <motion.div animate={{ opacity: [0, 1, 0], y: [0, -20] }} transition={{ repeat: Infinity, duration: 2, delay: 0.5 }} className="absolute -top-2 -left-2 pointer-events-none">
-          <Zap className="w-4 h-4 text-amber-400 fill-amber-400" />
+          <Zap className="w-4 h-4 text-amber-400 fill-amber-400"/>
         </motion.div>
         <motion.div animate={{ opacity: [0, 1, 0], y: [0, -15] }} transition={{ repeat: Infinity, duration: 1.5, delay: 1 }} className="absolute top-2 -right-4 pointer-events-none">
-          <Sparkles className="w-3 h-3 text-sky-400" />
+          <Sparkles className="w-3 h-3 text-sky-400"/>
         </motion.div>
       </motion.div>
 
