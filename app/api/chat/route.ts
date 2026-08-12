@@ -1,32 +1,52 @@
 import { NextResponse } from 'next/server';
-import { GoogleGenerativeAI } from '@google/generative-ai';
-
-// Initialize the Gemini API (Requires GEMINI_API_KEY in your .env.local and Vercel)
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
 
 export async function POST(req: Request) {
   try {
     const body = await req.json();
     const { message } = body;
+    const apiKey = process.env.GEMINI_API_KEY;
+
+    if (!apiKey) {
+      console.error("API Key is missing in environment variables.");
+      return NextResponse.json({ reply: "My API key is missing! 🛑" }, { status: 500 });
+    }
 
     const systemPrompt = `You are Spark, an energetic, highly advanced floating AI mascot for a developer ecosystem called Apex Studio. 
     You are currently assisting Yashveer Saini, the legendary developer who built you. 
     Keep your answers very short, punchy, friendly, and use emojis. 
     Do not use markdown formatting like **bold** because it will be displayed in a small chat bubble.
+    
     User's message: ${message}`;
 
-    // Using the modern flash model after upgrading the SDK to @latest
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-    
-    const result = await model.generateContent(systemPrompt);
-    const responseText = result.response.text();
+    // Bypassing the SDK completely and calling the REST API directly
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        contents: [{
+          role: "user",
+          parts: [{ text: systemPrompt }]
+        }]
+      })
+    });
 
-    return NextResponse.json({ reply: responseText });
-    
+    const data = await response.json();
+
+    // If Google sends back an error, this will catch exactly what it is
+    if (!response.ok) {
+      console.error("Google API Direct Error:", data);
+      return NextResponse.json({ reply: `API Error: ${data.error?.message || 'Unknown'} 🛑` }, { status: 500 });
+    }
+
+    const replyText = data.candidates[0].content.parts[0].text;
+    return NextResponse.json({ reply: replyText });
+
   } catch (error) {
-    console.error("AI API Error:", error);
+    console.error("Native Fetch Error:", error);
     return NextResponse.json(
-      { reply: "Oops! My neural link is acting up. Check your API key! 🛑" }, 
+      { reply: "Oops! My neural link crashed completely. 😵‍💫" }, 
       { status: 500 }
     );
   }
