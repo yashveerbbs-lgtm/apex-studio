@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, Send, Sparkles, Zap, Copy, Check, Hourglass, Maximize2, Minimize2, Columns, Trophy } from 'lucide-react'
 import { usePathname } from 'next/navigation'
-import { supabase } from '../../../utils/supabase'
+import { supabase } from '../utils/supabase'
 
 type Mood = 'idle' | 'happy' | 'thinking' | 'excited' | 'sleepy' | 'dizzy'
 type ViewMode = 'normal' | 'half' | 'full'
@@ -156,7 +156,6 @@ export default function SparkAIAssistant() {
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        // 🚨 NEW: Passing userName to the backend API! 🚨
         body: JSON.stringify({ message: userMessage, context: pageContext, history: recentHistory, userName: userName })
       })
 
