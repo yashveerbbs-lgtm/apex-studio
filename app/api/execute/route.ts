@@ -4,15 +4,18 @@ export async function POST(request: Request) {
   try {
     const { script, language } = await request.json();
 
-    // Tripwire: This will print in your VS Code terminal!
+    // Tripwire: This will print in your VERCEL LOGS!
     console.log("--- JDoodle API Check ---");
     console.log("Client ID:", process.env.JDOODLE_CLIENT_ID ? "Found ✅" : "MISSING ❌");
     console.log("Client Secret:", process.env.JDOODLE_CLIENT_SECRET ? "Found ✅" : "MISSING ❌");
 
-    // Expanded Language Map to support your new Workspace Academy courses
+    if (!process.env.JDOODLE_CLIENT_ID || !process.env.JDOODLE_CLIENT_SECRET) {
+      return NextResponse.json({ error: "JDoodle API keys are missing in Vercel Environment Variables." }, { status: 500 });
+    }
+
     const langMap: any = {
-      'javascript': { lang: 'nodejs', versionIndex: '4' }, // Added for Next.js Academy
-      'go': { lang: 'go', versionIndex: '4' },             // Added for Microservices Academy
+      'javascript': { lang: 'nodejs', versionIndex: '4' }, 
+      'go': { lang: 'go', versionIndex: '4' },             
       'python': { lang: 'python3', versionIndex: '4' },
       'cpp': { lang: 'cpp17', versionIndex: '1' },
       'c': { lang: 'c', versionIndex: '5' },
@@ -38,11 +41,19 @@ export async function POST(request: Request) {
       })
     });
 
-    // JDoodle returns { output: "...", statusCode: 200, memory: "...", cpuTime: "..." }
     const data = await response.json();
+
+    // If JDoodle rejects our request (e.g., invalid keys, out of credits)
+    if (!response.ok || data.error) {
+      console.error("JDoodle Cloud Error:", data);
+      return NextResponse.json({ error: `JDoodle Cloud Error: ${data.error || 'Unauthorized or Out of Quota'}` }, { status: 500 });
+    }
+
     return NextResponse.json(data);
 
-  } catch (error) {
-    return NextResponse.json({ error: "Failed to connect to secure compiler container." }, { status: 500 });
+  } catch (error: any) {
+    console.error("Execution Engine Fatal Error:", error);
+    // WE CHANGED THIS ERROR MESSAGE! No more Docker lies!
+    return NextResponse.json({ error: `Cloud Execution Failed: ${error.message}` }, { status: 500 });
   }
 }
