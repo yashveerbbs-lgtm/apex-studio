@@ -14,18 +14,29 @@ export default function InternshipsRouter() {
 
   useEffect(() => {
     checkUserPower()
+
+    // 🚨 LISTEN FOR SIDEBAR ROLE SWITCHES INSTANTLY
+    const handleRoleChange = () => {
+      const localRole = localStorage.getItem('apex_role')
+      if (localRole) setRole(localRole as any)
+    }
+    
+    window.addEventListener('roleChanged', handleRoleChange)
+    return () => window.removeEventListener('roleChanged', handleRoleChange)
   }, [])
 
   async function checkUserPower() {
+    // Read local cache immediately for blazing fast UI loading
+    const localRole = localStorage.getItem('apex_role')
+    if (localRole) {
+      setRole(localRole as any)
+    }
+
     const { data: { user } } = await supabase.auth.getUser()
     if (user) {
       setCurrentUserId(user.id)
-      
-      // 🚨 NEW: Force the page to read the local role first!
-      const localRole = localStorage.getItem('apex_role')
-      if (localRole) {
-        setRole(localRole as any)
-      } else {
+      if (!localRole) {
+        // Fallback to database check
         const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
         setRole(profile?.role || 'INTERN')
       }

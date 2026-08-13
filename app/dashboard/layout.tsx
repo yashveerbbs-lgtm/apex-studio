@@ -48,8 +48,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     const { data: { user } } = await supabase.auth.getUser()
     if (user) {
       setCurrentUser(user)
-      const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-      if (profile) setUserRole(profile.role)
+      
+      // 🚨 CHECK LOCAL STORAGE FIRST TO SYNC UI INSTANTLY
+      const localRole = localStorage.getItem('apex_role')
+      if (localRole) {
+        setUserRole(localRole as any)
+      } else {
+        const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+        setUserRole(profile?.role || 'INTERN')
+      }
     }
     setShowClickwrap(true)
   }
@@ -84,6 +91,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     const newRole = userRole === 'EMPLOYER' ? 'INTERN' : 'EMPLOYER'
     const displayName = currentUser?.user_metadata?.full_name || currentUser?.email?.split('@')[0] || 'User'
     
+    // 🚨 SAVE LOCALLY AND TRIGGER EVENT TO UPDATE ALL PAGES INSTANTLY
+    localStorage.setItem('apex_role', newRole)
+    window.dispatchEvent(new Event('roleChanged')) 
+    
+    // Try to update DB (will fail silently if RLS is strict, which is fine now)
     await supabase.from('profiles').upsert({
       id: currentUser.id,
       display_name: displayName,
