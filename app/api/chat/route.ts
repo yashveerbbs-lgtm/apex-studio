@@ -3,7 +3,6 @@ import { NextResponse } from 'next/server';
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    // Now receiving the message, the deep page context, AND the chat history!
     const { message, context, history } = body; 
     const apiKey = process.env.GEMINI_API_KEY;
 
@@ -12,7 +11,6 @@ export async function POST(req: Request) {
       return NextResponse.json({ reply: "My API key is missing! 🛑" }, { status: 500 });
     }
 
-    // Format the history so the AI remembers the conversation
     const formattedHistory = history ? history.map((msg: any) => `${msg.sender === 'user' ? 'Yashveer' : 'Spark'}: ${msg.text}`).join('\n') : '';
 
     const systemPrompt = `You are Spark, an energetic, highly advanced floating AI mascot for a developer ecosystem called Apex Studio. 
@@ -48,6 +46,15 @@ export async function POST(req: Request) {
 
     if (!response.ok) {
       console.error("Google API Direct Error:", data);
+      
+      // --- OPTION 2: THE GRACEFUL FALLBACK ---
+      // If we hit a rate limit, Spark pretends he just needs a breather
+      if (response.status === 429 || (data.error?.message && data.error.message.toLowerCase().includes('quota'))) {
+        return NextResponse.json({ 
+          reply: "Whoa, hold your horses! 🐎 My neural link is overheating from all these requests. Give me about 10 seconds to cool down!" 
+        }, { status: 200 }); // Sending a 200 so it renders as a normal chat bubble!
+      }
+
       return NextResponse.json({ reply: `API Error: ${data.error?.message || 'Unknown'} 🛑` }, { status: 500 });
     }
 

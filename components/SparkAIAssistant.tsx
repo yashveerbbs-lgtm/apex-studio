@@ -1,7 +1,7 @@
 'use client'
 import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, Send, Sparkles, Zap, Copy, Check } from 'lucide-react' // Added Copy/Check icons
+import { X, Send, Sparkles, Zap, Copy, Check, Hourglass } from 'lucide-react'
 import { usePathname } from 'next/navigation'
 
 type Mood = 'idle' | 'happy' | 'thinking' | 'excited' | 'sleepy' | 'dizzy'
@@ -11,7 +11,8 @@ export default function SparkAIAssistant() {
   const [isOpen, setIsOpen] = useState(false)
   const [mood, setMood] = useState<Mood>('idle')
   const [inputText, setInputText] = useState('')
-  const [copiedCode, setCopiedCode] = useState<string | null>(null) // Tracks which code block is copied
+  const [isCooldown, setIsCooldown] = useState(false) // --- NEW: Cooldown state ---
+  const [copiedCode, setCopiedCode] = useState<string | null>(null)
   const [messages, setMessages] = useState<Message[]>([
     { sender: 'spark', text: 'Hey Yash! Grab me, fling me across the screen, or ask me about the team! ✨' }
   ])
@@ -81,13 +82,17 @@ export default function SparkAIAssistant() {
   }
 
   const handleSendMessage = async () => {
-    if (!inputText.trim()) return
+    if (!inputText.trim() || isCooldown) return // --- OPTION 1: Block send if on cooldown ---
 
     const userMessage = inputText
     const newMessages = [...messages, { sender: 'user', text: userMessage }] as Message[]
     setMessages(newMessages)
     setInputText('')
     setMood('thinking')
+    
+    // Activate 4-second cooldown
+    setIsCooldown(true)
+    setTimeout(() => setIsCooldown(false), 4000) 
 
     try {
       const pageContext = getPageContext()
@@ -112,7 +117,6 @@ export default function SparkAIAssistant() {
     }
   }
 
-  // --- THE MAGIC MARKDOWN RENDERER ---
   const renderFormattedText = (text: string) => {
     if (!text.includes('```')) return <p className="whitespace-pre-wrap">{text}</p>
 
@@ -153,7 +157,6 @@ export default function SparkAIAssistant() {
       return <p key={index} className="whitespace-pre-wrap">{part.replace(/\*\*(.*?)\*\*/g, '$1')}</p>
     })
   }
-  // -----------------------------------
 
   const renderEyes = () => {
     switch (mood) {
@@ -215,10 +218,7 @@ export default function SparkAIAssistant() {
               {messages.map((msg, idx) => (
                 <div key={idx} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
                   <div className={`max-w-[85%] p-3 rounded-2xl text-sm font-medium ${msg.sender === 'user' ? 'bg-indigo-500 text-white rounded-tr-sm shadow-[0_2px_0_rgb(67,56,202)]' : 'bg-white border-2 border-slate-100 text-slate-600 rounded-tl-sm shadow-sm'}`}>
-                    
-                    {/* Render the formatted text here! */}
                     {msg.sender === 'spark' ? renderFormattedText(msg.text) : <p className="whitespace-pre-wrap">{msg.text}</p>}
-                    
                   </div>
                 </div>
               ))}
@@ -242,15 +242,16 @@ export default function SparkAIAssistant() {
                   value={inputText}
                   onChange={(e) => setInputText(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
-                  placeholder="Ask Spark anything..."
-                  className="flex-1 bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-700 focus:outline-none focus:border-indigo-400 focus:bg-white transition-all placeholder:text-slate-300"
+                  placeholder={isCooldown ? "Spark is catching his breath..." : "Ask Spark anything..."}
+                  disabled={isCooldown}
+                  className="flex-1 bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-700 focus:outline-none focus:border-indigo-400 focus:bg-white transition-all placeholder:text-slate-300 disabled:opacity-60"
                 />
                 <button 
                   onClick={handleSendMessage}
-                  disabled={!inputText.trim()}
+                  disabled={!inputText.trim() || isCooldown}
                   className="bg-indigo-500 hover:bg-indigo-600 disabled:bg-slate-200 disabled:text-slate-400 text-white p-2.5 rounded-xl transition-all shadow-[0_2px_0_rgb(67,56,202)] disabled:shadow-none active:translate-y-[2px] active:shadow-none"
                 >
-                  <Send className="w-4 h-4"/>
+                  {isCooldown ? <Hourglass className="w-4 h-4 animate-spin"/> : <Send className="w-4 h-4"/>}
                 </button>
               </div>
             </div>
