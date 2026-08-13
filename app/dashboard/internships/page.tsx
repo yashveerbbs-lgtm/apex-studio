@@ -2,10 +2,13 @@
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { supabase } from '../../../utils/supabase'
-import { Users, Search, FileCode, ChevronRight, ChevronLeft, Briefcase, Mail, Cpu, Award, Activity, CheckCircle, Terminal, Plus, X, Clock, Calendar, MessageSquare, Star, Trash2, Edit2, Image as ImageIcon, Gem, Sparkles, ShieldCheck } from 'lucide-react'
+import { Users, Search, FileCode, ChevronRight, ChevronLeft, Briefcase, Mail, Cpu, Award, Activity, CheckCircle, Terminal, Plus, X, Clock, Calendar, MessageSquare, Star, Trash2, Edit2, Image as ImageIcon, Gem, Sparkles, ShieldCheck, CheckCircle2 } from 'lucide-react'
 
+// ==========================================
+// 1. MAIN ROUTER COMPONENT
+// ==========================================
 export default function InternshipsRouter() {
-  const [role, setRole] = useState<'ADMIN' | 'INTERN' | null>(null)
+  const [role, setRole] = useState<'ADMIN' | 'INTERN' | 'EMPLOYER' | null>(null)
   const [loading, setLoading] = useState(true)
   const [currentUserId, setCurrentUserId] = useState<string | null>(null)
 
@@ -31,10 +34,14 @@ export default function InternshipsRouter() {
     )
   }
 
-  if (role === 'ADMIN') return <AdminRecruiterDashboard />
+  // 🚨 DUAL UI ROUTING 🚨
+  if (role === 'ADMIN' || role === 'EMPLOYER') return <AdminRecruiterDashboard />
   return <InternTaskBoard currentUserId={currentUserId} />
 }
 
+// ==========================================
+// 2. EMPLOYER / RECRUITER VIEW
+// ==========================================
 function AdminRecruiterDashboard() {
   const [activeTab, setActiveTab] = useState('All Candidates')
   const [searchQuery, setSearchQuery] = useState('')
@@ -293,7 +300,7 @@ function AdminRecruiterDashboard() {
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
             <div className="inline-flex items-center gap-2 text-indigo-600 dark:text-indigo-400 mb-4 font-black tracking-widest text-[10px] uppercase bg-indigo-50 dark:bg-indigo-900/50 px-3 py-1.5 rounded-lg border-2 border-indigo-100 dark:border-indigo-800 shadow-sm">
-              <ShieldCheck className="w-3 h-3" /> Admin Authorized
+              <ShieldCheck className="w-3 h-3" /> Recruiter Authorized
             </div>
             <h1 className="text-3xl md:text-4xl font-black tracking-tight text-slate-800 dark:text-slate-100 mb-2">Recruitment Command</h1>
             <p className="text-slate-500 dark:text-slate-400 text-sm font-bold tracking-wide">Evaluate, interview, and onboard top developers.</p>
@@ -401,6 +408,9 @@ function AdminRecruiterDashboard() {
   )
 }
 
+// ==========================================
+// 3. STUDENT / INTERN VIEW
+// ==========================================
 function InternTaskBoard({ currentUserId }: { currentUserId: string | null }) {
   const [tasks, setTasks] = useState<any[]>([])
   
