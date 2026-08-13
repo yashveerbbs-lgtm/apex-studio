@@ -182,14 +182,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <h2 className="text-[11px] font-extrabold text-slate-300 mb-2 tracking-widest uppercase px-4">Workspace</h2>
               <div className="space-y-1">
                 <Link href="/dashboard/home" onClick={() => setIsSidebarOpen(false)} className={getLinkStyle('/dashboard/home')}>Home</Link>
-                <Link href="/dashboard/internships" onClick={() => setIsSidebarOpen(false)} className={getLinkStyle('/dashboard/internships')}>Inturnships</Link>
+                <Link href="/dashboard/internships" onClick={() => setIsSidebarOpen(false)} className={getLinkStyle('/dashboard/internships')}>Internships</Link>
               </div>
             </div>
             <div>
               <h2 className="text-[11px] font-extrabold text-slate-300 mb-2 tracking-widest uppercase px-4">Learning</h2>
               <div className="space-y-1">
-                <Link href="/dashboard/courses" onClick={() => setIsSidebarOpen(false)} className={getAcademyStyle('/dashboard/courses')}>Apex Academy</Link>
-                <Link href="/dashboard/services" onClick={() => setIsSidebarOpen(false)} className={getLinkStyle('/dashboard/services')}>Agency Services</Link>
+                <Link href="/dashboard/courses" onClick={() => setIsSidebarOpen(false)} className={getAcademyStyle('/dashboard/courses')}>Learning Courses</Link>
+                <Link href="/dashboard/services" onClick={() => setIsSidebarOpen(false)} className={getLinkStyle('/dashboard/services')}>Services</Link>
                 <Link href="/dashboard/showcase" onClick={() => setIsSidebarOpen(false)} className={getLinkStyle('/dashboard/showcase')}>Showcase</Link>
               </div>
             </div>
