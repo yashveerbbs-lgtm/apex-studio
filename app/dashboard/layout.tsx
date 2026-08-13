@@ -181,8 +181,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <div>
               <h2 className="text-[11px] font-extrabold text-slate-300 mb-2 tracking-widest uppercase px-4">Workspace</h2>
               <div className="space-y-1">
-                <Link href="/dashboard/overview" onClick={() => setIsSidebarOpen(false)} className={getLinkStyle('/dashboard/overview')}>Overview</Link>
-                <Link href="/dashboard/internships" onClick={() => setIsSidebarOpen(false)} className={getLinkStyle('/dashboard/internships')}>My Internships</Link>
+                <Link href="/dashboard/home" onClick={() => setIsSidebarOpen(false)} className={getLinkStyle('/dashboard/home')}>Home</Link>
+                <Link href="/dashboard/internships" onClick={() => setIsSidebarOpen(false)} className={getLinkStyle('/dashboard/internships')}>Inturnships</Link>
               </div>
             </div>
             <div>
