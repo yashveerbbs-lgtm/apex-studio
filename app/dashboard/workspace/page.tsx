@@ -91,10 +91,11 @@ export default function EnterpriseWorkspace() {
     return () => window.removeEventListener('click', handleClick)
   }, [])
 
-  // MULTIPLAYER REALTIME SYNC ENGINE
+  // MULTIPLAYER REALTIME SYNC ENGINE & CHAT
   useEffect(() => {
     if (!activeTeam) return
 
+    // 1. Listen for Live Code Typing (Broadcasts)
     const room = supabase.channel(`squad-${activeTeam.id}`, {
       config: { broadcast: { ack: false } },
     })
@@ -119,8 +120,22 @@ export default function EnterpriseWorkspace() {
 
     setRealtimeChannel(room)
 
+    // 2. Listen for Database Chat Inserts (Realtime Messages)
+    const chatSubscription = supabase
+      .channel(`chat-${activeTeam.id}`)
+      .on('postgres_changes', 
+        { event: 'INSERT', schema: 'public', table: 'workspace_messages', filter: `team_id=eq.${activeTeam.id}` }, 
+        (payload) => {
+          if (payload.new.user_id !== currentUser?.id) {
+            setMessages((prevMessages) => [...prevMessages, payload.new])
+          }
+        }
+      )
+      .subscribe()
+
     return () => {
       supabase.removeChannel(room)
+      supabase.removeChannel(chatSubscription)
     }
   }, [activeTeam, currentUser])
 
@@ -806,7 +821,6 @@ export default function EnterpriseWorkspace() {
                   </div>
                 </div>
                 <div className="flex-1 relative pt-4">
-                  {/* --- UPDATED MONACO THEME PROP --- */}
                   <Editor
                     height="100%"
                     language="markdown"
@@ -834,7 +848,6 @@ export default function EnterpriseWorkspace() {
                     </div>
                   </div>
                   <div className="flex-1 relative pt-4">
-                    {/* --- UPDATED MONACO THEME PROP --- */}
                     <Editor
                       height="100%"
                       language={activeFile.language}

@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, Send, Sparkles, Zap, Copy, Check, Hourglass, Maximize2, Minimize2, Columns, Trophy } from 'lucide-react'
 import { usePathname } from 'next/navigation'
+import { supabase } from '../../../utils/supabase'
 
 type Mood = 'idle' | 'happy' | 'thinking' | 'excited' | 'sleepy' | 'dizzy'
 type ViewMode = 'normal' | 'half' | 'full'
@@ -16,12 +17,14 @@ export default function SparkAIAssistant() {
   const [isCooldown, setIsCooldown] = useState(false) 
   const [copiedCode, setCopiedCode] = useState<string | null>(null)
   
+  // --- USER IDENTITY STATE ---
+  const [currentUser, setCurrentUser] = useState<any>(null)
+  const [userName, setUserName] = useState('Developer')
+
   // --- GAMIFICATION STATES ---
   const [xp, setXp] = useState(0)
   
-  const [messages, setMessages] = useState<Message[]>([
-    { sender: 'spark', text: 'Hey Yash! Grab me, fling me across the screen, or ask me about the team! ✨' }
-  ])
+  const [messages, setMessages] = useState<Message[]>([])
   
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const pathname = usePathname()
@@ -34,52 +37,75 @@ export default function SparkAIAssistant() {
     return 'Apex'
   }
 
+  // Fetch the current user on mount to isolate chat memory
   useEffect(() => {
-    const savedChat = localStorage.getItem('spark_memory')
-    if (savedChat) setMessages(JSON.parse(savedChat))
+    const fetchUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        setCurrentUser(user)
+        const name = user.user_metadata?.full_name || user.email?.split('@')[0] || 'Developer'
+        setUserName(name)
+        
+        // 🚨 NEW: ISOLATED MEMORY PER USER 🚨
+        const memoryKey = `spark_memory_${user.id}`
+        const savedChat = localStorage.getItem(memoryKey)
+        
+        if (savedChat) {
+          setMessages(JSON.parse(savedChat))
+        } else {
+          // Default greeting using the correct name!
+          setMessages([{ sender: 'spark', text: `Hey ${name}! Grab me, fling me across the screen, or ask me about the team! ✨` }])
+        }
 
-    // Load saved XP
-    const savedXp = parseInt(localStorage.getItem('spark_xp') || '0')
-    setXp(savedXp)
+        // Load saved XP (also per user)
+        const xpKey = `spark_xp_${user.id}`
+        const savedXp = parseInt(localStorage.getItem(xpKey) || '0')
+        setXp(savedXp)
 
-    const lastVisit = localStorage.getItem('spark_last_visit')
-    const currentStreak = parseInt(localStorage.getItem('spark_streak') || '0')
-    const today = new Date().toDateString()
+        // Streak logic
+        const streakKey = `spark_streak_${user.id}`
+        const visitKey = `spark_last_visit_${user.id}`
+        const lastVisit = localStorage.getItem(visitKey)
+        const currentStreak = parseInt(localStorage.getItem(streakKey) || '0')
+        const today = new Date().toDateString()
 
-    if (lastVisit !== today) {
-      let newStreak = 1
-      const yesterday = new Date(Date.now() - 86400000).toDateString()
-      if (lastVisit === yesterday) newStreak = currentStreak + 1
-      
-      localStorage.setItem('spark_last_visit', today)
-      localStorage.setItem('spark_streak', newStreak.toString())
+        if (lastVisit !== today) {
+          let newStreak = 1
+          const yesterday = new Date(Date.now() - 86400000).toDateString()
+          if (lastVisit === yesterday) newStreak = currentStreak + 1
+          
+          localStorage.setItem(visitKey, today)
+          localStorage.setItem(streakKey, newStreak.toString())
 
-      if (newStreak > 1) {
-        // Award massive XP for maintaining a streak!
-        const streakBonus = 50 * newStreak
-        const newTotalXp = savedXp + streakBonus
-        setXp(newTotalXp)
-        localStorage.setItem('spark_xp', newTotalXp.toString())
+          if (newStreak > 1) {
+            const streakBonus = 50 * newStreak
+            const newTotalXp = savedXp + streakBonus
+            setXp(newTotalXp)
+            localStorage.setItem(xpKey, newTotalXp.toString())
 
-        setTimeout(() => {
-          setIsOpen(true)
-          setMood('excited')
-          setMessages(prev => {
-            const newMsgs = [...prev, { sender: 'spark', text: `Welcome back! You are on a ${newStreak}-day streak! +${streakBonus} XP awarded! 🔥🚀` }]
-            localStorage.setItem('spark_memory', JSON.stringify(newMsgs))
-            return newMsgs as Message[]
-          })
-        }, 2000)
+            setTimeout(() => {
+              setIsOpen(true)
+              setMood('excited')
+              setMessages(prev => {
+                const newMsgs = [...prev, { sender: 'spark', text: `Welcome back! You are on a ${newStreak}-day streak! +${streakBonus} XP awarded! 🔥🚀` }]
+                localStorage.setItem(memoryKey, JSON.stringify(newMsgs))
+                return newMsgs as Message[]
+              })
+            }, 2000)
+          }
+        }
       }
     }
+    fetchUser()
   }, [])
 
   useEffect(() => {
-    if (messages.length > 1) {
-      localStorage.setItem('spark_memory', JSON.stringify(messages))
+    // 🚨 Ensure we only save memory if we have a user to attach it to!
+    if (messages.length > 1 && currentUser) {
+      localStorage.setItem(`spark_memory_${currentUser.id}`, JSON.stringify(messages))
     }
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages, viewMode]) 
+  }, [messages, viewMode, currentUser]) 
 
   useEffect(() => {
     if (isOpen || mood !== 'idle') return
@@ -94,7 +120,6 @@ export default function SparkAIAssistant() {
 
   const getPageContext = () => {
     let friendlyName = "the platform"
-    // CHANGED: Now looks for /home instead of /overview
     if (pathname?.includes('/home')) friendlyName = "the Home Page" 
     else if (pathname?.includes('/workspace')) friendlyName = "the IDE Workspace"
     else if (pathname?.includes('/internships')) friendlyName = "the Internships Pipeline"
@@ -103,7 +128,7 @@ export default function SparkAIAssistant() {
     const activeWorkspaces = document.querySelectorAll('.workspace-card, [class*="workspace"]').length || document.body.innerText.match(/Recent Workspaces/i) ? "They have recent workspaces open." : ""
     const textOnScreen = document.body.innerText.substring(0, 500)
     
-    return `Yash is currently viewing ${friendlyName}. Screen context data: ${activeWorkspaces} Visible text on screen includes: "${textOnScreen.replace(/\n/g, ' ')}"`
+    return `${userName} is currently viewing ${friendlyName}. Screen context data: ${activeWorkspaces} Visible text on screen includes: "${textOnScreen.replace(/\n/g, ' ')}"`
   }
 
   const handleSendMessage = async () => {
@@ -118,10 +143,11 @@ export default function SparkAIAssistant() {
     setIsCooldown(true)
     setTimeout(() => setIsCooldown(false), 4000) 
 
-    // Award +10 XP for using the AI
-    const newXp = xp + 10
-    setXp(newXp)
-    localStorage.setItem('spark_xp', newXp.toString())
+    if (currentUser) {
+      const newXp = xp + 10
+      setXp(newXp)
+      localStorage.setItem(`spark_xp_${currentUser.id}`, newXp.toString())
+    }
 
     try {
       const pageContext = getPageContext()
@@ -130,7 +156,8 @@ export default function SparkAIAssistant() {
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: userMessage, context: pageContext, history: recentHistory })
+        // 🚨 NEW: Passing userName to the backend API! 🚨
+        body: JSON.stringify({ message: userMessage, context: pageContext, history: recentHistory, userName: userName })
       })
 
       const data = await response.json()
@@ -231,19 +258,19 @@ export default function SparkAIAssistant() {
             initial={{ opacity: 0, y: 20, scale: 0.8, transformOrigin: 'bottom right' }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.8 }}
-            className={`bg-white shadow-[0_20px_50px_rgb(0,0,0,0.1)] overflow-hidden flex flex-col pointer-events-auto transition-all duration-300 ease-in-out ${
-              viewMode === 'normal' ? 'w-80 h-[28rem] rounded-[2rem] border-4 border-slate-100 mb-6 relative' :
-              viewMode === 'half' ? 'fixed top-0 right-0 w-[50vw] h-[100vh] rounded-none border-l-4 border-slate-100 z-[200]' :
+            className={`bg-white dark:bg-slate-900 shadow-[0_20px_50px_rgb(0,0,0,0.1)] overflow-hidden flex flex-col pointer-events-auto transition-all duration-300 ease-in-out ${
+              viewMode === 'normal' ? 'w-80 h-[28rem] rounded-[2rem] border-4 border-slate-100 dark:border-slate-800 mb-6 relative' :
+              viewMode === 'half' ? 'fixed top-0 right-0 w-[50vw] h-[100vh] rounded-none border-l-4 border-slate-100 dark:border-slate-800 z-[200]' :
               'fixed top-0 left-0 w-[100vw] h-[100vh] rounded-none border-0 z-[200]'
             }`}
           >
-            <div className="bg-indigo-50 border-b-2 border-slate-100 p-4 flex justify-between items-center shrink-0">
+            <div className="bg-indigo-50 dark:bg-indigo-900/30 border-b-2 border-slate-100 dark:border-slate-800 p-4 flex justify-between items-center shrink-0 transition-colors">
               <div className="flex items-center gap-2">
-                <Sparkles className="w-5 h-5 text-indigo-500"/>
-                <span className="font-black text-slate-800 tracking-tight flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-indigo-500 dark:text-indigo-400"/>
+                <span className="font-black text-slate-800 dark:text-slate-100 tracking-tight flex items-center gap-2 transition-colors">
                   Spark AI
                   {/* --- NEW GAMIFICATION UI BADGE --- */}
-                  <span className="flex items-center gap-1 text-[10px] uppercase font-bold tracking-wider bg-indigo-100 text-indigo-600 px-2 py-0.5 rounded-full">
+                  <span className="flex items-center gap-1 text-[10px] uppercase font-bold tracking-wider bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 px-2 py-0.5 rounded-full transition-colors">
                     <Trophy className="w-3 h-3"/> {getRank(xp)} • {xp} XP
                   </span>
                 </span>
@@ -251,31 +278,31 @@ export default function SparkAIAssistant() {
               
               <div className="flex items-center gap-3">
                 {viewMode !== 'normal' && (
-                  <button onClick={() => setViewMode('normal')} className="text-slate-400 hover:text-indigo-500 transition-colors" title="Default View">
+                  <button onClick={() => setViewMode('normal')} className="text-slate-400 dark:text-slate-500 hover:text-indigo-500 dark:hover:text-indigo-400 transition-colors" title="Default View">
                     <Minimize2 className="w-4 h-4"/>
                   </button>
                 )}
                 {viewMode !== 'half' && (
-                  <button onClick={() => setViewMode('half')} className="text-slate-400 hover:text-indigo-500 transition-colors" title="Half Screen View">
+                  <button onClick={() => setViewMode('half')} className="text-slate-400 dark:text-slate-500 hover:text-indigo-500 dark:hover:text-indigo-400 transition-colors" title="Half Screen View">
                     <Columns className="w-4 h-4"/>
                   </button>
                 )}
                 {viewMode !== 'full' && (
-                  <button onClick={() => setViewMode('full')} className="text-slate-400 hover:text-indigo-500 transition-colors" title="Full Screen View">
+                  <button onClick={() => setViewMode('full')} className="text-slate-400 dark:text-slate-500 hover:text-indigo-500 dark:hover:text-indigo-400 transition-colors" title="Full Screen View">
                     <Maximize2 className="w-4 h-4"/>
                   </button>
                 )}
-                <div className="w-px h-4 bg-slate-300 mx-1"></div>
-                <button onClick={() => { setIsOpen(false); setMood('idle'); setViewMode('normal'); }} className="text-slate-400 hover:text-rose-500 transition-colors" title="Close">
+                <div className="w-px h-4 bg-slate-300 dark:bg-slate-700 mx-1 transition-colors"></div>
+                <button onClick={() => { setIsOpen(false); setMood('idle'); setViewMode('normal'); }} className="text-slate-400 dark:text-slate-500 hover:text-rose-500 dark:hover:text-rose-400 transition-colors" title="Close">
                   <X className="w-5 h-5"/>
                 </button>
               </div>
             </div>
 
-            <div className="p-4 flex-1 overflow-y-auto flex flex-col gap-3 bg-slate-50/50">
+            <div className="p-4 flex-1 overflow-y-auto flex flex-col gap-3 bg-slate-50/50 dark:bg-slate-900/50 transition-colors">
               {messages.map((msg, idx) => (
                 <div key={idx} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`max-w-[85%] p-3 rounded-2xl text-sm font-medium ${msg.sender === 'user' ? 'bg-indigo-500 text-white rounded-tr-sm shadow-[0_2px_0_rgb(67,56,202)]' : 'bg-white border-2 border-slate-100 text-slate-600 rounded-tl-sm shadow-sm'}`}>
+                  <div className={`max-w-[85%] p-3 rounded-2xl text-sm font-medium transition-colors ${msg.sender === 'user' ? 'bg-indigo-500 text-white rounded-tr-sm shadow-[0_2px_0_rgb(67,56,202)]' : 'bg-white dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded-tl-sm shadow-sm'}`}>
                     {msg.sender === 'spark' ? renderFormattedText(msg.text) : <p className="whitespace-pre-wrap">{msg.text}</p>}
                   </div>
                 </div>
@@ -283,17 +310,17 @@ export default function SparkAIAssistant() {
               
               {mood === 'thinking' && (
                 <div className="flex justify-start">
-                  <div className="bg-white border-2 border-slate-100 p-3 rounded-2xl rounded-tl-sm flex gap-1.5 shadow-sm">
-                    <motion.div animate={{ y: [0, -5, 0] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0 }} className="w-2 h-2 bg-indigo-300 rounded-full" />
-                    <motion.div animate={{ y: [0, -5, 0] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0.2 }} className="w-2 h-2 bg-indigo-400 rounded-full" />
-                    <motion.div animate={{ y: [0, -5, 0] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0.4 }} className="w-2 h-2 bg-indigo-500 rounded-full" />
+                  <div className="bg-white dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 p-3 rounded-2xl rounded-tl-sm flex gap-1.5 shadow-sm transition-colors">
+                    <motion.div animate={{ y: [0, -5, 0] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0 }} className="w-2 h-2 bg-indigo-300 dark:bg-indigo-600 rounded-full" />
+                    <motion.div animate={{ y: [0, -5, 0] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0.2 }} className="w-2 h-2 bg-indigo-400 dark:bg-indigo-500 rounded-full" />
+                    <motion.div animate={{ y: [0, -5, 0] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0.4 }} className="w-2 h-2 bg-indigo-500 dark:bg-indigo-400 rounded-full" />
                   </div>
                 </div>
               )}
               <div ref={messagesEndRef} />
             </div>
 
-            <div className="p-3 border-t-2 border-slate-100 bg-white shrink-0">
+            <div className="p-3 border-t-2 border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 shrink-0 transition-colors">
               <div className="flex items-center gap-2">
                 <input 
                   type="text" 
@@ -302,12 +329,12 @@ export default function SparkAIAssistant() {
                   onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
                   placeholder={isCooldown ? "Spark is catching his breath..." : "Ask Spark anything..."}
                   disabled={isCooldown}
-                  className="flex-1 bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 focus:outline-none focus:border-indigo-400 focus:bg-white transition-all placeholder:text-slate-300 disabled:opacity-60"
+                  className="flex-1 bg-slate-50 dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 dark:text-slate-200 focus:outline-none focus:border-indigo-400 dark:focus:border-indigo-500 focus:bg-white dark:focus:bg-slate-900 transition-all placeholder:text-slate-300 dark:placeholder:text-slate-500 disabled:opacity-60"
                 />
                 <button 
                   onClick={handleSendMessage}
                   disabled={!inputText.trim() || isCooldown}
-                  className="bg-indigo-500 hover:bg-indigo-600 disabled:bg-slate-200 disabled:text-slate-400 text-white p-3 rounded-xl transition-all shadow-[0_2px_0_rgb(67,56,202)] disabled:shadow-none active:translate-y-[2px] active:shadow-none"
+                  className="bg-indigo-500 hover:bg-indigo-600 disabled:bg-slate-200 dark:disabled:bg-slate-700 disabled:text-slate-400 dark:disabled:text-slate-500 text-white p-3 rounded-xl transition-all shadow-[0_2px_0_rgb(67,56,202)] disabled:shadow-none active:translate-y-[2px] active:shadow-none"
                 >
                   {isCooldown ? <Hourglass className="w-5 h-5 animate-spin"/> : <Send className="w-5 h-5"/>}
                 </button>
@@ -336,7 +363,7 @@ export default function SparkAIAssistant() {
           
           setMessages(prev => {
             const newMsgs = [...prev, { sender: 'spark', text: randomJoke }]
-            localStorage.setItem('spark_memory', JSON.stringify(newMsgs))
+            if (currentUser) localStorage.setItem(`spark_memory_${currentUser.id}`, JSON.stringify(newMsgs))
             return newMsgs as Message[]
           })
           if (!isOpen) setIsOpen(true)
@@ -349,7 +376,7 @@ export default function SparkAIAssistant() {
         onClick={() => { if (!isOpen) { setIsOpen(true); setMood('happy'); } }}
         className="relative cursor-grab pointer-events-auto"
       >
-        <div className={`w-16 h-16 rounded-[2rem] shadow-[0_10px_20px_rgb(99,102,241,0.4)] border-4 border-white flex flex-col items-center justify-center gap-1.5 transition-all duration-300 ${
+        <div className={`w-16 h-16 rounded-[2rem] shadow-[0_10px_20px_rgb(99,102,241,0.4)] border-4 border-white dark:border-slate-800 flex flex-col items-center justify-center gap-1.5 transition-all duration-300 ${
           mood === 'excited' ? 'bg-gradient-to-br from-rose-400 to-amber-500' :
           mood === 'thinking' ? 'bg-gradient-to-br from-sky-400 to-indigo-500' :
           mood === 'dizzy' ? 'bg-gradient-to-br from-fuchsia-500 to-rose-500' :

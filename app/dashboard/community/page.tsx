@@ -18,9 +18,9 @@ export default function EnterpriseNetwork() {
   const [expandedComments, setExpandedComments] = useState<Record<number, boolean>>({})
   const [commentInputs, setCommentInputs] = useState<Record<number, string>>({})
   const [copiedId, setCopiedId] = useState<number | null>(null) 
-  const [postComments, setPostComments] = useState<Record<number, any[]>>({
-    1: [{ author: 'Yashveer', role: 'Apex Executive', text: 'I can allocate some backend resources for the lighting optimization. Check your internal inbox.', time: '1 hr ago' }]
-  })
+  
+  // Cleaned out hardcoded comments!
+  const [postComments, setPostComments] = useState<Record<number, any[]>>({})
 
   // Feed State (Corporate Data)
   const [posts, setPosts] = useState([
@@ -109,7 +109,7 @@ export default function EnterpriseNetwork() {
       id: Date.now(),
       author: displayName,
       role: userRole === 'ADMIN' ? 'System Admin' : 'Apex Staff', 
-      isVerified: userRole === 'ADMIN' || displayName.toLowerCase().includes('yash'),
+      isVerified: userRole === 'ADMIN', // Removed hardcoded name check
       avatar: userRole === 'ADMIN' ? 'bg-rose-100 text-rose-600 border-rose-200 dark:bg-rose-900/50 dark:text-rose-400 dark:border-rose-700' : 'bg-indigo-100 text-indigo-600 border-indigo-200 dark:bg-indigo-900/50 dark:text-indigo-400 dark:border-indigo-700', 
       time: 'Just now',
       content: newPost,
@@ -447,10 +447,10 @@ export default function EnterpriseNetwork() {
             </h3>
             <div className="space-y-4">
               <div className="flex items-center gap-4 bg-slate-50 dark:bg-slate-800 p-3 rounded-xl border-2 border-slate-100 dark:border-slate-700 transition-colors">
-                <div className="w-10 h-10 rounded-xl border-2 border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-black text-sm shadow-sm transition-colors">Y</div>
+                <div className="w-10 h-10 rounded-xl border-2 border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-black text-sm shadow-sm transition-colors">S</div>
                 <div>
-                  <p className="text-sm font-extrabold text-slate-800 dark:text-slate-200 flex items-center gap-1 transition-colors">Yashveer <ShieldCheck className="w-3.5 h-3.5 text-emerald-500 dark:text-emerald-400"/></p>
-                  <p className="text-[9px] text-slate-500 dark:text-slate-400 uppercase tracking-wider font-bold mt-0.5 transition-colors">Co-Founder / Lead Arch</p>
+                  <p className="text-sm font-extrabold text-slate-800 dark:text-slate-200 flex items-center gap-1 transition-colors">System Admin <ShieldCheck className="w-3.5 h-3.5 text-emerald-500 dark:text-emerald-400"/></p>
+                  <p className="text-[9px] text-slate-500 dark:text-slate-400 uppercase tracking-wider font-bold mt-0.5 transition-colors">Lead Architect</p>
                 </div>
               </div>
             </div>

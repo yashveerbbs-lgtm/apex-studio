@@ -20,9 +20,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [theme, setTheme] = useState<'light' | 'dark'>('light')
 
-  // SECURITY CLEARANCE CHECK
-  const isExecutive = currentUser?.email?.toLowerCase().includes('yashveer') || currentUser?.email?.toLowerCase().includes('aparna')
-
   useEffect(() => {
     checkLegalStatus()
     
