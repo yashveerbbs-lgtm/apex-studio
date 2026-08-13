@@ -1,17 +1,20 @@
 'use client'
 import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, Send, Sparkles, Zap, Copy, Check, Hourglass } from 'lucide-react'
+// Notice the new Maximize2, Minimize2, and Columns icons!
+import { X, Send, Sparkles, Zap, Copy, Check, Hourglass, Maximize2, Minimize2, Columns } from 'lucide-react'
 import { usePathname } from 'next/navigation'
 
 type Mood = 'idle' | 'happy' | 'thinking' | 'excited' | 'sleepy' | 'dizzy'
+type ViewMode = 'normal' | 'half' | 'full'
 type Message = { sender: 'spark' | 'user', text: string }
 
 export default function SparkAIAssistant() {
   const [isOpen, setIsOpen] = useState(false)
   const [mood, setMood] = useState<Mood>('idle')
+  const [viewMode, setViewMode] = useState<ViewMode>('normal') // --- NEW: View Mode State ---
   const [inputText, setInputText] = useState('')
-  const [isCooldown, setIsCooldown] = useState(false) // --- NEW: Cooldown state ---
+  const [isCooldown, setIsCooldown] = useState(false) 
   const [copiedCode, setCopiedCode] = useState<string | null>(null)
   const [messages, setMessages] = useState<Message[]>([
     { sender: 'spark', text: 'Hey Yash! Grab me, fling me across the screen, or ask me about the team! ✨' }
@@ -55,7 +58,7 @@ export default function SparkAIAssistant() {
       localStorage.setItem('spark_memory', JSON.stringify(messages))
     }
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages])
+  }, [messages, viewMode]) // Added viewMode as dependency so it scrolls to bottom when resizing
 
   useEffect(() => {
     if (isOpen || mood !== 'idle') return
@@ -70,10 +73,10 @@ export default function SparkAIAssistant() {
 
   const getPageContext = () => {
     let friendlyName = "the platform"
-    if (pathname.includes('/overview')) friendlyName = "the Main Dashboard"
-    else if (pathname.includes('/workspace')) friendlyName = "the IDE Workspace"
-    else if (pathname.includes('/internships')) friendlyName = "the Internships Pipeline"
-    else if (pathname.includes('/courses') || pathname.includes('/academy')) friendlyName = "the Apex Academy"
+    if (pathname?.includes('/overview')) friendlyName = "the Main Dashboard"
+    else if (pathname?.includes('/workspace')) friendlyName = "the IDE Workspace"
+    else if (pathname?.includes('/internships')) friendlyName = "the Internships Pipeline"
+    else if (pathname?.includes('/courses') || pathname?.includes('/academy')) friendlyName = "the Apex Academy"
     
     const activeWorkspaces = document.querySelectorAll('.workspace-card, [class*="workspace"]').length || document.body.innerText.match(/Recent Workspaces/i) ? "They have recent workspaces open." : ""
     const textOnScreen = document.body.innerText.substring(0, 500)
@@ -82,7 +85,7 @@ export default function SparkAIAssistant() {
   }
 
   const handleSendMessage = async () => {
-    if (!inputText.trim() || isCooldown) return // --- OPTION 1: Block send if on cooldown ---
+    if (!inputText.trim() || isCooldown) return 
 
     const userMessage = inputText
     const newMessages = [...messages, { sender: 'user', text: userMessage }] as Message[]
@@ -90,7 +93,6 @@ export default function SparkAIAssistant() {
     setInputText('')
     setMood('thinking')
     
-    // Activate 4-second cooldown
     setIsCooldown(true)
     setTimeout(() => setIsCooldown(false), 4000) 
 
@@ -107,7 +109,7 @@ export default function SparkAIAssistant() {
       const data = await response.json()
       
       setMood('excited')
-      setMessages(prev => [...prev, { sender: 'spark', text: data.reply }])
+      setMessages(prev => [...prev, { sender: 'spark', text: data.reply || data.error }])
       setTimeout(() => setMood('happy'), 2000)
 
     } catch (error) {
@@ -202,19 +204,45 @@ export default function SparkAIAssistant() {
             initial={{ opacity: 0, y: 20, scale: 0.8, transformOrigin: 'bottom right' }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.8 }}
-            className="bg-white border-4 border-slate-100 rounded-[2rem] w-80 shadow-[0_20px_50px_rgb(0,0,0,0.1)] mb-6 overflow-hidden flex flex-col pointer-events-auto"
+            // --- DYNAMIC CLASSES FOR VIEW MODES ---
+            className={`bg-white shadow-[0_20px_50px_rgb(0,0,0,0.1)] overflow-hidden flex flex-col pointer-events-auto transition-all duration-300 ease-in-out ${
+              viewMode === 'normal' ? 'w-80 h-[28rem] rounded-[2rem] border-4 border-slate-100 mb-6 relative' :
+              viewMode === 'half' ? 'fixed top-0 right-0 w-[50vw] h-[100vh] rounded-none border-l-4 border-slate-100 z-[200]' :
+              'fixed top-0 left-0 w-[100vw] h-[100vh] rounded-none border-0 z-[200]'
+            }`}
           >
-            <div className="bg-indigo-50 border-b-2 border-slate-100 p-4 flex justify-between items-center">
+            <div className="bg-indigo-50 border-b-2 border-slate-100 p-4 flex justify-between items-center shrink-0">
               <div className="flex items-center gap-2">
                 <Sparkles className="w-5 h-5 text-indigo-500"/>
                 <span className="font-black text-slate-800 tracking-tight">Spark AI</span>
               </div>
-              <button onClick={() => { setIsOpen(false); setMood('idle'); }} className="text-slate-400 hover:text-rose-500 transition-colors">
-                <X className="w-5 h-5"/>
-              </button>
+              
+              {/* --- NEW HEADER CONTROLS --- */}
+              <div className="flex items-center gap-3">
+                {viewMode !== 'normal' && (
+                  <button onClick={() => setViewMode('normal')} className="text-slate-400 hover:text-indigo-500 transition-colors" title="Default View">
+                    <Minimize2 className="w-4 h-4"/>
+                  </button>
+                )}
+                {viewMode !== 'half' && (
+                  <button onClick={() => setViewMode('half')} className="text-slate-400 hover:text-indigo-500 transition-colors" title="Half Screen View">
+                    <Columns className="w-4 h-4"/>
+                  </button>
+                )}
+                {viewMode !== 'full' && (
+                  <button onClick={() => setViewMode('full')} className="text-slate-400 hover:text-indigo-500 transition-colors" title="Full Screen View">
+                    <Maximize2 className="w-4 h-4"/>
+                  </button>
+                )}
+                <div className="w-px h-4 bg-slate-300 mx-1"></div>
+                <button onClick={() => { setIsOpen(false); setMood('idle'); setViewMode('normal'); }} className="text-slate-400 hover:text-rose-500 transition-colors" title="Close">
+                  <X className="w-5 h-5"/>
+                </button>
+              </div>
             </div>
 
-            <div className="p-4 h-64 overflow-y-auto flex flex-col gap-3 bg-slate-50/50">
+            {/* Changed from 'h-64' to 'flex-1' so it automatically fills the window */}
+            <div className="p-4 flex-1 overflow-y-auto flex flex-col gap-3 bg-slate-50/50">
               {messages.map((msg, idx) => (
                 <div key={idx} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
                   <div className={`max-w-[85%] p-3 rounded-2xl text-sm font-medium ${msg.sender === 'user' ? 'bg-indigo-500 text-white rounded-tr-sm shadow-[0_2px_0_rgb(67,56,202)]' : 'bg-white border-2 border-slate-100 text-slate-600 rounded-tl-sm shadow-sm'}`}>
@@ -235,7 +263,7 @@ export default function SparkAIAssistant() {
               <div ref={messagesEndRef} />
             </div>
 
-            <div className="p-3 border-t-2 border-slate-100 bg-white">
+            <div className="p-3 border-t-2 border-slate-100 bg-white shrink-0">
               <div className="flex items-center gap-2">
                 <input 
                   type="text" 
@@ -244,14 +272,14 @@ export default function SparkAIAssistant() {
                   onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
                   placeholder={isCooldown ? "Spark is catching his breath..." : "Ask Spark anything..."}
                   disabled={isCooldown}
-                  className="flex-1 bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-700 focus:outline-none focus:border-indigo-400 focus:bg-white transition-all placeholder:text-slate-300 disabled:opacity-60"
+                  className="flex-1 bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 focus:outline-none focus:border-indigo-400 focus:bg-white transition-all placeholder:text-slate-300 disabled:opacity-60"
                 />
                 <button 
                   onClick={handleSendMessage}
                   disabled={!inputText.trim() || isCooldown}
-                  className="bg-indigo-500 hover:bg-indigo-600 disabled:bg-slate-200 disabled:text-slate-400 text-white p-2.5 rounded-xl transition-all shadow-[0_2px_0_rgb(67,56,202)] disabled:shadow-none active:translate-y-[2px] active:shadow-none"
+                  className="bg-indigo-500 hover:bg-indigo-600 disabled:bg-slate-200 disabled:text-slate-400 text-white p-3 rounded-xl transition-all shadow-[0_2px_0_rgb(67,56,202)] disabled:shadow-none active:translate-y-[2px] active:shadow-none"
                 >
-                  {isCooldown ? <Hourglass className="w-4 h-4 animate-spin"/> : <Send className="w-4 h-4"/>}
+                  {isCooldown ? <Hourglass className="w-5 h-5 animate-spin"/> : <Send className="w-5 h-5"/>}
                 </button>
               </div>
             </div>
