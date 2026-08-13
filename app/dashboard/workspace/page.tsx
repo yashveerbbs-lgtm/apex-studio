@@ -33,6 +33,9 @@ export default function EnterpriseWorkspace() {
   const [isMounted, setIsMounted] = useState(false)
   const [currentUser, setCurrentUser] = useState<any>(null)
 
+  // --- NEW: MONACO THEME STATE ---
+  const [editorTheme, setEditorTheme] = useState('light')
+
   // Team & File State
   const [activeTeam, setActiveTeam] = useState<any>(null)
   const [userTeams, setUserTeams] = useState<any[]>([])
@@ -66,6 +69,25 @@ export default function EnterpriseWorkspace() {
     initializeSystem()
     const handleClick = () => setContextMenu(null)
     window.addEventListener('click', handleClick)
+
+    // --- NEW: THEME LISTENER ---
+    if (typeof window !== 'undefined') {
+      const currentTheme = localStorage.getItem('apex_theme') === 'dark' ? 'vs-dark' : 'light'
+      setEditorTheme(currentTheme)
+      
+      const handleThemeChange = () => {
+        const newTheme = localStorage.getItem('apex_theme') === 'dark' ? 'vs-dark' : 'light'
+        setEditorTheme(newTheme)
+      }
+      
+      window.addEventListener('themeChanged', handleThemeChange)
+      
+      return () => {
+        window.removeEventListener('click', handleClick)
+        window.removeEventListener('themeChanged', handleThemeChange)
+      }
+    }
+
     return () => window.removeEventListener('click', handleClick)
   }, [])
 
@@ -478,29 +500,29 @@ export default function EnterpriseWorkspace() {
   // ✨ WELCOME / INITIALIZATION SCREEN ✨
   if (!activeTeam) {
     return (
-      <div className="h-full flex items-center justify-center bg-slate-50 text-slate-800 p-6 font-sans transition-colors duration-500">
-        <div className="max-w-md w-full bg-white border-2 border-slate-100 p-8 rounded-[2rem] shadow-sm relative overflow-hidden">
+      <div className="h-full flex items-center justify-center bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-200 p-6 font-sans transition-colors duration-500">
+        <div className="max-w-md w-full bg-white dark:bg-slate-900 border-2 border-slate-100 dark:border-slate-800 p-8 rounded-[2rem] shadow-sm relative overflow-hidden">
           
           <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-indigo-400 to-purple-400"></div>
 
-          <div className="w-16 h-16 bg-indigo-50 rounded-2xl flex items-center justify-center mx-auto mb-6 border-2 border-indigo-100 shadow-sm">
-            <TerminalIcon className="w-8 h-8 text-indigo-500" />
+          <div className="w-16 h-16 bg-indigo-50 dark:bg-indigo-900/30 rounded-2xl flex items-center justify-center mx-auto mb-6 border-2 border-indigo-100 dark:border-indigo-800 shadow-sm">
+            <TerminalIcon className="w-8 h-8 text-indigo-500 dark:text-indigo-400" />
           </div>
-          <h2 className="text-2xl font-extrabold text-center mb-6 tracking-tight text-slate-800">Workspace Hub</h2>
+          <h2 className="text-2xl font-extrabold text-center mb-6 tracking-tight text-slate-800 dark:text-white">Workspace Hub</h2>
 
           <div className="mb-8">
-            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 px-1">
+            <h3 className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-3 px-1">
               Your Active Squads
             </h3>
             <div className="space-y-3 max-h-48 overflow-y-auto pr-2 mb-6">
               {userTeams.map((team) => (
                 <div
                   key={team.id}
-                  className="w-full flex items-center justify-between p-4 bg-slate-50 hover:bg-white border-2 border-slate-100 hover:border-indigo-300 rounded-xl transition-all group cursor-pointer shadow-sm hover:shadow"
+                  className="w-full flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/50 hover:bg-white dark:hover:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 hover:border-indigo-300 dark:hover:border-indigo-500/50 rounded-xl transition-all group cursor-pointer shadow-sm hover:shadow"
                   onClick={() => loadTeamWorkspace(team)}
                 >
-                  <span className="font-bold flex items-center gap-3 text-sm text-slate-700 group-hover:text-indigo-600 transition-colors">
-                    <Users className="w-4 h-4 text-indigo-400 group-hover:text-indigo-600 transition-colors" /> {team.name}
+                  <span className="font-bold flex items-center gap-3 text-sm text-slate-700 dark:text-slate-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                    <Users className="w-4 h-4 text-indigo-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors" /> {team.name}
                   </span>
 
                   <div className="flex items-center gap-2">
@@ -508,28 +530,28 @@ export default function EnterpriseWorkspace() {
                       <>
                         <button
                           onClick={(e) => handleEditTeam(e, team)}
-                          className="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-indigo-600 p-2 rounded-lg hover:bg-indigo-50 transition-all"
+                          className="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 p-2 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-all"
                         >
                           <Edit2 className="w-3.5 h-3.5" />
                         </button>
                         <button
                           onClick={(e) => handleDeleteTeam(e, team.id)}
-                          className="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-red-500 p-2 rounded-lg hover:bg-red-50 transition-all"
+                          className="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-red-500 dark:hover:text-red-400 p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/30 transition-all"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
                       </>
                     )}
-                    <div className="bg-white p-1.5 rounded-md border-2 border-slate-100 group-hover:border-indigo-200 group-hover:bg-indigo-50 transition-colors">
-                      <ChevronRight className="w-3 h-3 text-slate-400 group-hover:text-indigo-600" />
+                    <div className="bg-white dark:bg-slate-700 p-1.5 rounded-md border-2 border-slate-100 dark:border-slate-600 group-hover:border-indigo-200 dark:group-hover:border-indigo-500/50 group-hover:bg-indigo-50 dark:group-hover:bg-indigo-900/50 transition-colors">
+                      <ChevronRight className="w-3 h-3 text-slate-400 dark:text-slate-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400" />
                     </div>
                   </div>
                 </div>
               ))}
 
               {userTeams.length === 0 && (
-                <div className="text-center py-6 bg-slate-50 border-2 border-dashed border-slate-200 rounded-xl">
-                  <p className="text-xs text-slate-400 uppercase tracking-widest font-bold">
+                <div className="text-center py-6 bg-slate-50 dark:bg-slate-800/30 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl">
+                  <p className="text-xs text-slate-400 dark:text-slate-500 uppercase tracking-widest font-bold">
                     No active squads
                   </p>
                 </div>
@@ -542,12 +564,12 @@ export default function EnterpriseWorkspace() {
                 value={newTeamName}
                 onChange={(e) => setNewTeamName(e.target.value)}
                 placeholder="New Squad Name..."
-                className="flex-1 bg-slate-50 border-2 border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-800 focus:outline-none focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all placeholder:text-slate-400"
+                className="flex-1 bg-slate-50 dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold text-slate-800 dark:text-white focus:outline-none focus:bg-white dark:focus:bg-slate-900 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500"
               />
               <button
                 type="submit"
                 disabled={isCreatingTeam || !newTeamName.trim()}
-                className="btn-indigo px-5 py-3 text-xs flex items-center gap-2 disabled:opacity-50"
+                className="bg-indigo-500 hover:bg-indigo-600 text-white rounded-xl px-5 py-3 text-xs flex items-center gap-2 disabled:opacity-50 font-bold transition-all shadow-[0_4px_0_rgb(67,56,202)] hover:shadow-[0_2px_0_rgb(67,56,202)] hover:translate-y-[2px] active:translate-y-[4px] active:shadow-none"
               >
                 <Plus className="w-4 h-4" /> Create
               </button>
@@ -562,25 +584,25 @@ export default function EnterpriseWorkspace() {
   const lessonNode = nodes.find((n) => n.name === 'LESSON.md')
 
   return (
-    <div className="h-full flex flex-col bg-slate-50 text-slate-800 font-sans overflow-hidden relative transition-colors duration-500">
+    <div className="h-full flex flex-col bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-200 font-sans overflow-hidden relative transition-colors duration-500">
       
       {/* 🚨 THE CERTIFICATE MODAL OVERLAY 🚨 */}
       {showCertificate && (
-        <div className="fixed inset-0 z-[100] bg-slate-900/40 backdrop-blur-sm flex flex-col items-center justify-center p-6 animate-in fade-in duration-500">
-          <div className="relative w-full max-w-5xl flex flex-col items-center animate-in zoom-in-95 duration-500 bg-white border-2 border-slate-100 rounded-[2rem] p-8 shadow-[0_8px_30px_rgb(0,0,0,0.08)]">
-            <div className="w-full flex justify-between items-end mb-6 border-b-2 border-slate-100 pb-4">
+        <div className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm flex flex-col items-center justify-center p-6 animate-in fade-in duration-500">
+          <div className="relative w-full max-w-5xl flex flex-col items-center animate-in zoom-in-95 duration-500 bg-white dark:bg-slate-900 border-2 border-slate-100 dark:border-slate-800 rounded-[2rem] p-8 shadow-[0_8px_30px_rgb(0,0,0,0.08)]">
+            <div className="w-full flex justify-between items-end mb-6 border-b-2 border-slate-100 dark:border-slate-800 pb-4">
               <div className="text-left">
-                <h2 className="text-3xl font-black text-emerald-500 flex items-center gap-2">
+                <h2 className="text-3xl font-black text-emerald-500 dark:text-emerald-400 flex items-center gap-2">
                   Course Completed! <Sparkles className="w-6 h-6 text-yellow-400 fill-yellow-400" />
                 </h2>
-                <p className="text-slate-500 font-bold text-sm mt-1">
+                <p className="text-slate-500 dark:text-slate-400 font-bold text-sm mt-1">
                   Credential generated and secured.
                 </p>
               </div>
 
               <button
                 onClick={() => setShowCertificate(false)}
-                className="text-slate-400 hover:text-slate-600 bg-slate-50 hover:bg-slate-100 p-2.5 rounded-xl transition-all border-2 border-slate-200"
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 p-2.5 rounded-xl transition-all border-2 border-slate-200 dark:border-slate-700"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -598,7 +620,7 @@ export default function EnterpriseWorkspace() {
 
       {contextMenu && (
         <div
-          className="absolute z-50 bg-white border-2 border-slate-200 shadow-xl py-2 w-60 text-slate-700 font-bold text-xs rounded-xl overflow-hidden"
+          className="absolute z-50 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 shadow-xl py-2 w-60 text-slate-700 dark:text-slate-300 font-bold text-xs rounded-xl overflow-hidden"
           style={{ top: contextMenu.y, left: contextMenu.x }}
         >
           <button
@@ -606,7 +628,7 @@ export default function EnterpriseWorkspace() {
               handleCreateFile()
               setContextMenu(null)
             }}
-            className="w-full text-left px-4 py-2.5 hover:bg-indigo-50 hover:text-indigo-600 flex items-center gap-2 transition-colors"
+            className="w-full text-left px-4 py-2.5 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 hover:text-indigo-600 dark:hover:text-indigo-400 flex items-center gap-2 transition-colors"
           >
             <FilePlus className="w-4 h-4" /> New File...
           </button>
@@ -615,20 +637,20 @@ export default function EnterpriseWorkspace() {
               handleCreateFolder()
               setContextMenu(null)
             }}
-            className="w-full text-left px-4 py-2.5 hover:bg-indigo-50 hover:text-indigo-600 flex items-center gap-2 transition-colors"
+            className="w-full text-left px-4 py-2.5 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 hover:text-indigo-600 dark:hover:text-indigo-400 flex items-center gap-2 transition-colors"
           >
             <FolderPlus className="w-4 h-4" /> New Folder...
           </button>
 
           {contextMenu.node && (
             <>
-              <div className="h-px bg-slate-100 my-1 mx-2"></div>
+              <div className="h-px bg-slate-100 dark:bg-slate-700 my-1 mx-2"></div>
               <button
                 onClick={() => {
                   handleRenameNode(contextMenu.node)
                   setContextMenu(null)
                 }}
-                className="w-full text-left px-4 py-2.5 hover:bg-indigo-50 hover:text-indigo-600 flex justify-between items-center group transition-colors"
+                className="w-full text-left px-4 py-2.5 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 hover:text-indigo-600 dark:hover:text-indigo-400 flex justify-between items-center group transition-colors"
               >
                 <span className="flex items-center gap-2">
                   <Edit2 className="w-4 h-4" /> Rename
@@ -639,7 +661,7 @@ export default function EnterpriseWorkspace() {
                   handleDeleteNode(contextMenu.node)
                   setContextMenu(null)
                 }}
-                className="w-full text-left px-4 py-2.5 hover:bg-red-50 hover:text-red-600 flex justify-between items-center group text-red-500 transition-colors"
+                className="w-full text-left px-4 py-2.5 hover:bg-red-50 dark:hover:bg-red-900/30 hover:text-red-600 dark:hover:text-red-400 flex justify-between items-center group text-red-500 transition-colors"
               >
                 <span className="flex items-center gap-2">
                   <Trash2 className="w-4 h-4" /> Delete
@@ -651,16 +673,16 @@ export default function EnterpriseWorkspace() {
       )}
 
       {/* WORKSPACE HEADER */}
-      <header className="h-14 border-b-2 border-slate-200 bg-white flex items-center justify-between px-4 shrink-0 shadow-sm z-10">
+      <header className="h-14 border-b-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center justify-between px-4 shrink-0 shadow-sm z-10 transition-colors">
         <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2 text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-lg border-2 border-indigo-100 font-black text-sm shadow-sm">
+          <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-3 py-1.5 rounded-lg border-2 border-indigo-100 dark:border-indigo-500/30 font-black text-sm shadow-sm transition-colors">
             <Users className="w-4 h-4" /> {activeTeam.name}
           </div>
 
           {!isAcademy && (
             <button
               onClick={handleInviteMember}
-              className="flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-indigo-600 bg-slate-50 hover:bg-indigo-50 border-2 border-slate-200 hover:border-indigo-200 px-3 py-1.5 rounded-lg transition-colors shadow-sm"
+              className="flex items-center gap-1.5 text-xs font-bold text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 bg-slate-50 dark:bg-slate-800 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 border-2 border-slate-200 dark:border-slate-700 hover:border-indigo-200 dark:hover:border-indigo-500/50 px-3 py-1.5 rounded-lg transition-colors shadow-sm"
             >
               <UserPlus className="w-3.5 h-3.5" /> Invite Teammates
             </button>
@@ -671,7 +693,7 @@ export default function EnterpriseWorkspace() {
           {isAcademy && (
             <button
               onClick={() => setShowCertificate(true)}
-              className="flex items-center gap-1.5 text-slate-400 hover:text-amber-500 text-xs font-bold px-3 py-2 rounded-lg transition-colors bg-white border-2 border-slate-100 shadow-sm hover:border-amber-200 hover:bg-amber-50"
+              className="flex items-center gap-1.5 text-slate-400 dark:text-slate-500 hover:text-amber-500 dark:hover:text-amber-400 text-xs font-bold px-3 py-2 rounded-lg transition-colors bg-white dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 shadow-sm hover:border-amber-200 dark:hover:border-amber-500/50 hover:bg-amber-50 dark:hover:bg-amber-900/30"
               title="God Mode: Instantly unlock certificate"
             >
               <Zap className="w-3.5 h-3.5" /> Skip to End
@@ -682,7 +704,7 @@ export default function EnterpriseWorkspace() {
             <button
               onClick={handleCheckCode}
               disabled={!activeFile || activeFile.name === 'LESSON.md'}
-              className="flex items-center gap-1.5 btn-indigo text-xs px-4 py-2 disabled:opacity-50 animate-in zoom-in duration-300"
+              className="flex items-center gap-1.5 bg-indigo-500 hover:bg-indigo-600 text-white shadow-[0_4px_0_rgb(67,56,202)] hover:shadow-[0_2px_0_rgb(67,56,202)] hover:translate-y-[2px] active:translate-y-[4px] active:shadow-none transition-all rounded-xl font-bold text-xs px-4 py-2 disabled:opacity-50 animate-in zoom-in duration-300"
             >
               <ScanSearch className="w-4 h-4" /> Check Code
             </button>
@@ -704,15 +726,15 @@ export default function EnterpriseWorkspace() {
               disabled={!lessonPassed}
               className={`flex items-center gap-1.5 text-xs font-bold px-4 py-2 rounded-xl transition-all ${
                 lessonPassed
-                  ? 'btn-emerald'
-                  : 'bg-slate-100 text-slate-400 border-2 border-slate-200 opacity-50 cursor-not-allowed'
+                  ? 'bg-emerald-500 hover:bg-emerald-600 text-white shadow-[0_4px_0_rgb(16,185,129)] hover:shadow-[0_2px_0_rgb(16,185,129)] hover:translate-y-[2px] active:translate-y-[4px] active:shadow-none'
+                  : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 border-2 border-slate-200 dark:border-slate-700 opacity-50 cursor-not-allowed'
               }`}
             >
               <GraduationCap className="w-4 h-4" /> Next Lesson
             </button>
           )}
 
-          {isAcademy && <div className="h-6 w-px bg-slate-200 mx-2"></div>}
+          {isAcademy && <div className="h-6 w-px bg-slate-200 dark:bg-slate-700 mx-2 transition-colors"></div>}
 
           <button
             onClick={executeCode}
@@ -730,13 +752,13 @@ export default function EnterpriseWorkspace() {
         
         {/* FILE EXPLORER SIDEBAR */}
         <div
-          className="w-64 bg-slate-50 border-r-2 border-slate-200 flex flex-col shrink-0"
+          className="w-64 bg-slate-50 dark:bg-slate-900/50 border-r-2 border-slate-200 dark:border-slate-800 flex flex-col shrink-0 transition-colors"
           onContextMenu={(e) => handleContextMenu(e, null)}
         >
-          <div className="h-10 flex items-center justify-between px-4 text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mt-2 mb-2">
+          <div className="h-10 flex items-center justify-between px-4 text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-2 mb-2">
             <span>Explorer</span>
             <div className="flex gap-2">
-              <button onClick={handleCreateFile} className="hover:text-indigo-600 bg-white p-1 rounded-md border-2 border-slate-100 shadow-sm transition-colors">
+              <button onClick={handleCreateFile} className="hover:text-indigo-600 dark:hover:text-indigo-400 bg-white dark:bg-slate-800 p-1 rounded-md border-2 border-slate-100 dark:border-slate-700 shadow-sm transition-colors">
                 <FilePlus className="w-3.5 h-3.5" />
               </button>
             </div>
@@ -749,13 +771,13 @@ export default function EnterpriseWorkspace() {
                 onContextMenu={(e) => handleContextMenu(e, node)}
                 className={`w-full flex items-center gap-2 px-3 py-2 text-sm font-bold rounded-xl transition-colors ${
                   activeFile?.id === node.id
-                    ? 'bg-indigo-100 text-indigo-700 border-2 border-indigo-200 shadow-sm'
-                    : 'text-slate-600 hover:bg-white hover:text-indigo-600 border-2 border-transparent hover:border-slate-100 hover:shadow-sm'
+                    ? 'bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 border-2 border-indigo-200 dark:border-indigo-500/30 shadow-sm'
+                    : 'text-slate-600 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800 hover:text-indigo-600 dark:hover:text-indigo-400 border-2 border-transparent hover:border-slate-100 dark:hover:border-slate-700 hover:shadow-sm'
                 }`}
               >
                 <FileIcon
                   className={`w-4 h-4 shrink-0 ${
-                    node.name.endsWith('.md') ? 'text-indigo-500' : 'text-slate-400'
+                    node.name.endsWith('.md') ? 'text-indigo-500 dark:text-indigo-400' : 'text-slate-400 dark:text-slate-500'
                   }`}
                 />
                 <span className="truncate">{node.name}</span>
@@ -764,28 +786,31 @@ export default function EnterpriseWorkspace() {
           </div>
         </div>
 
-        <div className="flex-1 flex flex-col relative bg-white">
+        <div className="flex-1 flex flex-col relative bg-white dark:bg-slate-950 transition-colors">
           <div className="flex-1 flex min-h-0 overflow-hidden">
             {isAcademy && lessonNode && (
               <div
-                className={`flex-1 flex flex-col border-r-2 border-slate-200 transition-colors duration-500 ${
-                  isExamMode ? 'bg-rose-50/50' : 'bg-slate-50'
+                className={`flex-1 flex flex-col border-r-2 border-slate-200 dark:border-slate-800 transition-colors duration-500 ${
+                  isExamMode ? 'bg-rose-50/50 dark:bg-rose-950/20' : 'bg-slate-50 dark:bg-slate-900/50'
                 }`}
               >
-                <div className="flex bg-slate-100 overflow-x-auto border-b-2 border-slate-200 pt-2 px-2 gap-1">
+                <div className="flex bg-slate-100 dark:bg-slate-900 overflow-x-auto border-b-2 border-slate-200 dark:border-slate-800 pt-2 px-2 gap-1 transition-colors">
                   <div
-                    className={`px-4 py-2 text-xs font-bold rounded-t-xl flex items-center gap-2 border-2 border-b-0 ${
-                      isExamMode ? 'border-rose-200 text-rose-600 bg-rose-50' : 'border-indigo-200 text-indigo-700 bg-indigo-50'
+                    className={`px-4 py-2 text-xs font-bold rounded-t-xl flex items-center gap-2 border-2 border-b-0 transition-colors ${
+                      isExamMode 
+                        ? 'border-rose-200 dark:border-rose-900/50 text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/50' 
+                        : 'border-indigo-200 dark:border-indigo-800/50 text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-900/30'
                     }`}
                   >
                     <BookOpen className="w-3.5 h-3.5" /> {lessonNode.name}
                   </div>
                 </div>
                 <div className="flex-1 relative pt-4">
+                  {/* --- UPDATED MONACO THEME PROP --- */}
                   <Editor
                     height="100%"
                     language="markdown"
-                    theme="light"
+                    theme={editorTheme}
                     value={lessonNode.content}
                     options={{
                       minimap: { enabled: false },
@@ -800,19 +825,20 @@ export default function EnterpriseWorkspace() {
               </div>
             )}
 
-            <div className="flex-1 flex flex-col bg-white">
+            <div className="flex-1 flex flex-col bg-white dark:bg-slate-950 transition-colors">
               {activeFile && (!isAcademy || activeFile.name !== 'LESSON.md') ? (
                 <>
-                  <div className="flex bg-slate-100 overflow-x-auto border-b-2 border-slate-200 pt-2 px-2 gap-1">
-                    <div className="px-4 py-2 text-xs font-bold rounded-t-xl border-2 border-b-0 border-slate-200 bg-white text-slate-800 flex items-center gap-2 shadow-sm">
-                      <Code2 className="w-3.5 h-3.5 text-indigo-500" /> {activeFile.name}
+                  <div className="flex bg-slate-100 dark:bg-slate-900 overflow-x-auto border-b-2 border-slate-200 dark:border-slate-800 pt-2 px-2 gap-1 transition-colors">
+                    <div className="px-4 py-2 text-xs font-bold rounded-t-xl border-2 border-b-0 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-slate-200 flex items-center gap-2 shadow-sm transition-colors">
+                      <Code2 className="w-3.5 h-3.5 text-indigo-500 dark:text-indigo-400" /> {activeFile.name}
                     </div>
                   </div>
                   <div className="flex-1 relative pt-4">
+                    {/* --- UPDATED MONACO THEME PROP --- */}
                     <Editor
                       height="100%"
                       language={activeFile.language}
-                      theme="light"
+                      theme={editorTheme}
                       value={activeFile.content}
                       onChange={handleEditorChange}
                       onMount={handleEditorDidMount}
@@ -827,8 +853,8 @@ export default function EnterpriseWorkspace() {
                   </div>
                 </>
               ) : (
-                <div className="flex-1 flex flex-col items-center justify-center text-slate-400 text-sm font-bold bg-slate-50">
-                  <Code2 className="w-16 h-16 text-slate-200 mb-4" />
+                <div className="flex-1 flex flex-col items-center justify-center text-slate-400 dark:text-slate-600 text-sm font-bold bg-slate-50 dark:bg-slate-900/50 transition-colors">
+                  <Code2 className="w-16 h-16 text-slate-200 dark:text-slate-700 mb-4" />
                   Select a file from the explorer to begin.
                 </div>
               )}
@@ -870,24 +896,24 @@ export default function EnterpriseWorkspace() {
         </div>
 
         {/* 🚨 SQUAD CHAT SIDEBAR 🚨 */}
-        <div className="w-80 border-l-2 border-slate-200 bg-slate-50 flex flex-col shrink-0">
-          <div className="h-14 bg-white border-b-2 border-slate-200 flex items-center px-4 justify-between shadow-sm z-10">
-            <span className="text-xs font-extrabold text-slate-500 uppercase tracking-widest flex items-center gap-2">
-              <Users className="w-4 h-4 text-indigo-500" /> {isAcademy ? 'Instructor Hub' : 'Squad Chat'}
+        <div className="w-80 border-l-2 border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 flex flex-col shrink-0 transition-colors">
+          <div className="h-14 bg-white dark:bg-slate-900 border-b-2 border-slate-200 dark:border-slate-800 flex items-center px-4 justify-between shadow-sm z-10 transition-colors">
+            <span className="text-xs font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-widest flex items-center gap-2">
+              <Users className="w-4 h-4 text-indigo-500 dark:text-indigo-400" /> {isAcademy ? 'Instructor Hub' : 'Squad Chat'}
             </span>
           </div>
-          <div className="flex-1 overflow-y-auto p-4 space-y-4 flex flex-col bg-slate-50">
+          <div className="flex-1 overflow-y-auto p-4 space-y-4 flex flex-col bg-slate-50 dark:bg-slate-900/50 transition-colors">
             {messages.map((msg) => (
               <div key={msg.id} className="flex flex-col items-start">
                 <div className={`max-w-[90%] ${msg.user_id === currentUser?.id ? 'ml-auto' : ''}`}>
                   <div className="flex items-baseline gap-2 mb-1 justify-end">
-                    <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">{msg.sender_name}</span>
+                    <span className="text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest">{msg.sender_name}</span>
                   </div>
                   <div
-                    className={`p-3 rounded-2xl text-sm font-medium shadow-sm border-2 ${
+                    className={`p-3 rounded-2xl text-sm font-medium shadow-sm border-2 transition-colors ${
                       msg.user_id === currentUser?.id 
                         ? 'bg-indigo-500 text-white border-indigo-600 rounded-tr-sm' 
-                        : 'bg-white text-slate-700 border-slate-200 rounded-tl-sm'
+                        : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 rounded-tl-sm'
                     }`}
                   >
                     {msg.text}
@@ -896,16 +922,16 @@ export default function EnterpriseWorkspace() {
               </div>
             ))}
           </div>
-          <div className="p-4 border-t-2 border-slate-200 bg-white">
+          <div className="p-4 border-t-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 transition-colors">
             <form onSubmit={handleSendMessage} className="flex gap-2">
               <input
                 type="text"
                 value={chatMessage}
                 onChange={(e) => setChatMessage(e.target.value)}
                 placeholder={isAcademy ? 'Ask for help...' : 'Message squad...'}
-                className="flex-1 bg-slate-50 border-2 border-slate-200 rounded-xl px-3 py-2.5 text-sm font-bold text-slate-700 focus:outline-none focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all placeholder:text-slate-400"
+                className="flex-1 bg-slate-50 dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 text-sm font-bold text-slate-700 dark:text-slate-200 focus:outline-none focus:bg-white dark:focus:bg-slate-900 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500"
               />
-              <button type="submit" className="btn-indigo p-2.5 flex items-center justify-center">
+              <button type="submit" className="bg-indigo-500 hover:bg-indigo-600 text-white p-2.5 flex items-center justify-center rounded-xl transition-all shadow-[0_4px_0_rgb(67,56,202)] hover:shadow-[0_2px_0_rgb(67,56,202)] hover:translate-y-[2px] active:translate-y-[4px] active:shadow-none">
                 <Send className="w-4 h-4" />
               </button>
             </form>
