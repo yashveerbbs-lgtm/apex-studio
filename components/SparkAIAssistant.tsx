@@ -1,8 +1,7 @@
 'use client'
 import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-// Notice the new Maximize2, Minimize2, and Columns icons!
-import { X, Send, Sparkles, Zap, Copy, Check, Hourglass, Maximize2, Minimize2, Columns } from 'lucide-react'
+import { X, Send, Sparkles, Zap, Copy, Check, Hourglass, Maximize2, Minimize2, Columns, Trophy } from 'lucide-react'
 import { usePathname } from 'next/navigation'
 
 type Mood = 'idle' | 'happy' | 'thinking' | 'excited' | 'sleepy' | 'dizzy'
@@ -12,10 +11,14 @@ type Message = { sender: 'spark' | 'user', text: string }
 export default function SparkAIAssistant() {
   const [isOpen, setIsOpen] = useState(false)
   const [mood, setMood] = useState<Mood>('idle')
-  const [viewMode, setViewMode] = useState<ViewMode>('normal') // --- NEW: View Mode State ---
+  const [viewMode, setViewMode] = useState<ViewMode>('normal')
   const [inputText, setInputText] = useState('')
   const [isCooldown, setIsCooldown] = useState(false) 
   const [copiedCode, setCopiedCode] = useState<string | null>(null)
+  
+  // --- GAMIFICATION STATES ---
+  const [xp, setXp] = useState(0)
+  
   const [messages, setMessages] = useState<Message[]>([
     { sender: 'spark', text: 'Hey Yash! Grab me, fling me across the screen, or ask me about the team! ✨' }
   ])
@@ -23,9 +26,21 @@ export default function SparkAIAssistant() {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const pathname = usePathname()
 
+  // Calculate Rank based on XP
+  const getRank = (currentXp: number) => {
+    if (currentXp < 100) return 'Rookie'
+    if (currentXp < 500) return 'Pro'
+    if (currentXp < 1000) return 'Elite'
+    return 'Apex'
+  }
+
   useEffect(() => {
     const savedChat = localStorage.getItem('spark_memory')
     if (savedChat) setMessages(JSON.parse(savedChat))
+
+    // Load saved XP
+    const savedXp = parseInt(localStorage.getItem('spark_xp') || '0')
+    setXp(savedXp)
 
     const lastVisit = localStorage.getItem('spark_last_visit')
     const currentStreak = parseInt(localStorage.getItem('spark_streak') || '0')
@@ -40,11 +55,17 @@ export default function SparkAIAssistant() {
       localStorage.setItem('spark_streak', newStreak.toString())
 
       if (newStreak > 1) {
+        // Award massive XP for maintaining a streak!
+        const streakBonus = 50 * newStreak
+        const newTotalXp = savedXp + streakBonus
+        setXp(newTotalXp)
+        localStorage.setItem('spark_xp', newTotalXp.toString())
+
         setTimeout(() => {
           setIsOpen(true)
           setMood('excited')
           setMessages(prev => {
-            const newMsgs = [...prev, { sender: 'spark', text: `Welcome back to the studio! You are on a ${newStreak}-day coding streak! Absolute legend. 🔥🚀` }]
+            const newMsgs = [...prev, { sender: 'spark', text: `Welcome back! You are on a ${newStreak}-day streak! +${streakBonus} XP awarded! 🔥🚀` }]
             localStorage.setItem('spark_memory', JSON.stringify(newMsgs))
             return newMsgs as Message[]
           })
@@ -58,7 +79,7 @@ export default function SparkAIAssistant() {
       localStorage.setItem('spark_memory', JSON.stringify(messages))
     }
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages, viewMode]) // Added viewMode as dependency so it scrolls to bottom when resizing
+  }, [messages, viewMode]) 
 
   useEffect(() => {
     if (isOpen || mood !== 'idle') return
@@ -73,7 +94,8 @@ export default function SparkAIAssistant() {
 
   const getPageContext = () => {
     let friendlyName = "the platform"
-    if (pathname?.includes('/overview')) friendlyName = "the Main Dashboard"
+    // CHANGED: Now looks for /home instead of /overview
+    if (pathname?.includes('/home')) friendlyName = "the Home Page" 
     else if (pathname?.includes('/workspace')) friendlyName = "the IDE Workspace"
     else if (pathname?.includes('/internships')) friendlyName = "the Internships Pipeline"
     else if (pathname?.includes('/courses') || pathname?.includes('/academy')) friendlyName = "the Apex Academy"
@@ -95,6 +117,11 @@ export default function SparkAIAssistant() {
     
     setIsCooldown(true)
     setTimeout(() => setIsCooldown(false), 4000) 
+
+    // Award +10 XP for using the AI
+    const newXp = xp + 10
+    setXp(newXp)
+    localStorage.setItem('spark_xp', newXp.toString())
 
     try {
       const pageContext = getPageContext()
@@ -204,7 +231,6 @@ export default function SparkAIAssistant() {
             initial={{ opacity: 0, y: 20, scale: 0.8, transformOrigin: 'bottom right' }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.8 }}
-            // --- DYNAMIC CLASSES FOR VIEW MODES ---
             className={`bg-white shadow-[0_20px_50px_rgb(0,0,0,0.1)] overflow-hidden flex flex-col pointer-events-auto transition-all duration-300 ease-in-out ${
               viewMode === 'normal' ? 'w-80 h-[28rem] rounded-[2rem] border-4 border-slate-100 mb-6 relative' :
               viewMode === 'half' ? 'fixed top-0 right-0 w-[50vw] h-[100vh] rounded-none border-l-4 border-slate-100 z-[200]' :
@@ -214,10 +240,15 @@ export default function SparkAIAssistant() {
             <div className="bg-indigo-50 border-b-2 border-slate-100 p-4 flex justify-between items-center shrink-0">
               <div className="flex items-center gap-2">
                 <Sparkles className="w-5 h-5 text-indigo-500"/>
-                <span className="font-black text-slate-800 tracking-tight">Spark AI</span>
+                <span className="font-black text-slate-800 tracking-tight flex items-center gap-2">
+                  Spark AI
+                  {/* --- NEW GAMIFICATION UI BADGE --- */}
+                  <span className="flex items-center gap-1 text-[10px] uppercase font-bold tracking-wider bg-indigo-100 text-indigo-600 px-2 py-0.5 rounded-full">
+                    <Trophy className="w-3 h-3"/> {getRank(xp)} • {xp} XP
+                  </span>
+                </span>
               </div>
               
-              {/* --- NEW HEADER CONTROLS --- */}
               <div className="flex items-center gap-3">
                 {viewMode !== 'normal' && (
                   <button onClick={() => setViewMode('normal')} className="text-slate-400 hover:text-indigo-500 transition-colors" title="Default View">
@@ -241,7 +272,6 @@ export default function SparkAIAssistant() {
               </div>
             </div>
 
-            {/* Changed from 'h-64' to 'flex-1' so it automatically fills the window */}
             <div className="p-4 flex-1 overflow-y-auto flex flex-col gap-3 bg-slate-50/50">
               {messages.map((msg, idx) => (
                 <div key={idx} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
