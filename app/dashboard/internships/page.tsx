@@ -20,8 +20,15 @@ export default function InternshipsRouter() {
     const { data: { user } } = await supabase.auth.getUser()
     if (user) {
       setCurrentUserId(user.id)
-      const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-      setRole(profile?.role || 'INTERN')
+      
+      // 🚨 NEW: Force the page to read the local role first!
+      const localRole = localStorage.getItem('apex_role')
+      if (localRole) {
+        setRole(localRole as any)
+      } else {
+        const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+        setRole(profile?.role || 'INTERN')
+      }
     }
     setLoading(false)
   }
