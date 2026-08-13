@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* 🔥 THE TAILWIND v4 FIX: Force Tailwind to listen to the toggle button, not the OS! */
+@custom-variant dark (&:is(.dark *));
+
 :root {
   /* Soft, cozy light mode background */
   --background: #F7F9FC;
@@ -15,12 +18,10 @@
   --font-mono: 'Fira Code', 'JetBrains Mono', var(--font-geist-mono), monospace;
 }
 
-/* Soft Dark Mode - deep rich slate instead of pitch black */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0F172A; 
-    --foreground: #F8FAFC; 
-  }
+/* 🔥 THE FIX: Changed from @media to the .dark class selector */
+.dark {
+  --background: #0F172A; 
+  --foreground: #F8FAFC; 
 }
 
 body {
