@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { supabase } from '../../utils/supabase'
-import { CheckCircle2, Lock, Sparkles, Zap, UserX, Menu, X, BookOpen, HeartHandshake, Moon, Sun } from 'lucide-react'
+import { CheckCircle2, Lock, Sparkles, Zap, UserX, Menu, X, BookOpen, HeartHandshake, Moon, Sun, Briefcase, Users, Search, Trophy } from 'lucide-react'
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
@@ -11,7 +11,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   
   // Legal Clickwrap & Role State
   const [currentUser, setCurrentUser] = useState<any>(null)
-  const [userRole, setUserRole] = useState<'ADMIN' | 'INTERN'>('INTERN')
+  const [userRole, setUserRole] = useState<'ADMIN' | 'INTERN' | 'EMPLOYER'>('INTERN')
   const [showClickwrap, setShowClickwrap] = useState(true)
   const [hasAgreed, setHasAgreed] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -80,11 +80,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     router.push('/')
   }
 
-  async function toggleGodMode() {
-    if (!currentUser || !isExecutive) return 
+  async function toggleUserMode() {
+    if (!currentUser) return 
     
-    const newRole = userRole === 'ADMIN' ? 'INTERN' : 'ADMIN'
-    const displayName = currentUser?.user_metadata?.full_name || currentUser?.email?.split('@')[0] || 'Executive'
+    // Cycle between INTERN (Student) and EMPLOYER (Recruiter)
+    const newRole = userRole === 'EMPLOYER' ? 'INTERN' : 'EMPLOYER'
+    const displayName = currentUser?.user_metadata?.full_name || currentUser?.email?.split('@')[0] || 'User'
     
     await supabase.from('profiles').upsert({
       id: currentUser.id,
@@ -92,7 +93,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       role: newRole
     })
     
-    window.location.reload()
+    setUserRole(newRole)
+    if (newRole === 'EMPLOYER') {
+      router.push('/dashboard/employer')
+    } else {
+      router.push('/dashboard/home')
+    }
   }
 
   const getLinkStyle = (path: string) => {
@@ -180,9 +186,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 APEX <Sparkles className="w-5 h-5 text-yellow-400 fill-yellow-400" />
               </h1>
               <div className="flex items-center gap-2 mt-1">
-                <div className={`w-2 h-2 rounded-full animate-pulse ${userRole === 'ADMIN' ? 'bg-indigo-500' : 'bg-emerald-500'}`}></div>
-                <span className={`text-[10px] tracking-wider font-bold uppercase ${userRole === 'ADMIN' ? 'text-indigo-500 dark:text-indigo-400' : 'text-slate-400 dark:text-slate-500'}`}>
-                  {userRole === 'ADMIN' ? 'Instructor Mode' : 'Student Hub'}
+                <div className={`w-2 h-2 rounded-full animate-pulse ${userRole === 'EMPLOYER' ? 'bg-amber-500' : 'bg-emerald-500'}`}></div>
+                <span className={`text-[10px] tracking-wider font-bold uppercase ${userRole === 'EMPLOYER' ? 'text-amber-500 dark:text-amber-400' : 'text-slate-400 dark:text-slate-500'}`}>
+                  {userRole === 'EMPLOYER' ? 'Employer Portal' : 'Student Hub'}
                 </span>
               </div>
             </div>
@@ -196,34 +202,59 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
 
           <nav className="px-4 space-y-6 pb-6">
-            <div>
-              <h2 className="text-[11px] font-extrabold text-slate-300 dark:text-slate-600 mb-2 tracking-widest uppercase px-4">Workspace</h2>
-              <div className="space-y-1">
-                <Link href="/dashboard/home" onClick={() => setIsSidebarOpen(false)} className={getLinkStyle('/dashboard/home')}>Home</Link>
-                <Link href="/dashboard/internships" onClick={() => setIsSidebarOpen(false)} className={getLinkStyle('/dashboard/internships')}>Internships</Link>
-              </div>
-            </div>
-            <div>
-              <h2 className="text-[11px] font-extrabold text-slate-300 dark:text-slate-600 mb-2 tracking-widest uppercase px-4">Learning</h2>
-              <div className="space-y-1">
-                <Link href="/dashboard/courses" onClick={() => setIsSidebarOpen(false)} className={getAcademyStyle('/dashboard/courses')}>Learning Courses</Link>
-                <Link href="/dashboard/services" onClick={() => setIsSidebarOpen(false)} className={getLinkStyle('/dashboard/services')}>Services</Link>
-                <Link href="/dashboard/showcase" onClick={() => setIsSidebarOpen(false)} className={getLinkStyle('/dashboard/showcase')}>Showcase</Link>
-              </div>
-            </div>
-            <div>
-              <h2 className="text-[11px] font-extrabold text-slate-300 dark:text-slate-600 mb-2 tracking-widest uppercase px-4">Community</h2>
-              <div className="space-y-1">
-                <Link href="/dashboard/community" onClick={() => setIsSidebarOpen(false)} className={getLinkStyle('/dashboard/community')}>Dev Lounge</Link>
-                <Link href="/dashboard/hackathons" onClick={() => setIsSidebarOpen(false)} className={getLinkStyle('/dashboard/hackathons')}>Live Arenas</Link>
-              </div>
-            </div>
-            <div>
-              <h2 className="text-[11px] font-extrabold text-slate-300 dark:text-slate-600 mb-2 tracking-widest uppercase px-4">Tools</h2>
-              <div className="space-y-1">
-                <Link href="/dashboard/workspace" onClick={() => setIsSidebarOpen(false)} className={getLinkStyle('/dashboard/workspace')}>Code Studio</Link>
-              </div>
-            </div>
+            
+            {/* DUAL UI: EMPLOYER NAVIGATION */}
+            {userRole === 'EMPLOYER' ? (
+              <>
+                <div>
+                  <h2 className="text-[11px] font-extrabold text-slate-300 dark:text-slate-600 mb-2 tracking-widest uppercase px-4">Recruitment</h2>
+                  <div className="space-y-1">
+                    <Link href="/dashboard/employer" onClick={() => setIsSidebarOpen(false)} className={getLinkStyle('/dashboard/employer')}>Candidate Pool</Link>
+                    <Link href="/dashboard/internships" onClick={() => setIsSidebarOpen(false)} className={getLinkStyle('/dashboard/internships')}>Manage Bounties</Link>
+                  </div>
+                </div>
+                <div>
+                  <h2 className="text-[11px] font-extrabold text-slate-300 dark:text-slate-600 mb-2 tracking-widest uppercase px-4">Talent Discovery</h2>
+                  <div className="space-y-1">
+                    <Link href="/dashboard/showcase" onClick={() => setIsSidebarOpen(false)} className={getLinkStyle('/dashboard/showcase')}>Verified Builds</Link>
+                    <Link href="/dashboard/hackathons" onClick={() => setIsSidebarOpen(false)} className={getLinkStyle('/dashboard/hackathons')}>Sponsored Arenas</Link>
+                  </div>
+                </div>
+              </>
+            ) : (
+              /* DUAL UI: STUDENT NAVIGATION */
+              <>
+                <div>
+                  <h2 className="text-[11px] font-extrabold text-slate-300 dark:text-slate-600 mb-2 tracking-widest uppercase px-4">Workspace</h2>
+                  <div className="space-y-1">
+                    <Link href="/dashboard/home" onClick={() => setIsSidebarOpen(false)} className={getLinkStyle('/dashboard/home')}>Home</Link>
+                    <Link href="/dashboard/internships" onClick={() => setIsSidebarOpen(false)} className={getLinkStyle('/dashboard/internships')}>Internships</Link>
+                  </div>
+                </div>
+                <div>
+                  <h2 className="text-[11px] font-extrabold text-slate-300 dark:text-slate-600 mb-2 tracking-widest uppercase px-4">Learning</h2>
+                  <div className="space-y-1">
+                    <Link href="/dashboard/courses" onClick={() => setIsSidebarOpen(false)} className={getAcademyStyle('/dashboard/courses')}>Learning Courses</Link>
+                    <Link href="/dashboard/services" onClick={() => setIsSidebarOpen(false)} className={getLinkStyle('/dashboard/services')}>Services</Link>
+                    <Link href="/dashboard/showcase" onClick={() => setIsSidebarOpen(false)} className={getLinkStyle('/dashboard/showcase')}>Showcase</Link>
+                  </div>
+                </div>
+                <div>
+                  <h2 className="text-[11px] font-extrabold text-slate-300 dark:text-slate-600 mb-2 tracking-widest uppercase px-4">Community</h2>
+                  <div className="space-y-1">
+                    <Link href="/dashboard/community" onClick={() => setIsSidebarOpen(false)} className={getLinkStyle('/dashboard/community')}>Dev Lounge</Link>
+                    <Link href="/dashboard/hackathons" onClick={() => setIsSidebarOpen(false)} className={getLinkStyle('/dashboard/hackathons')}>Live Arenas</Link>
+                  </div>
+                </div>
+                <div>
+                  <h2 className="text-[11px] font-extrabold text-slate-300 dark:text-slate-600 mb-2 tracking-widest uppercase px-4">Tools</h2>
+                  <div className="space-y-1">
+                    <Link href="/dashboard/workspace" onClick={() => setIsSidebarOpen(false)} className={getLinkStyle('/dashboard/workspace')}>Code Studio</Link>
+                  </div>
+                </div>
+              </>
+            )}
+
           </nav>
         </div>
 
@@ -231,37 +262,38 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
            
            <button 
              onClick={toggleTheme}
-             className="w-full py-3.5 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 text-xs font-bold hover:bg-slate-50 dark:hover:bg-slate-700 rounded-xl transition-colors flex items-center justify-center gap-2 shadow-sm mb-2"
+             className="w-full py-3 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 text-xs font-bold hover:bg-slate-50 dark:hover:bg-slate-700 rounded-xl transition-colors flex items-center justify-center gap-2 shadow-sm"
            >
              {theme === 'dark' ? <><Sun className="w-4 h-4 text-amber-400" /> Light Mode</> : <><Moon className="w-4 h-4 text-indigo-500" /> Dark Mode</>}
            </button>
 
-           {isExecutive && (
-             <button 
-               onClick={toggleGodMode} 
-               className={`w-full py-3.5 border-2 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-2 ${
-                 userRole === 'ADMIN' 
-                   ? 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 shadow-sm' 
-                   : 'bg-indigo-50 dark:bg-indigo-900/30 border-indigo-200 dark:border-indigo-500/30 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 shadow-sm'
-               }`}
-             >
-               {userRole === 'ADMIN' ? <><UserX className="w-4 h-4" /> Switch to Student</> : <><Zap className="w-4 h-4" /> Enable Instructor</>}
-             </button>
-           )}
+           {/* SWITCH BETWEEN STUDENT AND EMPLOYER MODE */}
+           <button 
+             onClick={toggleUserMode} 
+             className={`w-full py-3 border-2 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-2 ${
+               userRole === 'EMPLOYER' 
+                 ? 'bg-amber-50 dark:bg-amber-900/30 border-amber-200 dark:border-amber-700/50 text-amber-600 dark:text-amber-400 shadow-sm' 
+                 : 'bg-indigo-50 dark:bg-indigo-900/30 border-indigo-200 dark:border-indigo-500/30 text-indigo-600 dark:text-indigo-400 shadow-sm'
+             }`}
+           >
+             {userRole === 'EMPLOYER' ? <><Users className="w-4 h-4" /> Switch to Student</> : <><Briefcase className="w-4 h-4" /> Switch to Employer</>}
+           </button>
+
            <button 
              onClick={handleSignOut}
-             className="w-full py-3.5 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 text-xs font-bold hover:bg-red-50 hover:border-red-200 hover:text-red-500 dark:hover:bg-red-900/20 dark:hover:border-red-900/50 dark:hover:text-red-400 rounded-xl transition-colors flex items-center justify-center gap-2 shadow-sm"
+             className="w-full py-3 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 text-xs font-bold hover:bg-red-50 hover:border-red-200 hover:text-red-500 dark:hover:bg-red-900/20 dark:hover:border-red-900/50 dark:hover:text-red-400 rounded-xl transition-colors flex items-center justify-center gap-2 shadow-sm"
            >
              Log Out
            </button>
         </div>
       </aside>
 
+      {/* MAIN CONTENT WRAPPER */}
       <main className={`flex-1 flex flex-col overflow-hidden relative transition-opacity ${showClickwrap ? 'opacity-20 pointer-events-none' : ''}`}>
         
         <header className="md:hidden flex items-center justify-between p-4 border-b-2 border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 shrink-0">
           <div className="flex items-center gap-2">
-             <div className={`w-2.5 h-2.5 rounded-full animate-pulse ${userRole === 'ADMIN' ? 'bg-indigo-500' : 'bg-emerald-500'}`}></div>
+             <div className={`w-2.5 h-2.5 rounded-full animate-pulse ${userRole === 'EMPLOYER' ? 'bg-amber-500' : 'bg-emerald-500'}`}></div>
              <h1 className="text-xl font-black text-slate-800 dark:text-white tracking-tight">APEX</h1>
           </div>
           <button 
