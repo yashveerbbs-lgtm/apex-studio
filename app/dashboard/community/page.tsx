@@ -11,7 +11,6 @@ export default function EnterpriseNetwork() {
   const [newPost, setNewPost] = useState('')
   const [attachedImage, setAttachedImage] = useState<string | null>(null)
   const [isDragging, setIsDragging] = useState(false)
-  const [isBroadcasting, setIsBroadcasting] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   
   // Interaction State
@@ -19,12 +18,40 @@ export default function EnterpriseNetwork() {
   const [expandedComments, setExpandedComments] = useState<Record<number, boolean>>({})
   const [commentInputs, setCommentInputs] = useState<Record<number, string>>({})
   const [copiedId, setCopiedId] = useState<number | null>(null) 
+  
+  // Cleaned out hardcoded comments!
   const [postComments, setPostComments] = useState<Record<number, any[]>>({})
 
-  // Feed State
-  const [posts, setPosts] = useState<any[]>([])
+  // Feed State (Corporate Data)
+  const [posts, setPosts] = useState([
+    {
+      id: 1,
+      author: 'System_Arch',
+      role: 'System Admin', 
+      isVerified: true,
+      avatar: 'bg-purple-100 text-purple-600 border-purple-200 dark:bg-purple-900/50 dark:text-purple-400 dark:border-purple-700',
+      time: '2 hours ago',
+      content: 'Production Update: Just finished modeling the new 3D assets for our upcoming Unreal Engine client project! The rendering pipeline in C++ is finally stable on our internal servers.\n\nDoes anyone in the engineering org have experience optimizing lighting textures for mobile? Could use some advice before the client demo.',
+      image: 'https://images.unsplash.com/photo-1605379399642-870262d3d051?auto=format&fit=crop&w=800&q=80',
+      tags: ['#InternalBuild', '#UnrealEngine5', '#Engineering'],
+      likes: 24,
+      commentCount: 1
+    },
+    {
+      id: 2,
+      author: 'Alex_Engineer',
+      role: 'L2 Software Engineer',
+      isVerified: false,
+      avatar: 'bg-sky-100 text-sky-600 border-sky-200 dark:bg-sky-900/50 dark:text-sky-400 dark:border-sky-700',
+      time: '5 hours ago',
+      content: 'Successfully migrated the legacy database to our new Supabase architecture. Query speeds are up 400%. Documentation has been pushed to the company wiki.',
+      image: null,
+      tags: ['#Backend', '#Database', '#Milestone'],
+      likes: 89,
+      commentCount: 0
+    }
+  ])
 
-  // 1. Setup Auth and Realtime Subscription
   useEffect(() => {
     supabase.auth.getUser().then(async ({ data: { user } }) => {
       if (user) {
@@ -33,68 +60,7 @@ export default function EnterpriseNetwork() {
         if (profile) setUserRole(profile.role)
       }
     })
-
-    fetchPosts()
-
-    // 🚨 SUPABASE REALTIME MAGIC 🚨
-    const channel = supabase
-      .channel('public:community_posts')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'community_posts' }, (payload) => {
-        // Map the DB structure to match your beautiful UI structure!
-        const mappedPost = {
-          id: payload.new.id,
-          author: payload.new.author_name,
-          role: payload.new.author_role,
-          isVerified: payload.new.author_role === 'ADMIN',
-          avatar: payload.new.author_role === 'ADMIN' 
-            ? 'bg-rose-100 text-rose-600 border-rose-200 dark:bg-rose-900/50 dark:text-rose-400 dark:border-rose-700' 
-            : 'bg-indigo-100 text-indigo-600 border-indigo-200 dark:bg-indigo-900/50 dark:text-indigo-400 dark:border-indigo-700',
-          time: payload.new.created_at, // We will format this in the render
-          content: payload.new.content,
-          image: payload.new.image_url,
-          tags: ['#OrgUpdate'],
-          likes: 0,
-          commentCount: 0
-        }
-        setPosts((currentPosts) => [mappedPost, ...currentPosts])
-      })
-      .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'community_posts' }, (payload) => {
-        setPosts((currentPosts) => currentPosts.filter(p => p.id !== payload.old.id))
-      })
-      .subscribe()
-
-    return () => {
-      supabase.removeChannel(channel)
-    }
   }, [])
-
-  // 2. Fetch Posts from DB
-  async function fetchPosts() {
-    const { data } = await supabase
-      .from('community_posts')
-      .select('*')
-      .order('created_at', { ascending: false })
-      .limit(50)
-    
-    if (data) {
-      const mappedData = data.map(post => ({
-        id: post.id,
-        author: post.author_name,
-        role: post.author_role,
-        isVerified: post.author_role === 'ADMIN',
-        avatar: post.author_role === 'ADMIN' 
-          ? 'bg-rose-100 text-rose-600 border-rose-200 dark:bg-rose-900/50 dark:text-rose-400 dark:border-rose-700' 
-          : 'bg-indigo-100 text-indigo-600 border-indigo-200 dark:bg-indigo-900/50 dark:text-indigo-400 dark:border-indigo-700',
-        time: post.created_at,
-        content: post.content,
-        image: post.image_url,
-        tags: ['#OrgUpdate'],
-        likes: 0,
-        commentCount: 0
-      }))
-      setPosts(mappedData)
-    }
-  }
 
   // --- DRAG AND DROP & FILE UPLOAD LOGIC ---
   function handleFileProcess(file: File) {
@@ -133,38 +99,39 @@ export default function EnterpriseNetwork() {
     }
   }
 
-  // --- POSTING LOGIC (Now hits DB!) ---
-  async function handleCreatePost() {
-    if ((!newPost.trim() && !attachedImage) || !currentUser || isBroadcasting) return
+  // --- POSTING LOGIC ---
+  function handleCreatePost() {
+    if (!newPost.trim() && !attachedImage) return
 
-    setIsBroadcasting(true)
     const displayName = currentUser?.user_metadata?.full_name || currentUser?.email?.split('@')[0] || 'Apex Staff'
     
-    // Push to Supabase! Realtime subscription will catch it and update UI.
-    const { error } = await supabase.from('community_posts').insert([{
-      user_id: currentUser.id,
-      author_name: displayName,
-      author_role: userRole === 'ADMIN' ? 'ADMIN' : 'INTERN',
+    const createdPost = {
+      id: Date.now(),
+      author: displayName,
+      role: userRole === 'ADMIN' ? 'System Admin' : 'Apex Staff', 
+      isVerified: userRole === 'ADMIN', // Removed hardcoded name check
+      avatar: userRole === 'ADMIN' ? 'bg-rose-100 text-rose-600 border-rose-200 dark:bg-rose-900/50 dark:text-rose-400 dark:border-rose-700' : 'bg-indigo-100 text-indigo-600 border-indigo-200 dark:bg-indigo-900/50 dark:text-indigo-400 dark:border-indigo-700', 
+      time: 'Just now',
       content: newPost,
-      image_url: attachedImage
-    }])
-
-    if (!error) {
-      setNewPost('')
-      setAttachedImage(null)
+      image: attachedImage,
+      tags: ['#OrgUpdate'],
+      likes: 0,
+      commentCount: 0
     }
-    setIsBroadcasting(false)
+
+    setPosts([createdPost, ...posts])
+    setNewPost('')
+    setAttachedImage(null)
   }
 
-  // --- DELETE POST LOGIC ---
-  async function handleDeletePost(postId: string) {
+  // --- DELETE POST LOGIC (ADMIN ONLY) ---
+  function handleDeletePost(postId: number) {
     if (confirm("Are you sure you want to delete this post?")) {
-      await supabase.from('community_posts').delete().eq('id', postId)
-      // Realtime subscription handles the UI removal
+      setPosts(posts.filter(p => p.id !== postId))
     }
   }
 
-  // --- INTERACTION LOGIC (Remains local for now to avoid DB spam) ---
+  // --- INTERACTION LOGIC ---
   function toggleLike(postId: number) {
     const isLiked = likedPosts[postId]
     setLikedPosts(prev => ({ ...prev, [postId]: !isLiked }))
@@ -192,24 +159,15 @@ export default function EnterpriseNetwork() {
     setCommentInputs(prev => ({ ...prev, [postId]: '' }))
   }
 
+  // --- SHARE LINK LOGIC ---
   function handleShare(postId: number) {
     const linkToCopy = `${window.location.origin}/dashboard/community#post-${postId}`
     navigator.clipboard.writeText(linkToCopy)
     setCopiedId(postId)
-    setTimeout(() => { setCopiedId(null) }, 2000)
-  }
-
-  // Time formatter
-  const timeAgo = (dateString: string) => {
-    const date = new Date(dateString)
-    const now = new Date()
-    const seconds = Math.round((now.getTime() - date.getTime()) / 1000)
-    if (seconds < 60) return 'JUST NOW'
-    const minutes = Math.round(seconds / 60)
-    if (minutes < 60) return `${minutes} MINS AGO`
-    const hours = Math.round(minutes / 60)
-    if (hours < 24) return `${hours} HOURS AGO`
-    return `${Math.round(hours / 24)} DAYS AGO`
+    
+    setTimeout(() => {
+      setCopiedId(null)
+    }, 2000)
   }
 
   return (
@@ -237,7 +195,7 @@ export default function EnterpriseNetwork() {
         {/* LEFT COLUMN: THE FEED */}
         <div className="lg:col-span-2 space-y-8">
           
-          {/* Create Post Box */}
+          {/* Create Post Box (Drag and Drop Zone) */}
           <div 
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
@@ -263,6 +221,7 @@ export default function EnterpriseNetwork() {
               />
             </div>
             
+            {/* Image Preview Area */}
             {attachedImage && (
               <div className="relative mb-4 sm:ml-16 inline-block">
                 <img src={attachedImage} alt="Attachment preview" className="h-40 object-cover rounded-xl border-2 border-slate-200 dark:border-slate-700 shadow-sm transition-colors" />
@@ -296,19 +255,20 @@ export default function EnterpriseNetwork() {
               </div>
               <button 
                 onClick={handleCreatePost}
-                disabled={(!newPost.trim() && !attachedImage) || isBroadcasting}
-                className="bg-indigo-500 hover:bg-indigo-600 disabled:bg-slate-200 dark:disabled:bg-slate-800 text-white px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all shadow-[0_4px_0_rgb(67,56,202)] hover:translate-y-[2px] active:translate-y-[4px] active:shadow-none flex items-center justify-center gap-2"
+                disabled={!newPost.trim() && !attachedImage}
+                className="btn-indigo text-xs py-3 px-6 w-full sm:w-auto flex items-center justify-center gap-2 disabled:opacity-50"
               >
-                {isBroadcasting ? 'Sending...' : 'Broadcast'} <Send className="w-3.5 h-3.5" />
+                Broadcast <Send className="w-4 h-4" />
               </button>
             </div>
           </div>
 
-          {/* Dynamic Realtime Posts */}
+          {/* Feed Posts */}
           <div className="space-y-6">
             {posts.map(post => (
               <div key={post.id} id={`post-${post.id}`} className="bg-white dark:bg-slate-900 border-2 border-slate-100 dark:border-slate-800 rounded-[2rem] p-6 sm:p-8 hover:border-indigo-200 dark:hover:border-indigo-700 transition-colors shadow-sm hover:shadow-md">
                 
+                {/* Post Header */}
                 <div className="flex items-start justify-between mb-5">
                   <div className="flex items-center gap-4">
                     <div className={`w-12 h-12 rounded-xl border-2 flex items-center justify-center font-black text-xl shadow-sm transition-colors ${post.avatar}`}>
@@ -319,20 +279,19 @@ export default function EnterpriseNetwork() {
                         {post.author} 
                         {post.isVerified && <ShieldCheck className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />}
                       </h3>
-                      <p className={`text-[10px] font-bold tracking-wider uppercase mt-0.5 transition-colors ${post.role === 'ADMIN' ? 'text-rose-500 dark:text-rose-400' : 'text-slate-400 dark:text-slate-500'}`}>
-                        {post.role === 'ADMIN' ? 'System Admin' : 'Apex Staff'}
+                      <p className={`text-[10px] font-bold tracking-wider uppercase mt-0.5 transition-colors ${post.role === 'System Admin' || post.role === 'Apex Executive' ? 'text-rose-500 dark:text-rose-400' : 'text-slate-400 dark:text-slate-500'}`}>
+                        {post.role}
                       </p>
                     </div>
                   </div>
                   
                   <div className="flex items-center gap-3">
-                    <span className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider transition-colors">
-                      {typeof post.time === 'string' && post.time.includes('ago') ? post.time : timeAgo(post.time)}
-                    </span>
+                    <span className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider transition-colors">{post.time}</span>
                     {userRole === 'ADMIN' && (
                       <button 
                         onClick={() => handleDeletePost(post.id)} 
                         className="text-slate-400 dark:text-slate-500 hover:text-rose-500 dark:hover:text-rose-400 bg-white dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 hover:border-rose-100 dark:hover:border-rose-800/50 p-2 rounded-lg shadow-sm transition-all hover:scale-105" 
+                        title="Admin Delete"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -340,22 +299,26 @@ export default function EnterpriseNetwork() {
                   </div>
                 </div>
 
+                {/* Post Content */}
                 {post.content && <p className="text-slate-600 dark:text-slate-300 font-medium text-sm leading-relaxed mb-5 whitespace-pre-wrap sm:ml-16 transition-colors">{post.content}</p>}
                 
+                {/* Attached Image */}
                 {post.image && (
                   <div className="mb-5 sm:ml-16 rounded-2xl overflow-hidden border-2 border-slate-100 dark:border-slate-700 shadow-sm transition-colors">
                     <img src={post.image} alt="Post attachment" className="w-full h-auto max-h-[28rem] object-cover hover:scale-105 transition-transform duration-700" />
                   </div>
                 )}
                 
+                {/* Tags */}
                 <div className="flex flex-wrap gap-2 mb-6 sm:ml-16">
-                  {post.tags.map((tag: string) => (
+                  {post.tags.map(tag => (
                     <span key={tag} className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 border-2 border-indigo-100 dark:border-indigo-800/50 px-3 py-1.5 rounded-lg uppercase tracking-wider shadow-sm transition-colors">
                       {tag}
                     </span>
                   ))}
                 </div>
 
+                {/* Post Actions */}
                 <div className="flex items-center gap-3 border-t-2 border-slate-100 dark:border-slate-800 pt-5 sm:ml-16 transition-colors">
                   <button 
                     onClick={() => toggleLike(post.id)}
@@ -370,14 +333,20 @@ export default function EnterpriseNetwork() {
                     <MessageSquare className={`w-4 h-4 ${expandedComments[post.id] ? 'fill-current' : ''}`} /> {post.commentCount} Threads
                   </button>
                   
+                  {/* SHARE BUTTON */}
                   <button 
                     onClick={() => handleShare(post.id)} 
                     className={`flex items-center gap-2 text-xs font-bold ml-auto px-4 py-2.5 rounded-xl border-2 transition-all shadow-sm ${copiedId === post.id ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/30 border-emerald-200 dark:border-emerald-800/50' : 'text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'}`}
                   >
-                    {copiedId === post.id ? <><Check className="w-4 h-4" /> Copied</> : <><Share2 className="w-4 h-4" /> Share</>}
+                    {copiedId === post.id ? (
+                      <><Check className="w-4 h-4" /> Copied</>
+                    ) : (
+                      <><Share2 className="w-4 h-4" /> Share</>
+                    )}
                   </button>
                 </div>
 
+                {/* EXPANDABLE COMMENT SECTION */}
                 {expandedComments[post.id] && (
                   <div className="mt-6 pt-6 border-t-2 border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 -mx-6 -mb-6 sm:-mx-8 sm:-mb-8 p-6 sm:p-8 rounded-b-[2rem] transition-colors">
                     <div className="space-y-4 mb-6">
@@ -400,6 +369,7 @@ export default function EnterpriseNetwork() {
                       )}
                     </div>
                     
+                    {/* Add Comment Input */}
                     <div className="flex flex-col sm:flex-row gap-3">
                       <input 
                         type="text"
@@ -422,12 +392,6 @@ export default function EnterpriseNetwork() {
 
               </div>
             ))}
-            
-            {posts.length === 0 && (
-              <div className="text-center py-16 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-3xl text-slate-400 font-bold uppercase tracking-widest text-sm">
-                 No network broadcasts yet.
-              </div>
-            )}
           </div>
         </div>
 
