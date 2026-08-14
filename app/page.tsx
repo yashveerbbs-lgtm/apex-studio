@@ -26,14 +26,13 @@ export default function LandingPage() {
           <div className="hidden md:flex items-center gap-8 text-sm font-bold text-slate-400">
             <Link href="#features" className="hover:text-white transition-colors">Features</Link>
             <Link href="/auth/register" className="hover:text-white transition-colors">Academy</Link>
-            <Link href="/auth/login" className="hover:text-white transition-colors">For Employers</Link>
+            {/* 🚨 POINTS TO NEW EMPLOYER PAGE */}
+            <Link href="/auth/register-employer" className="hover:text-white transition-colors">For Employers</Link>
           </div>
           <div className="flex items-center gap-4">
-            {/* 🚨 FIXED: Now points to the actual login screen */}
             <Link href="/auth/login" className="text-sm font-bold text-slate-300 hover:text-white transition-colors">
               Sign In
             </Link>
-            {/* 🚨 FIXED: Now points to the register screen */}
             <Link href="/auth/register" className="bg-white text-slate-950 hover:bg-slate-200 px-5 py-2.5 rounded-xl text-sm font-black transition-all shadow-[0_0_15px_rgb(255,255,255,0.2)]">
               Get Started
             </Link>
@@ -67,7 +66,8 @@ export default function LandingPage() {
             <Link href="/auth/register" className="w-full sm:w-auto bg-indigo-500 hover:bg-indigo-600 text-white px-8 py-4 rounded-xl text-sm font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-[0_4px_0_rgb(67,56,202)] hover:translate-y-[2px] hover:shadow-[0_2px_0_rgb(67,56,202)] active:translate-y-[4px] active:shadow-none">
               Join as Developer <Code2 className="w-4 h-4" />
             </Link>
-            <Link href="/auth/login" className="w-full sm:w-auto bg-slate-800 hover:bg-slate-700 text-white px-8 py-4 rounded-xl text-sm font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 border border-slate-700">
+            {/* 🚨 POINTS TO NEW EMPLOYER PAGE */}
+            <Link href="/auth/register-employer" className="w-full sm:w-auto bg-slate-800 hover:bg-slate-700 text-white px-8 py-4 rounded-xl text-sm font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 border border-slate-700">
               Hire Top Talent <Briefcase className="w-4 h-4" />
             </Link>
           </div>
@@ -108,7 +108,6 @@ export default function LandingPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* 🚨 FIXED: Converted static divs into clickable Links pointing to registration */}
             <Link href="/auth/register" className="block bg-slate-900 border border-slate-800 p-8 rounded-3xl hover:border-indigo-500/50 transition-colors group cursor-pointer">
               <div className="w-12 h-12 bg-indigo-500/20 text-indigo-400 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                 <Terminal className="w-6 h-6" />
@@ -125,7 +124,8 @@ export default function LandingPage() {
               <p className="text-slate-400 text-sm leading-relaxed">Complete real-world tasks and open-source bounties to earn Gems, XP, and verified credentials that employers actually trust.</p>
             </Link>
 
-            <Link href="/auth/login" className="block bg-slate-900 border border-slate-800 p-8 rounded-3xl hover:border-amber-500/50 transition-colors group cursor-pointer">
+            {/* 🚨 POINTS TO NEW EMPLOYER PAGE */}
+            <Link href="/auth/register-employer" className="block bg-slate-900 border border-slate-800 p-8 rounded-3xl hover:border-amber-500/50 transition-colors group cursor-pointer">
               <div className="w-12 h-12 bg-amber-500/20 text-amber-400 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                 <Users className="w-6 h-6" />
               </div>
