@@ -74,12 +74,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       let onboardingDone = localStorage.getItem('bz_onboarding_done') === 'true'
       let ipSigned = localStorage.getItem('bz_ip_signed') === 'true'
 
-      // 🚨 STRICT DB ROLE ENFORCEMENT
       const { data: profile } = await supabase.from('profiles').select('role, onboarding_completed, ip_agreement_signed').eq('id', user.id).single()
       
       if (profile) {
         currentRole = profile.role || 'INTERN'
-        localStorage.setItem('apex_role', currentRole) // Sync UI purely to what the DB says
+        localStorage.setItem('apex_role', currentRole) 
         if (profile.onboarding_completed) onboardingDone = true
         if (profile.ip_agreement_signed) ipSigned = true
       }
@@ -152,8 +151,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     await supabase.auth.signOut()
     router.push('/')
   }
-
-  // 🚨 REMOVED toggleUserMode function entirely.
 
   const getLinkStyle = (path: string) => {
     if (pathname === path) return "block px-4 py-3 text-sm font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 border-2 border-indigo-100 dark:border-indigo-500/30 rounded-xl transition-all"
@@ -274,15 +271,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 <div>
                   <h2 className="text-[11px] font-extrabold text-slate-300 dark:text-slate-600 mb-2 tracking-widest uppercase px-4">Recruitment</h2>
                   <div className="space-y-1">
-                    <Link href="/dashboard/employer" onClick="{()"> setIsSidebarOpen(false)} className={getLinkStyle('/dashboard/employer')}>Candidate Pool</Link>
-                    <Link href="/dashboard/internships" onClick="{()"> setIsSidebarOpen(false)} className={getLinkStyle('/dashboard/internships')}>Manage Bounties</Link>
+                    <Link href="/dashboard/employer" onClick={() => setIsSidebarOpen(false)} className={getLinkStyle('/dashboard/employer')}>Candidate Pool</Link>
+                    <Link href="/dashboard/internships" onClick={() => setIsSidebarOpen(false)} className={getLinkStyle('/dashboard/internships')}>Manage Bounties</Link>
                   </div>
                 </div>
                 <div>
                   <h2 className="text-[11px] font-extrabold text-slate-300 dark:text-slate-600 mb-2 tracking-widest uppercase px-4">Talent Discovery</h2>
                   <div className="space-y-1">
-                    <Link href="/dashboard/showcase" onClick="{()"> setIsSidebarOpen(false)} className={getLinkStyle('/dashboard/showcase')}>Verified Builds</Link>
-                    <Link href="/dashboard/hackathons" onClick="{()"> setIsSidebarOpen(false)} className={getLinkStyle('/dashboard/hackathons')}>Sponsored Arenas</Link>
+                    <Link href="/dashboard/showcase" onClick={() => setIsSidebarOpen(false)} className={getLinkStyle('/dashboard/showcase')}>Verified Builds</Link>
+                    <Link href="/dashboard/hackathons" onClick={() => setIsSidebarOpen(false)} className={getLinkStyle('/dashboard/hackathons')}>Sponsored Arenas</Link>
                   </div>
                 </div>
               </>
@@ -291,29 +288,29 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 <div>
                   <h2 className="text-[11px] font-extrabold text-slate-300 dark:text-slate-600 mb-2 tracking-widest uppercase px-4">Workspace</h2>
                   <div className="space-y-1">
-                    <Link href="/dashboard/home" onClick="{()"> setIsSidebarOpen(false)} className={getLinkStyle('/dashboard/home')}>Home</Link>
-                    <Link href="/dashboard/internships" onClick="{()"> setIsSidebarOpen(false)} className={getLinkStyle('/dashboard/internships')}>Internships</Link>
+                    <Link href="/dashboard/home" onClick={() => setIsSidebarOpen(false)} className={getLinkStyle('/dashboard/home')}>Home</Link>
+                    <Link href="/dashboard/internships" onClick={() => setIsSidebarOpen(false)} className={getLinkStyle('/dashboard/internships')}>Internships</Link>
                   </div>
                 </div>
                 <div>
                   <h2 className="text-[11px] font-extrabold text-slate-300 dark:text-slate-600 mb-2 tracking-widest uppercase px-4">Learning</h2>
                   <div className="space-y-1">
-                    <Link href="/dashboard/courses" onClick="{()"> setIsSidebarOpen(false)} className={getAcademyStyle('/dashboard/courses')}>Learning Courses</Link>
-                    <Link href="/dashboard/services" onClick="{()"> setIsSidebarOpen(false)} className={getLinkStyle('/dashboard/services')}>Services</Link>
-                    <Link href="/dashboard/showcase" onClick="{()"> setIsSidebarOpen(false)} className={getLinkStyle('/dashboard/showcase')}>Showcase</Link>
+                    <Link href="/dashboard/courses" onClick={() => setIsSidebarOpen(false)} className={getAcademyStyle('/dashboard/courses')}>Learning Courses</Link>
+                    <Link href="/dashboard/services" onClick={() => setIsSidebarOpen(false)} className={getLinkStyle('/dashboard/services')}>Services</Link>
+                    <Link href="/dashboard/showcase" onClick={() => setIsSidebarOpen(false)} className={getLinkStyle('/dashboard/showcase')}>Showcase</Link>
                   </div>
                 </div>
                 <div>
                   <h2 className="text-[11px] font-extrabold text-slate-300 dark:text-slate-600 mb-2 tracking-widest uppercase px-4">Community</h2>
                   <div className="space-y-1">
-                    <Link href="/dashboard/community" onClick="{()"> setIsSidebarOpen(false)} className={getLinkStyle('/dashboard/community')}>Dev Lounge</Link>
-                    <Link href="/dashboard/hackathons" onClick="{()"> setIsSidebarOpen(false)} className={getLinkStyle('/dashboard/hackathons')}>Live Arenas</Link>
+                    <Link href="/dashboard/community" onClick={() => setIsSidebarOpen(false)} className={getLinkStyle('/dashboard/community')}>Dev Lounge</Link>
+                    <Link href="/dashboard/hackathons" onClick={() => setIsSidebarOpen(false)} className={getLinkStyle('/dashboard/hackathons')}>Live Arenas</Link>
                   </div>
                 </div>
                 <div>
                   <h2 className="text-[11px] font-extrabold text-slate-300 dark:text-slate-600 mb-2 tracking-widest uppercase px-4">Tools</h2>
                   <div className="space-y-1">
-                    <Link href="/dashboard/workspace" onClick="{()"> setIsSidebarOpen(false)} className={getLinkStyle('/dashboard/workspace')}>Code Studio</Link>
+                    <Link href="/dashboard/workspace" onClick={() => setIsSidebarOpen(false)} className={getLinkStyle('/dashboard/workspace')}>Code Studio</Link>
                   </div>
                 </div>
               </>
@@ -326,8 +323,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
              {theme === 'dark' ? <><Sun className="w-4 h-4 text-amber-400"/> Light Mode</> : <><Moon className="w-4 h-4 text-indigo-500"/> Dark Mode</>}
            </button>
            
-           {/* 🚨 REMOVED the "Switch to Employer/Student" toggle button entirely */}
-
            <button onClick={handleSignOut} className="w-full py-3 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 text-xs font-bold hover:bg-red-50 hover:border-red-200 hover:text-red-500 dark:hover:bg-red-900/20 dark:hover:border-red-900/50 dark:hover:text-red-400 rounded-xl transition-colors flex items-center justify-center gap-2 shadow-sm">
              Log Out
            </button>
