@@ -1,7 +1,7 @@
 'use client'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { Terminal, Code2, Users, Briefcase, Zap, Sparkles, ChevronRight, Layers, ShieldCheck, Globe } from 'lucide-react'
+import { Terminal, Code2, Users, Briefcase, Zap, Sparkles, ShieldCheck } from 'lucide-react'
 
 export default function LandingPage() {
   return (
@@ -25,14 +25,16 @@ export default function LandingPage() {
           </div>
           <div className="hidden md:flex items-center gap-8 text-sm font-bold text-slate-400">
             <Link href="#features" className="hover:text-white transition-colors">Features</Link>
-            <Link href="#academy" className="hover:text-white transition-colors">Academy</Link>
-            <Link href="#employers" className="hover:text-white transition-colors">For Employers</Link>
+            <Link href="/auth/register" className="hover:text-white transition-colors">Academy</Link>
+            <Link href="/auth/login" className="hover:text-white transition-colors">For Employers</Link>
           </div>
           <div className="flex items-center gap-4">
-            <Link href="/dashboard/home" className="text-sm font-bold text-slate-300 hover:text-white transition-colors">
+            {/* 🚨 FIXED: Now points to the actual login screen */}
+            <Link href="/auth/login" className="text-sm font-bold text-slate-300 hover:text-white transition-colors">
               Sign In
             </Link>
-            <Link href="/dashboard/home" className="bg-white text-slate-950 hover:bg-slate-200 px-5 py-2.5 rounded-xl text-sm font-black transition-all shadow-[0_0_15px_rgb(255,255,255,0.2)]">
+            {/* 🚨 FIXED: Now points to the register screen */}
+            <Link href="/auth/register" className="bg-white text-slate-950 hover:bg-slate-200 px-5 py-2.5 rounded-xl text-sm font-black transition-all shadow-[0_0_15px_rgb(255,255,255,0.2)]">
               Get Started
             </Link>
           </div>
@@ -62,10 +64,10 @@ export default function LandingPage() {
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link href="/dashboard/home" className="w-full sm:w-auto bg-indigo-500 hover:bg-indigo-600 text-white px-8 py-4 rounded-xl text-sm font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-[0_4px_0_rgb(67,56,202)] hover:translate-y-[2px] hover:shadow-[0_2px_0_rgb(67,56,202)] active:translate-y-[4px] active:shadow-none">
+            <Link href="/auth/register" className="w-full sm:w-auto bg-indigo-500 hover:bg-indigo-600 text-white px-8 py-4 rounded-xl text-sm font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-[0_4px_0_rgb(67,56,202)] hover:translate-y-[2px] hover:shadow-[0_2px_0_rgb(67,56,202)] active:translate-y-[4px] active:shadow-none">
               Join as Developer <Code2 className="w-4 h-4" />
             </Link>
-            <Link href="/dashboard/employer" className="w-full sm:w-auto bg-slate-800 hover:bg-slate-700 text-white px-8 py-4 rounded-xl text-sm font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 border border-slate-700">
+            <Link href="/auth/login" className="w-full sm:w-auto bg-slate-800 hover:bg-slate-700 text-white px-8 py-4 rounded-xl text-sm font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 border border-slate-700">
               Hire Top Talent <Briefcase className="w-4 h-4" />
             </Link>
           </div>
@@ -106,27 +108,30 @@ export default function LandingPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-slate-900 border border-slate-800 p-8 rounded-3xl hover:border-indigo-500/50 transition-colors">
-              <div className="w-12 h-12 bg-indigo-500/20 text-indigo-400 rounded-2xl flex items-center justify-center mb-6">
+            {/* 🚨 FIXED: Converted static divs into clickable Links pointing to registration */}
+            <Link href="/auth/register" className="block bg-slate-900 border border-slate-800 p-8 rounded-3xl hover:border-indigo-500/50 transition-colors group cursor-pointer">
+              <div className="w-12 h-12 bg-indigo-500/20 text-indigo-400 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                 <Terminal className="w-6 h-6" />
               </div>
-              <h3 className="text-xl font-black text-white mb-3">Cloud Code Studio</h3>
+              <h3 className="text-xl font-black text-white mb-3 group-hover:text-indigo-400 transition-colors">Cloud Code Studio</h3>
               <p className="text-slate-400 text-sm leading-relaxed">Write, compile, and execute code directly in your browser. No local setup required. Backed by enterprise-grade infrastructure.</p>
-            </div>
-            <div className="bg-slate-900 border border-slate-800 p-8 rounded-3xl hover:border-emerald-500/50 transition-colors">
-              <div className="w-12 h-12 bg-emerald-500/20 text-emerald-400 rounded-2xl flex items-center justify-center mb-6">
+            </Link>
+
+            <Link href="/auth/register" className="block bg-slate-900 border border-slate-800 p-8 rounded-3xl hover:border-emerald-500/50 transition-colors group cursor-pointer">
+              <div className="w-12 h-12 bg-emerald-500/20 text-emerald-400 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                 <ShieldCheck className="w-6 h-6" />
               </div>
-              <h3 className="text-xl font-black text-white mb-3">Verified Bounties</h3>
+              <h3 className="text-xl font-black text-white mb-3 group-hover:text-emerald-400 transition-colors">Verified Bounties</h3>
               <p className="text-slate-400 text-sm leading-relaxed">Complete real-world tasks and open-source bounties to earn Gems, XP, and verified credentials that employers actually trust.</p>
-            </div>
-            <div className="bg-slate-900 border border-slate-800 p-8 rounded-3xl hover:border-amber-500/50 transition-colors">
-              <div className="w-12 h-12 bg-amber-500/20 text-amber-400 rounded-2xl flex items-center justify-center mb-6">
+            </Link>
+
+            <Link href="/auth/login" className="block bg-slate-900 border border-slate-800 p-8 rounded-3xl hover:border-amber-500/50 transition-colors group cursor-pointer">
+              <div className="w-12 h-12 bg-amber-500/20 text-amber-400 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                 <Users className="w-6 h-6" />
               </div>
-              <h3 className="text-xl font-black text-white mb-3">Direct Recruitment</h3>
+              <h3 className="text-xl font-black text-white mb-3 group-hover:text-amber-400 transition-colors">Direct Recruitment</h3>
               <p className="text-slate-400 text-sm leading-relaxed">Employers can search the talent pool based on actual code performance and completed projects, not just padded resumes.</p>
-            </div>
+            </Link>
           </div>
         </div>
       </section>
@@ -134,7 +139,7 @@ export default function LandingPage() {
       {/* FOOTER CTA */}
       <footer className="border-t border-slate-800/50 bg-slate-900/50 pt-20 pb-10 relative z-10 text-center">
         <h2 className="text-3xl font-black text-white mb-6">Ready to enter the ecosystem?</h2>
-        <Link href="/dashboard/home" className="inline-block bg-white text-slate-950 hover:bg-slate-200 px-8 py-4 rounded-xl text-sm font-black uppercase tracking-wider transition-all shadow-[0_0_20px_rgb(255,255,255,0.2)] hover:scale-105">
+        <Link href="/auth/register" className="inline-block bg-white text-slate-950 hover:bg-slate-200 px-8 py-4 rounded-xl text-sm font-black uppercase tracking-wider transition-all shadow-[0_0_20px_rgb(255,255,255,0.2)] hover:scale-105">
           Launch Beyond Zero
         </Link>
         <p className="text-slate-600 text-xs mt-12 font-bold uppercase tracking-widest">© 2026 Beyond Zero. All rights reserved.</p>
