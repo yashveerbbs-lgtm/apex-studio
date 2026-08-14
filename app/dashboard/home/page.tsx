@@ -16,7 +16,7 @@ export default function DashboardOverview() {
     if (currentXp < 100) return 'Rookie'
     if (currentXp < 500) return 'Pro'
     if (currentXp < 1000) return 'Elite'
-    return 'Apex'
+    return 'Legend' // Updated to Legend instead of Apex for the new brand!
   }
 
   useEffect(() => {
@@ -60,7 +60,7 @@ export default function DashboardOverview() {
             Welcome back, {currentUser?.user_metadata?.full_name || currentUser?.user_metadata?.name || 'Developer'} <Sparkles className="w-8 h-8 text-yellow-400 fill-yellow-400" />
           </h1>
           <p className="text-slate-500 dark:text-slate-400 text-lg font-medium">
-            Your Apex Studio ecosystem is ready. Let's build something great today!
+            Your Beyond Zero ecosystem is ready. Let's build something great today!
           </p>
         </div>
         

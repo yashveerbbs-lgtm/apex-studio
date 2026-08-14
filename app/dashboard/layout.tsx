@@ -77,27 +77,22 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       
       const localRole = localStorage.getItem('apex_role')
       let currentRole = 'INTERN'
-      let onboardingDone = false
-      let ipSigned = false
+      
+      // 🚨 NEW: Check local storage FIRST as a bulletproof backup
+      let onboardingDone = localStorage.getItem('bz_onboarding_done') === 'true'
+      let ipSigned = localStorage.getItem('bz_ip_signed') === 'true'
 
-      if (localRole) {
-        currentRole = localRole
-        setUserRole(currentRole as any)
-        // We still need to fetch DB to check onboarding status
-        const { data: profile } = await supabase.from('profiles').select('role, onboarding_completed, ip_agreement_signed').eq('id', user.id).single()
-        if (profile) {
-          onboardingDone = profile.onboarding_completed
-          ipSigned = profile.ip_agreement_signed
-        }
-      } else {
-        const { data: profile } = await supabase.from('profiles').select('role, onboarding_completed, ip_agreement_signed').eq('id', user.id).single()
-        if (profile) {
-          currentRole = profile.role
-          onboardingDone = profile.onboarding_completed
-          ipSigned = profile.ip_agreement_signed
-          setUserRole(currentRole as any)
-        }
+      const { data: profile } = await supabase.from('profiles').select('role, onboarding_completed, ip_agreement_signed').eq('id', user.id).single()
+      
+      if (profile) {
+        if (!localRole) currentRole = profile.role
+        // If DB says true, override local storage
+        if (profile.onboarding_completed) onboardingDone = true
+        if (profile.ip_agreement_signed) ipSigned = true
       }
+      
+      if (localRole) currentRole = localRole
+      setUserRole(currentRole as any)
 
       // Routing the onboarding flow
       if (!ipSigned) {
@@ -112,6 +107,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     if (!hasAgreed) return
     setIsSubmitting(true)
     
+    // 🚨 NEW: Instantly save to local storage so it never asks again
+    localStorage.setItem('bz_ip_signed', 'true')
+    
     if (currentUser) {
       await supabase.from('profiles').update({ 
         ip_agreement_signed: true 
@@ -121,7 +119,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     setShowClickwrap(false)
     setIsSubmitting(false)
     
-    // Automatically push to assessment if they are a student
     if (userRole === 'INTERN') {
       setShowAssessment(true)
     }
@@ -145,16 +142,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     if (finalScore === 2) calculatedSkill = 'Pro'
     if (finalScore === 3) calculatedSkill = 'Elite'
 
-    // Save to DB
+    // 🚨 NEW: Instantly save to local storage so it never asks again
+    localStorage.setItem('bz_onboarding_done', 'true')
+    localStorage.setItem('apex_skill_level', calculatedSkill)
+
     if (currentUser) {
       await supabase.from('profiles').update({ 
         onboarding_completed: true,
         skill_level: calculatedSkill 
       }).eq('id', currentUser.id)
     }
-
-    // Save to LocalStorage so AI knows instantly
-    localStorage.setItem('apex_skill_level', calculatedSkill)
     
     setTimeout(() => {
       setShowAssessment(false)
@@ -215,7 +212,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <div className="bg-slate-50 dark:bg-slate-800/50 border-2 border-slate-100 dark:border-slate-700 p-5 rounded-2xl mb-6">
               <div className="flex items-start gap-3">
                 <BookOpen className="w-5 h-5 text-indigo-400 shrink-0 mt-0.5" />
-                <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed font-medium">"I understand that the code and projects I build here are part of the Apex Studio ecosystem. I'm ready to learn, collaborate, and respect the community's shared resources."</p>
+                <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed font-medium">"I understand that the code and projects I build here are part of the Beyond Zero ecosystem. I'm ready to learn, collaborate, and respect the community's shared resources."</p>
               </div>
             </div>
             <div onClick={() => setHasAgreed(!hasAgreed)} className="flex items-center gap-3 cursor-pointer mb-8 group">
@@ -240,14 +237,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <div className="text-center py-12 animate-in fade-in">
                 <Terminal className="w-16 h-16 text-indigo-500 mx-auto mb-6 animate-pulse" />
                 <h2 className="text-3xl font-black text-slate-800 dark:text-white mb-2">Analyzing Telemetry...</h2>
-                <p className="text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest text-sm">Calibrating your Apex workspace</p>
+                <p className="text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest text-sm">Calibrating your Beyond Zero workspace</p>
               </div>
             ) : (
               <>
                 <div className="flex justify-between items-center mb-8 border-b-2 border-slate-100 dark:border-slate-800 pb-4">
                   <div>
                     <h2 className="text-2xl font-black text-slate-800 dark:text-white flex items-center gap-2">
-                      <Code2 className="w-6 h-6 text-indigo-500" /> Apex Placement Protocol
+                      <Code2 className="w-6 h-6 text-indigo-500" /> Beyond Zero Placement Protocol
                     </h2>
                     <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Question {assessmentStep + 1} of {examQuestions.length}</p>
                   </div>
@@ -282,7 +279,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
       )}
 
-      {/* Sidebar & Dashboard Code Remains Exactly The Same Below... */}
+      {/* Sidebar & Dashboard */}
       {isSidebarOpen && <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-30 md:hidden" onClick={() => setIsSidebarOpen(false)} />}
       
       <aside className={`fixed md:static inset-y-0 left-0 z-40 w-64 bg-white dark:bg-slate-900 border-r-2 border-slate-100 dark:border-slate-800 flex flex-col justify-between shrink-0 transform transition-transform duration-300 ease-in-out md:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} ${(showClickwrap || showAssessment) ? 'opacity-20 pointer-events-none blur-sm' : ''}`}>
@@ -290,8 +287,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <div className="overflow-y-auto">
           <div className="p-6 flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-black text-indigo-600 dark:text-indigo-400 tracking-tight flex items-center gap-2">
-                APEX <Sparkles className="w-5 h-5 text-yellow-400 fill-yellow-400" />
+              <h1 className="text-xl font-black text-indigo-600 dark:text-indigo-400 tracking-tight flex items-center gap-2">
+                BEYOND ZERO <Sparkles className="w-5 h-5 text-yellow-400 fill-yellow-400" />
               </h1>
               <div className="flex items-center gap-2 mt-1">
                 <div className={`w-2 h-2 rounded-full animate-pulse ${userRole === 'EMPLOYER' ? 'bg-amber-500' : 'bg-emerald-500'}`}></div>
@@ -373,7 +370,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <header className="md:hidden flex items-center justify-between p-4 border-b-2 border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 shrink-0">
           <div className="flex items-center gap-2">
              <div className={`w-2.5 h-2.5 rounded-full animate-pulse ${userRole === 'EMPLOYER' ? 'bg-amber-500' : 'bg-emerald-500'}`}></div>
-             <h1 className="text-xl font-black text-slate-800 dark:text-white tracking-tight">APEX</h1>
+             <h1 className="text-xl font-black text-slate-800 dark:text-white tracking-tight">BEYOND ZERO</h1>
           </div>
           <button onClick={() => setIsSidebarOpen(true)} className="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors rounded-lg bg-slate-50 dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700">
             <Menu className="w-5 h-5" />

@@ -34,7 +34,7 @@ export default function SparkAIAssistant() {
     if (currentXp < 100) return 'Rookie'
     if (currentXp < 500) return 'Pro'
     if (currentXp < 1000) return 'Elite'
-    return 'Apex'
+    return 'Apex' // We can keep 'Apex' here as a cool rank name, or change it to 'Legend' later!
   }
 
   // Fetch the current user on mount to isolate chat memory
@@ -137,7 +137,7 @@ export default function SparkAIAssistant() {
     if (pathname?.includes('/home')) friendlyName = "the Home Page" 
     else if (pathname?.includes('/workspace')) friendlyName = "the IDE Workspace"
     else if (pathname?.includes('/internships')) friendlyName = "the Bounties/Internships Board"
-    else if (pathname?.includes('/courses') || pathname?.includes('/academy')) friendlyName = "the Apex Academy"
+    else if (pathname?.includes('/courses') || pathname?.includes('/academy')) friendlyName = "the Beyond Zero Academy"
     else if (pathname?.includes('/employer')) friendlyName = "the Employer Candidate Pool"
     else if (pathname?.includes('/hackathons')) friendlyName = "the Hackathon Arenas"
     
@@ -172,7 +172,6 @@ export default function SparkAIAssistant() {
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        // 🚨 ADDED skillLevel HERE to instantly inform the AI's coaching style
         body: JSON.stringify({ 
           message: userMessage, 
           context: pageContext, 

@@ -28,7 +28,8 @@ export async function POST(req: Request) {
       Act as their coding coach and hype-man!`;
     }
 
-    const systemPrompt = `You are Spark, an energetic, highly advanced floating AI mascot for a developer ecosystem called Apex Studio. 
+    // 🚨 REBRANDED: Apex Studio -> Beyond Zero
+    const systemPrompt = `You are Spark, an energetic, highly advanced floating AI mascot for a developer ecosystem called Beyond Zero. 
     
     ${roleSpecificInstructions}
     
