@@ -236,7 +236,7 @@ export default function EnterpriseShowcase() {
             <div className="max-w-3xl">
               <div className="flex items-center gap-3 mb-4">
                 <div className="inline-flex items-center gap-2 text-indigo-600 dark:text-indigo-400 font-black tracking-widest text-[10px] uppercase bg-indigo-50 dark:bg-indigo-900/50 px-3 py-1.5 rounded-lg border-2 border-indigo-100 dark:border-indigo-800/50 shadow-sm transition-colors">
-                  <Globe className="w-4 h-4" /> Apex Studio Global Portfolio
+                  <Globe className="w-4 h-4" /> Beyond Zero Global Portfolio
                 </div>
                 <button 
                   onClick={() => setShowModal(true)}
@@ -250,7 +250,7 @@ export default function EnterpriseShowcase() {
                 </button>
               </div>
               <h1 className="text-4xl md:text-5xl font-black tracking-tight text-slate-800 dark:text-slate-100 mb-4 leading-tight transition-colors">Engineering at Scale.</h1>
-              <p className="text-slate-500 dark:text-slate-400 text-lg leading-relaxed font-medium transition-colors">Proprietary software architecture, AAA interactive mechanics, and enterprise-grade web infrastructure built by the Apex engineering division.</p>
+              <p className="text-slate-500 dark:text-slate-400 text-lg leading-relaxed font-medium transition-colors">Proprietary software architecture, AAA interactive mechanics, and enterprise-grade web infrastructure built by the Beyond Zero engineering division.</p>
             </div>
             
             <div className="flex gap-6 border-l-2 border-slate-100 dark:border-slate-700 pl-6 bg-slate-50 dark:bg-slate-800 p-4 rounded-2xl shadow-inner border-2 dark:border-slate-700 transition-colors">

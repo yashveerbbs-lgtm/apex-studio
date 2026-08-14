@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation'
 import { BookOpen, MonitorPlay, Code2, Database, BrainCircuit, ChevronLeft, ChevronRight, Clock, BarChart, CheckCircle2, PlayCircle, Award, Sparkles, ShieldCheck, Plus, X, Trash2, Edit2, Image as ImageIcon, Gem } from 'lucide-react'
 import { supabase } from '../../../utils/supabase'
 
-export default function ApexAcademy() {
+export default function BeyondZeroAcademy() {
   const router = useRouter()
   
   const [currentUser, setCurrentUser] = useState<any>(null)
@@ -30,7 +30,7 @@ export default function ApexAcademy() {
     { 
       id: 'nextjs-mastery', 
       title: 'Full-Stack Engineering with Next.js', 
-      instructor: 'Apex Lead Architect',
+      instructor: 'Beyond Zero Lead Architect',
       icon: MonitorPlay, 
       level: 'Intermediate',
       duration: '8 Weeks',
@@ -56,7 +56,7 @@ export default function ApexAcademy() {
     { 
       id: 'game-engine', 
       title: '3D Game Engine Mechanics', 
-      instructor: 'Apex Interactive',
+      instructor: 'Beyond Zero Interactive',
       icon: Code2, 
       level: 'Advanced',
       duration: '12 Weeks',
@@ -128,7 +128,7 @@ export default function ApexAcademy() {
       const newCourse = {
         id: `course-${Date.now()}`,
         title: newTitle,
-        instructor: 'Apex Executive Team',
+        instructor: 'Beyond Zero Executive Team',
         icon: BookOpen,
         level: newLevel,
         duration: newDuration,
@@ -509,7 +509,7 @@ export default function ApexAcademy() {
         <div className="max-w-4xl">
           <div className="flex items-center gap-3 mb-3">
             <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/50 border-2 border-indigo-100 dark:border-indigo-800 px-3 py-1 rounded-lg font-bold tracking-widest text-xs uppercase shadow-sm transition-colors">
-              <BookOpen className="w-4 h-4" /> Apex Academy
+              <BookOpen className="w-4 h-4" /> Beyond Zero Academy
             </div>
             {userRole === 'ADMIN' && (
               <div className="text-[10px] bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-500 border-2 border-amber-200 dark:border-amber-800/50 px-2.5 py-1 rounded-lg font-black uppercase tracking-widest flex items-center gap-1 shadow-sm transition-colors">

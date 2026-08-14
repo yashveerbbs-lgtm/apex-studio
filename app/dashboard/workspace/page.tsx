@@ -50,7 +50,7 @@ export default function EnterpriseWorkspace() {
   const [realtimeChannel, setRealtimeChannel] = useState<any>(null)
 
   // Terminal & Chat State
-  const [terminalOutput, setTerminalOutput] = useState<string[]>(['✨ Apex Cloud Engine ready...'])
+  const [terminalOutput, setTerminalOutput] = useState<string[]>(['✨ Beyond Zero Cloud Engine ready...'])
   const [isExecuting, setIsExecuting] = useState(false)
   const [chatMessage, setChatMessage] = useState('')
   const [messages, setMessages] = useState<any[]>([])
@@ -175,7 +175,7 @@ export default function EnterpriseWorkspace() {
           team_id: team.id,
           name: 'main.py',
           is_folder: false,
-          content: 'print("Welcome to Apex Studio!")\n',
+          content: 'print("Welcome to Beyond Zero!")\n',
           language: 'python',
         },
       ])
@@ -624,7 +624,7 @@ export default function EnterpriseWorkspace() {
             </div>
 
             <CertificateCard
-              studentName={currentUser?.user_metadata?.full_name || currentUser?.email?.split('@')[0] || 'Apex Developer'}
+              studentName={currentUser?.user_metadata?.full_name || currentUser?.email?.split('@')[0] || 'Beyond Zero Developer'}
               courseName={activeTeam.name.replace('Academy:', '').trim()}
               date={new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
               awardType="Academy Graduate"

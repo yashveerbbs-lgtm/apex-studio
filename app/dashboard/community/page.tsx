@@ -103,13 +103,13 @@ export default function EnterpriseNetwork() {
   function handleCreatePost() {
     if (!newPost.trim() && !attachedImage) return
 
-    const displayName = currentUser?.user_metadata?.full_name || currentUser?.email?.split('@')[0] || 'Apex Staff'
+    const displayName = currentUser?.user_metadata?.full_name || currentUser?.email?.split('@')[0] || 'Beyond Zero Staff'
     
     const createdPost = {
       id: Date.now(),
       author: displayName,
-      role: userRole === 'ADMIN' ? 'System Admin' : 'Apex Staff', 
-      isVerified: userRole === 'ADMIN', // Removed hardcoded name check
+      role: userRole === 'ADMIN' ? 'System Admin' : 'Beyond Zero Staff', 
+      isVerified: userRole === 'ADMIN', 
       avatar: userRole === 'ADMIN' ? 'bg-rose-100 text-rose-600 border-rose-200 dark:bg-rose-900/50 dark:text-rose-400 dark:border-rose-700' : 'bg-indigo-100 text-indigo-600 border-indigo-200 dark:bg-indigo-900/50 dark:text-indigo-400 dark:border-indigo-700', 
       time: 'Just now',
       content: newPost,
@@ -146,10 +146,10 @@ export default function EnterpriseNetwork() {
     const text = commentInputs[postId]
     if (!text?.trim()) return
 
-    const displayName = currentUser?.user_metadata?.full_name || currentUser?.email?.split('@')[0] || 'Apex Staff'
+    const displayName = currentUser?.user_metadata?.full_name || currentUser?.email?.split('@')[0] || 'Beyond Zero Staff'
     const newComment = { 
       author: displayName, 
-      role: userRole === 'ADMIN' ? 'System Admin' : 'Apex Staff',
+      role: userRole === 'ADMIN' ? 'System Admin' : 'Beyond Zero Staff',
       text, 
       time: 'Just now' 
     }
@@ -178,7 +178,7 @@ export default function EnterpriseNetwork() {
         <div className="max-w-7xl mx-auto px-8 py-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl font-black text-slate-800 dark:text-slate-100 flex items-center gap-3 tracking-tight transition-colors">
-              <Server className="w-7 h-7 text-indigo-500 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/50 p-1.5 rounded-lg border-2 border-indigo-100 dark:border-indigo-800/50 transition-colors" /> Apex Internal Network
+              <Server className="w-7 h-7 text-indigo-500 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/50 p-1.5 rounded-lg border-2 border-indigo-100 dark:border-indigo-800/50 transition-colors" /> Beyond Zero Internal Network
             </h1>
             <p className="text-slate-500 dark:text-slate-400 text-xs mt-2 font-bold uppercase tracking-wider transition-colors">Global Communications & Engineering Updates</p>
           </div>
@@ -279,7 +279,7 @@ export default function EnterpriseNetwork() {
                         {post.author} 
                         {post.isVerified && <ShieldCheck className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />}
                       </h3>
-                      <p className={`text-[10px] font-bold tracking-wider uppercase mt-0.5 transition-colors ${post.role === 'System Admin' || post.role === 'Apex Executive' ? 'text-rose-500 dark:text-rose-400' : 'text-slate-400 dark:text-slate-500'}`}>
+                      <p className={`text-[10px] font-bold tracking-wider uppercase mt-0.5 transition-colors ${post.role === 'System Admin' || post.role === 'Beyond Zero Executive' ? 'text-rose-500 dark:text-rose-400' : 'text-slate-400 dark:text-slate-500'}`}>
                         {post.role}
                       </p>
                     </div>
@@ -352,12 +352,12 @@ export default function EnterpriseNetwork() {
                     <div className="space-y-4 mb-6">
                       {postComments[post.id]?.map((c, idx) => (
                         <div key={idx} className="flex gap-4">
-                          <div className={`w-10 h-10 rounded-xl border-2 flex items-center justify-center font-black text-sm shrink-0 shadow-sm transition-colors ${c.role === 'System Admin' || c.role === 'Apex Executive' ? 'bg-rose-100 dark:bg-rose-900/50 border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400'}`}>
+                          <div className={`w-10 h-10 rounded-xl border-2 flex items-center justify-center font-black text-sm shrink-0 shadow-sm transition-colors ${c.role === 'System Admin' || c.role === 'Beyond Zero Executive' ? 'bg-rose-100 dark:bg-rose-900/50 border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400'}`}>
                             {c.author.charAt(0)}
                           </div>
                           <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border-2 border-slate-100 dark:border-slate-700 flex-1 shadow-sm transition-colors">
                             <div className="flex justify-between items-baseline mb-2">
-                              <span className="font-extrabold text-sm text-slate-800 dark:text-slate-200 transition-colors">{c.author} <span className={`text-[9px] font-bold uppercase tracking-wider ml-2 transition-colors ${c.role === 'System Admin' || c.role === 'Apex Executive' ? 'text-rose-500 dark:text-rose-400 bg-rose-50 dark:bg-rose-900/30 px-2 py-1 rounded border border-rose-100 dark:border-rose-800' : 'text-slate-400 dark:text-slate-500 bg-slate-50 dark:bg-slate-700/50 px-2 py-1 rounded border border-slate-200 dark:border-slate-600'}`}>{c.role}</span></span>
+                              <span className="font-extrabold text-sm text-slate-800 dark:text-slate-200 transition-colors">{c.author} <span className={`text-[9px] font-bold uppercase tracking-wider ml-2 transition-colors ${c.role === 'System Admin' || c.role === 'Beyond Zero Executive' ? 'text-rose-500 dark:text-rose-400 bg-rose-50 dark:bg-rose-900/30 px-2 py-1 rounded border border-rose-100 dark:border-rose-800' : 'text-slate-400 dark:text-slate-500 bg-slate-50 dark:bg-slate-700/50 px-2 py-1 rounded border border-slate-200 dark:border-slate-600'}`}>{c.role}</span></span>
                               <span className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider transition-colors">{c.time}</span>
                             </div>
                             <p className="text-sm text-slate-600 dark:text-slate-400 font-medium leading-relaxed transition-colors">{c.text}</p>
@@ -430,7 +430,7 @@ export default function EnterpriseNetwork() {
                 <p className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider mt-0.5 transition-colors">2.4k org mentions</p>
               </div>
               <div className="cursor-pointer group bg-slate-50 dark:bg-slate-800 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 p-3 rounded-xl border-2 border-slate-100 dark:border-slate-700 hover:border-indigo-200 dark:hover:border-indigo-700 transition-all">
-                <p className="text-sm font-extrabold text-slate-700 dark:text-slate-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">#ApexAcademy</p>
+                <p className="text-sm font-extrabold text-slate-700 dark:text-slate-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">#BeyondZeroAcademy</p>
                 <p className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider mt-0.5 transition-colors">1.8k org mentions</p>
               </div>
               <div className="cursor-pointer group bg-slate-50 dark:bg-slate-800 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 p-3 rounded-xl border-2 border-slate-100 dark:border-slate-700 hover:border-indigo-200 dark:hover:border-indigo-700 transition-all">
