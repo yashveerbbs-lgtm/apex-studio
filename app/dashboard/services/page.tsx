@@ -365,7 +365,7 @@ export default function AgencyServices() {
         <div className="max-w-3xl">
           <div className="flex items-center gap-3 mb-3">
             <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/50 border-2 border-indigo-100 dark:border-indigo-800/50 px-3 py-1 rounded-lg font-black tracking-widest text-xs uppercase shadow-sm transition-colors">
-              <Sparkles className="w-4 h-4 fill-indigo-200 dark:fill-indigo-900" /> Welcome to Apex Studio
+              <Sparkles className="w-4 h-4 fill-indigo-200 dark:fill-indigo-900" /> Welcome to Beyond Zero
             </div>
             {userRole === 'ADMIN' && (
               <div className="text-[10px] bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-500 border-2 border-amber-200 dark:border-amber-800/50 px-2.5 py-1 rounded-lg font-black uppercase tracking-widest flex items-center gap-1 shadow-sm transition-colors">
