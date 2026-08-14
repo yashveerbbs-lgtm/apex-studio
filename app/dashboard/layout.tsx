@@ -70,24 +70,25 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     if (user) {
       setCurrentUser(user)
       
-      // 🚨 FIX: Read from the user's core auth metadata first! 
-      // This guarantees new employers instantly get the Employer sidebar.
-      let currentRole = user.user_metadata?.role || localStorage.getItem('apex_role') || 'INTERN'
+      let currentRole = 'INTERN'
       let onboardingDone = localStorage.getItem('bz_onboarding_done') === 'true'
       let ipSigned = localStorage.getItem('bz_ip_signed') === 'true'
 
+      // Fetch from DB first to get the ultimate source of truth
       const { data: profile } = await supabase.from('profiles').select('role, onboarding_completed, ip_agreement_signed').eq('id', user.id).single()
       
-      if (profile) {
-        // If the DB has a firm role, we respect it, otherwise we keep the metadata role
-        if (profile.role && profile.role !== 'INTERN') {
-          currentRole = profile.role
-        }
-        localStorage.setItem('apex_role', currentRole) 
+      if (profile && profile.role) {
+        // 🚨 FIX: DB is the absolute boss. It overwrites local memory completely.
+        currentRole = profile.role
         if (profile.onboarding_completed) onboardingDone = true
         if (profile.ip_agreement_signed) ipSigned = true
+      } else if (user.user_metadata?.role) {
+        // Fallback for brand new accounts that don't have a DB profile row generated yet
+        currentRole = user.user_metadata.role
       }
       
+      // Lock it into local storage and state
+      localStorage.setItem('apex_role', currentRole)
       setUserRole(currentRole as any)
 
       if (!ipSigned) {
@@ -153,6 +154,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }
 
   async function handleSignOut() {
+    // Clear out roles when logging out to ensure a clean slate for the next login
+    localStorage.removeItem('apex_role')
     await supabase.auth.signOut()
     router.push('/')
   }
