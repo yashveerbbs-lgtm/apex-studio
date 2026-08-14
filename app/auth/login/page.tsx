@@ -31,14 +31,16 @@ export default function Login() {
         sessionStorage.removeItem('pendingInvite') 
         router.push(pendingInvite) 
       } else {
-        router.push('/dashboard/overview') 
+        // 🚨 FIXED: Now routes to /dashboard/home
+        router.push('/dashboard/home') 
       }
     }
   }
 
   async function handleGoogleLogin() {
     const pendingInvite = sessionStorage.getItem('pendingInvite');
-    const redirectPath = pendingInvite ? pendingInvite : '/dashboard/overview';
+    // 🚨 FIXED: Now routes to /dashboard/home
+    const redirectPath = pendingInvite ? pendingInvite : '/dashboard/home';
     
     if (pendingInvite) {
       sessionStorage.removeItem('pendingInvite');
