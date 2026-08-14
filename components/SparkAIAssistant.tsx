@@ -10,6 +10,8 @@ type ViewMode = 'normal' | 'half' | 'full'
 type Message = { sender: 'spark' | 'user', text: string }
 
 export default function SparkAIAssistant() {
+  const pathname = usePathname()
+  
   const [isOpen, setIsOpen] = useState(false)
   const [mood, setMood] = useState<Mood>('idle')
   const [viewMode, setViewMode] = useState<ViewMode>('normal')
@@ -17,27 +19,21 @@ export default function SparkAIAssistant() {
   const [isCooldown, setIsCooldown] = useState(false) 
   const [copiedCode, setCopiedCode] = useState<string | null>(null)
   
-  // --- USER IDENTITY & ROLE STATE ---
   const [currentUser, setCurrentUser] = useState<any>(null)
   const [userName, setUserName] = useState('Developer')
   const [userRole, setUserRole] = useState<'ADMIN' | 'INTERN' | 'EMPLOYER'>('INTERN')
-
-  // --- GAMIFICATION STATES ---
   const [xp, setXp] = useState(0)
-  
   const [messages, setMessages] = useState<Message[]>([])
   
   const messagesEndRef = useRef<HTMLDivElement>(null)
-  const pathname = usePathname()
 
   const getRank = (currentXp: number) => {
     if (currentXp < 100) return 'Rookie'
     if (currentXp < 500) return 'Pro'
     if (currentXp < 1000) return 'Elite'
-    return 'Apex' // We can keep 'Apex' here as a cool rank name, or change it to 'Legend' later!
+    return 'Legend' 
   }
 
-  // Fetch the current user on mount to isolate chat memory
   useEffect(() => {
     const fetchUser = async () => {
       const { data: { user } } = await supabase.auth.getUser()
@@ -46,9 +42,9 @@ export default function SparkAIAssistant() {
         const name = user.user_metadata?.full_name || user.email?.split('@')[0] || 'Developer'
         setUserName(name)
         
-        // Get initial role
-        const localRole = localStorage.getItem('apex_role')
-        const initialRole = localRole || 'INTERN'
+        // Strictly fetch role from DB for the AI context
+        const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+        const initialRole = profile?.role || 'INTERN'
         setUserRole(initialRole as any)
 
         const memoryKey = `spark_memory_${user.id}`
@@ -57,7 +53,6 @@ export default function SparkAIAssistant() {
         if (savedChat) {
           setMessages(JSON.parse(savedChat))
         } else {
-          // Dynamic initial greeting based on role!
           const greetingMsg = initialRole === 'EMPLOYER' 
             ? `Greetings ${name}! I'm Spark. Ready to hunt for top-tier developers today? 🎯`
             : `Hey ${name}! Grab me, fling me across the screen, or ask me about the team! ✨`
@@ -102,16 +97,6 @@ export default function SparkAIAssistant() {
       }
     }
     fetchUser()
-  }, [])
-
-  // 🚨 Listen for instant role changes from the Dual UI sidebar!
-  useEffect(() => {
-    const handleRoleChange = () => {
-      const localRole = localStorage.getItem('apex_role')
-      if (localRole) setUserRole(localRole as any)
-    }
-    window.addEventListener('roleChanged', handleRoleChange)
-    return () => window.removeEventListener('roleChanged', handleRoleChange)
   }, [])
 
   useEffect(() => {
@@ -271,6 +256,11 @@ export default function SparkAIAssistant() {
     }
   }
 
+  // 🚨 NEW: Hide Spark entirely if on the landing page or any auth page
+  if (pathname === '/' || pathname?.startsWith('/auth')) {
+    return null
+  }
+
   return (
     <div className="fixed bottom-6 right-6 z-[100] flex flex-col items-end pointer-events-none">
       
@@ -291,7 +281,6 @@ export default function SparkAIAssistant() {
                 <Sparkles className="w-5 h-5 text-indigo-500 dark:text-indigo-400"/>
                 <span className="font-black text-slate-800 dark:text-slate-100 tracking-tight flex items-center gap-2 transition-colors">
                   Spark AI
-                  {/* 🚨 CHANGING THE BADGE BASED ON ROLE */}
                   {userRole === 'EMPLOYER' ? (
                     <span className="flex items-center gap-1 text-[10px] uppercase font-bold tracking-wider bg-amber-100 dark:bg-amber-900/50 text-amber-600 dark:text-amber-400 px-2 py-0.5 rounded-full transition-colors">
                       <Briefcase className="w-3 h-3"/> Recruiter Mode

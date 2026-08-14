@@ -3,29 +3,25 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { supabase } from '../../utils/supabase'
-import { CheckCircle2, Lock, Sparkles, Zap, UserX, Menu, X, BookOpen, HeartHandshake, Moon, Sun, Briefcase, Users, Search, Trophy, Terminal, Code2 } from 'lucide-react'
+import { CheckCircle2, Sparkles, Menu, X, BookOpen, HeartHandshake, Moon, Sun, Briefcase, Users, Trophy, Terminal, Code2 } from 'lucide-react'
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const router = useRouter()
   
-  // State
   const [currentUser, setCurrentUser] = useState<any>(null)
   const [userRole, setUserRole] = useState<'ADMIN' | 'INTERN' | 'EMPLOYER'>('INTERN')
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [theme, setTheme] = useState<'light' | 'dark'>('light')
 
-  // Onboarding States
   const [showClickwrap, setShowClickwrap] = useState(false)
   const [showAssessment, setShowAssessment] = useState(false)
   const [hasAgreed, setHasAgreed] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   
-  // Placement Exam States
   const [assessmentStep, setAssessmentStep] = useState(0)
   const [score, setScore] = useState(0)
 
-  // Dummy Placement Questions
   const examQuestions = [
     {
       question: "Which of the following best describes the purpose of a React useEffect dependency array?",
@@ -67,7 +63,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     localStorage.setItem('apex_theme', newTheme)
     if (newTheme === 'dark') document.documentElement.classList.add('dark')
     else document.documentElement.classList.remove('dark')
-    window.dispatchEvent(new Event('themeChanged'))
   }
 
   async function checkLegalStatus() {
@@ -75,26 +70,22 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     if (user) {
       setCurrentUser(user)
       
-      const localRole = localStorage.getItem('apex_role')
       let currentRole = 'INTERN'
-      
-      // 🚨 NEW: Check local storage FIRST as a bulletproof backup
       let onboardingDone = localStorage.getItem('bz_onboarding_done') === 'true'
       let ipSigned = localStorage.getItem('bz_ip_signed') === 'true'
 
+      // 🚨 STRICT DB ROLE ENFORCEMENT
       const { data: profile } = await supabase.from('profiles').select('role, onboarding_completed, ip_agreement_signed').eq('id', user.id).single()
       
       if (profile) {
-        if (!localRole) currentRole = profile.role
-        // If DB says true, override local storage
+        currentRole = profile.role || 'INTERN'
+        localStorage.setItem('apex_role', currentRole) // Sync UI purely to what the DB says
         if (profile.onboarding_completed) onboardingDone = true
         if (profile.ip_agreement_signed) ipSigned = true
       }
       
-      if (localRole) currentRole = localRole
       setUserRole(currentRole as any)
 
-      // Routing the onboarding flow
       if (!ipSigned) {
         setShowClickwrap(true)
       } else if (!onboardingDone && currentRole === 'INTERN') {
@@ -107,7 +98,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     if (!hasAgreed) return
     setIsSubmitting(true)
     
-    // 🚨 NEW: Instantly save to local storage so it never asks again
     localStorage.setItem('bz_ip_signed', 'true')
     
     if (currentUser) {
@@ -142,7 +132,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     if (finalScore === 2) calculatedSkill = 'Pro'
     if (finalScore === 3) calculatedSkill = 'Elite'
 
-    // 🚨 NEW: Instantly save to local storage so it never asks again
     localStorage.setItem('bz_onboarding_done', 'true')
     localStorage.setItem('apex_skill_level', calculatedSkill)
 
@@ -156,7 +145,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     setTimeout(() => {
       setShowAssessment(false)
       setIsSubmitting(false)
-      window.dispatchEvent(new Event('roleChanged')) 
     }, 1500)
   }
 
@@ -165,24 +153,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     router.push('/')
   }
 
-  async function toggleUserMode() {
-    if (!currentUser) return 
-    const newRole = userRole === 'EMPLOYER' ? 'INTERN' : 'EMPLOYER'
-    const displayName = currentUser?.user_metadata?.full_name || currentUser?.email?.split('@')[0] || 'User'
-    
-    localStorage.setItem('apex_role', newRole)
-    window.dispatchEvent(new Event('roleChanged')) 
-    
-    await supabase.from('profiles').upsert({
-      id: currentUser.id,
-      display_name: displayName,
-      role: newRole
-    })
-    
-    setUserRole(newRole)
-    if (newRole === 'EMPLOYER') router.push('/dashboard/employer')
-    else router.push('/dashboard/home')
-  }
+  // 🚨 REMOVED toggleUserMode function entirely.
 
   const getLinkStyle = (path: string) => {
     if (pathname === path) return "block px-4 py-3 text-sm font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 border-2 border-indigo-100 dark:border-indigo-500/30 rounded-xl transition-all"
@@ -199,25 +170,24 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   return (
     <div className="flex h-screen bg-slate-50 dark:bg-slate-950 text-slate-600 dark:text-slate-300 font-sans overflow-hidden relative transition-colors duration-500">
       
-      {/* 🚨 THE IP AGREEMENT 🚨 */}
       {showClickwrap && (
         <div className="absolute inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
           <div className="bg-white dark:bg-slate-900 border-2 border-slate-100 dark:border-slate-800 rounded-[2rem] max-w-lg w-full p-8 shadow-[0_8px_30px_rgb(0,0,0,0.08)] animate-in zoom-in-95 relative overflow-hidden">
             <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-400 to-indigo-400"></div>
             <div className="w-16 h-16 bg-blue-50 dark:bg-blue-900/30 border-2 border-blue-100 dark:border-blue-800 rounded-2xl flex items-center justify-center mb-6 mx-auto shadow-sm">
-              <HeartHandshake className="w-8 h-8 text-blue-500 dark:text-blue-400" />
+              <HeartHandshake className="w-8 h-8 text-blue-500 dark:text-blue-400"/>
             </div>
             <h2 className="text-2xl font-extrabold text-slate-800 dark:text-white text-center mb-2">Welcome to the Workspace!</h2>
             <p className="text-slate-500 dark:text-slate-400 text-center text-sm mb-8 font-medium">Before we start building awesome things, let's review our community guidelines.</p>
             <div className="bg-slate-50 dark:bg-slate-800/50 border-2 border-slate-100 dark:border-slate-700 p-5 rounded-2xl mb-6">
               <div className="flex items-start gap-3">
-                <BookOpen className="w-5 h-5 text-indigo-400 shrink-0 mt-0.5" />
+                <BookOpen className="w-5 h-5 text-indigo-400 shrink-0 mt-0.5"/>
                 <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed font-medium">"I understand that the code and projects I build here are part of the Beyond Zero ecosystem. I'm ready to learn, collaborate, and respect the community's shared resources."</p>
               </div>
             </div>
             <div onClick={() => setHasAgreed(!hasAgreed)} className="flex items-center gap-3 cursor-pointer mb-8 group">
               <div className={`w-6 h-6 border-2 rounded-lg transition-all flex items-center justify-center ${hasAgreed ? 'bg-indigo-500 border-indigo-500' : 'bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600'}`}>
-                {hasAgreed && <CheckCircle2 className="w-4 h-4 text-white" />}
+                {hasAgreed && <CheckCircle2 className="w-4 h-4 text-white"/>}
               </div>
               <span className="text-sm font-bold text-slate-500 dark:text-slate-400 group-hover:text-slate-700 dark:text-slate-200 transition-colors select-none">I'm ready to start building!</span>
             </div>
@@ -228,14 +198,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
       )}
 
-      {/* 🚨 THE ONE-TIME PLACEMENT EXAM 🚨 */}
       {showAssessment && !showClickwrap && (
         <div className="absolute inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
           <div className="bg-white dark:bg-slate-900 border-2 border-slate-100 dark:border-slate-800 rounded-[2rem] max-w-2xl w-full p-8 md:p-10 shadow-[0_20px_50px_rgb(0,0,0,0.15)] animate-in zoom-in-95 relative overflow-hidden transition-colors">
             
             {isSubmitting ? (
               <div className="text-center py-12 animate-in fade-in">
-                <Terminal className="w-16 h-16 text-indigo-500 mx-auto mb-6 animate-pulse" />
+                <Terminal className="w-16 h-16 text-indigo-500 mx-auto mb-6 animate-pulse"/>
                 <h2 className="text-3xl font-black text-slate-800 dark:text-white mb-2">Analyzing Telemetry...</h2>
                 <p className="text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest text-sm">Calibrating your Beyond Zero workspace</p>
               </div>
@@ -244,7 +213,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 <div className="flex justify-between items-center mb-8 border-b-2 border-slate-100 dark:border-slate-800 pb-4">
                   <div>
                     <h2 className="text-2xl font-black text-slate-800 dark:text-white flex items-center gap-2">
-                      <Code2 className="w-6 h-6 text-indigo-500" /> Beyond Zero Placement Protocol
+                      <Code2 className="w-6 h-6 text-indigo-500"/> Beyond Zero Placement Protocol
                     </h2>
                     <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Question {assessmentStep + 1} of {examQuestions.length}</p>
                   </div>
@@ -279,7 +248,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
       )}
 
-      {/* Sidebar & Dashboard */}
       {isSidebarOpen && <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-30 md:hidden" onClick={() => setIsSidebarOpen(false)} />}
       
       <aside className={`fixed md:static inset-y-0 left-0 z-40 w-64 bg-white dark:bg-slate-900 border-r-2 border-slate-100 dark:border-slate-800 flex flex-col justify-between shrink-0 transform transition-transform duration-300 ease-in-out md:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} ${(showClickwrap || showAssessment) ? 'opacity-20 pointer-events-none blur-sm' : ''}`}>
@@ -288,7 +256,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <div className="p-6 flex items-center justify-between">
             <div>
               <h1 className="text-xl font-black text-indigo-600 dark:text-indigo-400 tracking-tight flex items-center gap-2">
-                BEYOND ZERO <Sparkles className="w-5 h-5 text-yellow-400 fill-yellow-400" />
+                BEYOND ZERO <Sparkles className="w-5 h-5 text-yellow-400 fill-yellow-400"/>
               </h1>
               <div className="flex items-center gap-2 mt-1">
                 <div className={`w-2 h-2 rounded-full animate-pulse ${userRole === 'EMPLOYER' ? 'bg-amber-500' : 'bg-emerald-500'}`}></div>
@@ -297,7 +265,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 </span>
               </div>
             </div>
-            <button onClick={() => setIsSidebarOpen(false)} className="md:hidden text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 p-1 bg-slate-50 dark:bg-slate-800 rounded-lg"><X className="w-5 h-5" /></button>
+            <button onClick={() => setIsSidebarOpen(false)} className="md:hidden text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 p-1 bg-slate-50 dark:bg-slate-800 rounded-lg"><X className="w-5 h-5"/></button>
           </div>
 
           <nav className="px-4 space-y-6 pb-6">
@@ -306,15 +274,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 <div>
                   <h2 className="text-[11px] font-extrabold text-slate-300 dark:text-slate-600 mb-2 tracking-widest uppercase px-4">Recruitment</h2>
                   <div className="space-y-1">
-                    <Link href="/dashboard/employer" onClick={() => setIsSidebarOpen(false)} className={getLinkStyle('/dashboard/employer')}>Candidate Pool</Link>
-                    <Link href="/dashboard/internships" onClick={() => setIsSidebarOpen(false)} className={getLinkStyle('/dashboard/internships')}>Manage Bounties</Link>
+                    <Link href="/dashboard/employer" onClick="{()"> setIsSidebarOpen(false)} className={getLinkStyle('/dashboard/employer')}>Candidate Pool</Link>
+                    <Link href="/dashboard/internships" onClick="{()"> setIsSidebarOpen(false)} className={getLinkStyle('/dashboard/internships')}>Manage Bounties</Link>
                   </div>
                 </div>
                 <div>
                   <h2 className="text-[11px] font-extrabold text-slate-300 dark:text-slate-600 mb-2 tracking-widest uppercase px-4">Talent Discovery</h2>
                   <div className="space-y-1">
-                    <Link href="/dashboard/showcase" onClick={() => setIsSidebarOpen(false)} className={getLinkStyle('/dashboard/showcase')}>Verified Builds</Link>
-                    <Link href="/dashboard/hackathons" onClick={() => setIsSidebarOpen(false)} className={getLinkStyle('/dashboard/hackathons')}>Sponsored Arenas</Link>
+                    <Link href="/dashboard/showcase" onClick="{()"> setIsSidebarOpen(false)} className={getLinkStyle('/dashboard/showcase')}>Verified Builds</Link>
+                    <Link href="/dashboard/hackathons" onClick="{()"> setIsSidebarOpen(false)} className={getLinkStyle('/dashboard/hackathons')}>Sponsored Arenas</Link>
                   </div>
                 </div>
               </>
@@ -323,29 +291,29 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 <div>
                   <h2 className="text-[11px] font-extrabold text-slate-300 dark:text-slate-600 mb-2 tracking-widest uppercase px-4">Workspace</h2>
                   <div className="space-y-1">
-                    <Link href="/dashboard/home" onClick={() => setIsSidebarOpen(false)} className={getLinkStyle('/dashboard/home')}>Home</Link>
-                    <Link href="/dashboard/internships" onClick={() => setIsSidebarOpen(false)} className={getLinkStyle('/dashboard/internships')}>Internships</Link>
+                    <Link href="/dashboard/home" onClick="{()"> setIsSidebarOpen(false)} className={getLinkStyle('/dashboard/home')}>Home</Link>
+                    <Link href="/dashboard/internships" onClick="{()"> setIsSidebarOpen(false)} className={getLinkStyle('/dashboard/internships')}>Internships</Link>
                   </div>
                 </div>
                 <div>
                   <h2 className="text-[11px] font-extrabold text-slate-300 dark:text-slate-600 mb-2 tracking-widest uppercase px-4">Learning</h2>
                   <div className="space-y-1">
-                    <Link href="/dashboard/courses" onClick={() => setIsSidebarOpen(false)} className={getAcademyStyle('/dashboard/courses')}>Learning Courses</Link>
-                    <Link href="/dashboard/services" onClick={() => setIsSidebarOpen(false)} className={getLinkStyle('/dashboard/services')}>Services</Link>
-                    <Link href="/dashboard/showcase" onClick={() => setIsSidebarOpen(false)} className={getLinkStyle('/dashboard/showcase')}>Showcase</Link>
+                    <Link href="/dashboard/courses" onClick="{()"> setIsSidebarOpen(false)} className={getAcademyStyle('/dashboard/courses')}>Learning Courses</Link>
+                    <Link href="/dashboard/services" onClick="{()"> setIsSidebarOpen(false)} className={getLinkStyle('/dashboard/services')}>Services</Link>
+                    <Link href="/dashboard/showcase" onClick="{()"> setIsSidebarOpen(false)} className={getLinkStyle('/dashboard/showcase')}>Showcase</Link>
                   </div>
                 </div>
                 <div>
                   <h2 className="text-[11px] font-extrabold text-slate-300 dark:text-slate-600 mb-2 tracking-widest uppercase px-4">Community</h2>
                   <div className="space-y-1">
-                    <Link href="/dashboard/community" onClick={() => setIsSidebarOpen(false)} className={getLinkStyle('/dashboard/community')}>Dev Lounge</Link>
-                    <Link href="/dashboard/hackathons" onClick={() => setIsSidebarOpen(false)} className={getLinkStyle('/dashboard/hackathons')}>Live Arenas</Link>
+                    <Link href="/dashboard/community" onClick="{()"> setIsSidebarOpen(false)} className={getLinkStyle('/dashboard/community')}>Dev Lounge</Link>
+                    <Link href="/dashboard/hackathons" onClick="{()"> setIsSidebarOpen(false)} className={getLinkStyle('/dashboard/hackathons')}>Live Arenas</Link>
                   </div>
                 </div>
                 <div>
                   <h2 className="text-[11px] font-extrabold text-slate-300 dark:text-slate-600 mb-2 tracking-widest uppercase px-4">Tools</h2>
                   <div className="space-y-1">
-                    <Link href="/dashboard/workspace" onClick={() => setIsSidebarOpen(false)} className={getLinkStyle('/dashboard/workspace')}>Code Studio</Link>
+                    <Link href="/dashboard/workspace" onClick="{()"> setIsSidebarOpen(false)} className={getLinkStyle('/dashboard/workspace')}>Code Studio</Link>
                   </div>
                 </div>
               </>
@@ -355,11 +323,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
         <div className="p-4 border-t-2 border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 flex flex-col gap-2 shrink-0">
            <button onClick={toggleTheme} className="w-full py-3 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 text-xs font-bold hover:bg-slate-50 dark:hover:bg-slate-700 rounded-xl transition-colors flex items-center justify-center gap-2 shadow-sm">
-             {theme === 'dark' ? <><Sun className="w-4 h-4 text-amber-400" /> Light Mode</> : <><Moon className="w-4 h-4 text-indigo-500" /> Dark Mode</>}
+             {theme === 'dark' ? <><Sun className="w-4 h-4 text-amber-400"/> Light Mode</> : <><Moon className="w-4 h-4 text-indigo-500"/> Dark Mode</>}
            </button>
-           <button onClick={toggleUserMode} className={`w-full py-3 border-2 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-2 ${userRole === 'EMPLOYER' ? 'bg-amber-50 dark:bg-amber-900/30 border-amber-200 dark:border-amber-700/50 text-amber-600 dark:text-amber-400 shadow-sm' : 'bg-indigo-50 dark:bg-indigo-900/30 border-indigo-200 dark:border-indigo-500/30 text-indigo-600 dark:text-indigo-400 shadow-sm'}`}>
-             {userRole === 'EMPLOYER' ? <><Users className="w-4 h-4" /> Switch to Student</> : <><Briefcase className="w-4 h-4" /> Switch to Employer</>}
-           </button>
+           
+           {/* 🚨 REMOVED the "Switch to Employer/Student" toggle button entirely */}
+
            <button onClick={handleSignOut} className="w-full py-3 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 text-xs font-bold hover:bg-red-50 hover:border-red-200 hover:text-red-500 dark:hover:bg-red-900/20 dark:hover:border-red-900/50 dark:hover:text-red-400 rounded-xl transition-colors flex items-center justify-center gap-2 shadow-sm">
              Log Out
            </button>
@@ -373,7 +341,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
              <h1 className="text-xl font-black text-slate-800 dark:text-white tracking-tight">BEYOND ZERO</h1>
           </div>
           <button onClick={() => setIsSidebarOpen(true)} className="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors rounded-lg bg-slate-50 dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700">
-            <Menu className="w-5 h-5" />
+            <Menu className="w-5 h-5"/>
           </button>
         </header>
 
