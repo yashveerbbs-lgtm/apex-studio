@@ -104,7 +104,7 @@ export default function SparkAIAssistant() {
     fetchUser()
   }, [])
 
-  // 🚨 NEW: Listen for instant role changes from the Dual UI sidebar!
+  // 🚨 Listen for instant role changes from the Dual UI sidebar!
   useEffect(() => {
     const handleRoleChange = () => {
       const localRole = localStorage.getItem('apex_role')
@@ -172,8 +172,15 @@ export default function SparkAIAssistant() {
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        // 🚨 NEW: Passing the userRole to the backend to split personality!
-        body: JSON.stringify({ message: userMessage, context: pageContext, history: recentHistory, userName: userName, role: userRole })
+        // 🚨 ADDED skillLevel HERE to instantly inform the AI's coaching style
+        body: JSON.stringify({ 
+          message: userMessage, 
+          context: pageContext, 
+          history: recentHistory, 
+          userName: userName, 
+          role: userRole,
+          skillLevel: localStorage.getItem('apex_skill_level') || 'Rookie' 
+        })
       })
 
       const data = await response.json()
