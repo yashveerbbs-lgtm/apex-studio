@@ -192,6 +192,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     return "block px-4 py-3 text-sm font-semibold text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-all"
   }
 
+  const getAcademyStyle = (path: string) => {
+    if (pathname === path) {
+      return "block px-4 py-3 text-sm font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/30 border-2 border-emerald-100 dark:border-emerald-500/30 rounded-xl transition-all"
+    }
+    return "block px-4 py-3 text-sm font-semibold text-emerald-500 dark:text-emerald-400 hover:text-emerald-600 dark:hover:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-slate-800 rounded-xl transition-all"
+  }
+
   return (
     <div className="flex h-screen bg-slate-50 dark:bg-slate-950 text-slate-600 dark:text-slate-300 font-sans overflow-hidden relative transition-colors duration-500">
       
