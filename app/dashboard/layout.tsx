@@ -70,14 +70,19 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     if (user) {
       setCurrentUser(user)
       
-      let currentRole = 'INTERN'
+      // 🚨 FIX: Read from the user's core auth metadata first! 
+      // This guarantees new employers instantly get the Employer sidebar.
+      let currentRole = user.user_metadata?.role || localStorage.getItem('apex_role') || 'INTERN'
       let onboardingDone = localStorage.getItem('bz_onboarding_done') === 'true'
       let ipSigned = localStorage.getItem('bz_ip_signed') === 'true'
 
       const { data: profile } = await supabase.from('profiles').select('role, onboarding_completed, ip_agreement_signed').eq('id', user.id).single()
       
       if (profile) {
-        currentRole = profile.role || 'INTERN'
+        // If the DB has a firm role, we respect it, otherwise we keep the metadata role
+        if (profile.role && profile.role !== 'INTERN') {
+          currentRole = profile.role
+        }
         localStorage.setItem('apex_role', currentRole) 
         if (profile.onboarding_completed) onboardingDone = true
         if (profile.ip_agreement_signed) ipSigned = true
