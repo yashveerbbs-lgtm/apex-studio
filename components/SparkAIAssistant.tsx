@@ -1,7 +1,7 @@
 'use client'
 import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, Send, Sparkles, Zap, Copy, Check, Hourglass, Maximize2, Minimize2, Columns, Trophy } from 'lucide-react'
+import { X, Send, Sparkles, Zap, Copy, Check, Hourglass, Maximize2, Minimize2, Columns, Trophy, Briefcase } from 'lucide-react'
 import { usePathname } from 'next/navigation'
 import { supabase } from '../utils/supabase'
 
@@ -17,9 +17,10 @@ export default function SparkAIAssistant() {
   const [isCooldown, setIsCooldown] = useState(false) 
   const [copiedCode, setCopiedCode] = useState<string | null>(null)
   
-  // --- USER IDENTITY STATE ---
+  // --- USER IDENTITY & ROLE STATE ---
   const [currentUser, setCurrentUser] = useState<any>(null)
   const [userName, setUserName] = useState('Developer')
+  const [userRole, setUserRole] = useState<'ADMIN' | 'INTERN' | 'EMPLOYER'>('INTERN')
 
   // --- GAMIFICATION STATES ---
   const [xp, setXp] = useState(0)
@@ -29,7 +30,6 @@ export default function SparkAIAssistant() {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const pathname = usePathname()
 
-  // Calculate Rank based on XP
   const getRank = (currentXp: number) => {
     if (currentXp < 100) return 'Rookie'
     if (currentXp < 500) return 'Pro'
@@ -46,23 +46,28 @@ export default function SparkAIAssistant() {
         const name = user.user_metadata?.full_name || user.email?.split('@')[0] || 'Developer'
         setUserName(name)
         
-        // 🚨 NEW: ISOLATED MEMORY PER USER 🚨
+        // Get initial role
+        const localRole = localStorage.getItem('apex_role')
+        const initialRole = localRole || 'INTERN'
+        setUserRole(initialRole as any)
+
         const memoryKey = `spark_memory_${user.id}`
         const savedChat = localStorage.getItem(memoryKey)
         
         if (savedChat) {
           setMessages(JSON.parse(savedChat))
         } else {
-          // Default greeting using the correct name!
-          setMessages([{ sender: 'spark', text: `Hey ${name}! Grab me, fling me across the screen, or ask me about the team! ✨` }])
+          // Dynamic initial greeting based on role!
+          const greetingMsg = initialRole === 'EMPLOYER' 
+            ? `Greetings ${name}! I'm Spark. Ready to hunt for top-tier developers today? 🎯`
+            : `Hey ${name}! Grab me, fling me across the screen, or ask me about the team! ✨`
+          setMessages([{ sender: 'spark', text: greetingMsg }])
         }
 
-        // Load saved XP (also per user)
         const xpKey = `spark_xp_${user.id}`
         const savedXp = parseInt(localStorage.getItem(xpKey) || '0')
         setXp(savedXp)
 
-        // Streak logic
         const streakKey = `spark_streak_${user.id}`
         const visitKey = `spark_last_visit_${user.id}`
         const lastVisit = localStorage.getItem(visitKey)
@@ -99,8 +104,17 @@ export default function SparkAIAssistant() {
     fetchUser()
   }, [])
 
+  // 🚨 NEW: Listen for instant role changes from the Dual UI sidebar!
   useEffect(() => {
-    // 🚨 Ensure we only save memory if we have a user to attach it to!
+    const handleRoleChange = () => {
+      const localRole = localStorage.getItem('apex_role')
+      if (localRole) setUserRole(localRole as any)
+    }
+    window.addEventListener('roleChanged', handleRoleChange)
+    return () => window.removeEventListener('roleChanged', handleRoleChange)
+  }, [])
+
+  useEffect(() => {
     if (messages.length > 1 && currentUser) {
       localStorage.setItem(`spark_memory_${currentUser.id}`, JSON.stringify(messages))
     }
@@ -122,8 +136,10 @@ export default function SparkAIAssistant() {
     let friendlyName = "the platform"
     if (pathname?.includes('/home')) friendlyName = "the Home Page" 
     else if (pathname?.includes('/workspace')) friendlyName = "the IDE Workspace"
-    else if (pathname?.includes('/internships')) friendlyName = "the Internships Pipeline"
+    else if (pathname?.includes('/internships')) friendlyName = "the Bounties/Internships Board"
     else if (pathname?.includes('/courses') || pathname?.includes('/academy')) friendlyName = "the Apex Academy"
+    else if (pathname?.includes('/employer')) friendlyName = "the Employer Candidate Pool"
+    else if (pathname?.includes('/hackathons')) friendlyName = "the Hackathon Arenas"
     
     const activeWorkspaces = document.querySelectorAll('.workspace-card, [class*="workspace"]').length || document.body.innerText.match(/Recent Workspaces/i) ? "They have recent workspaces open." : ""
     const textOnScreen = document.body.innerText.substring(0, 500)
@@ -156,7 +172,8 @@ export default function SparkAIAssistant() {
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: userMessage, context: pageContext, history: recentHistory, userName: userName })
+        // 🚨 NEW: Passing the userRole to the backend to split personality!
+        body: JSON.stringify({ message: userMessage, context: pageContext, history: recentHistory, userName: userName, role: userRole })
       })
 
       const data = await response.json()
@@ -268,10 +285,16 @@ export default function SparkAIAssistant() {
                 <Sparkles className="w-5 h-5 text-indigo-500 dark:text-indigo-400"/>
                 <span className="font-black text-slate-800 dark:text-slate-100 tracking-tight flex items-center gap-2 transition-colors">
                   Spark AI
-                  {/* --- NEW GAMIFICATION UI BADGE --- */}
-                  <span className="flex items-center gap-1 text-[10px] uppercase font-bold tracking-wider bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 px-2 py-0.5 rounded-full transition-colors">
-                    <Trophy className="w-3 h-3"/> {getRank(xp)} • {xp} XP
-                  </span>
+                  {/* 🚨 CHANGING THE BADGE BASED ON ROLE */}
+                  {userRole === 'EMPLOYER' ? (
+                    <span className="flex items-center gap-1 text-[10px] uppercase font-bold tracking-wider bg-amber-100 dark:bg-amber-900/50 text-amber-600 dark:text-amber-400 px-2 py-0.5 rounded-full transition-colors">
+                      <Briefcase className="w-3 h-3"/> Recruiter Mode
+                    </span>
+                  ) : (
+                    <span className="flex items-center gap-1 text-[10px] uppercase font-bold tracking-wider bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 px-2 py-0.5 rounded-full transition-colors">
+                      <Trophy className="w-3 h-3"/> {getRank(xp)} • {xp} XP
+                    </span>
+                  )}
                 </span>
               </div>
               
@@ -301,7 +324,11 @@ export default function SparkAIAssistant() {
             <div className="p-4 flex-1 overflow-y-auto flex flex-col gap-3 bg-slate-50/50 dark:bg-slate-900/50 transition-colors">
               {messages.map((msg, idx) => (
                 <div key={idx} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`max-w-[85%] p-3 rounded-2xl text-sm font-medium transition-colors ${msg.sender === 'user' ? 'bg-indigo-500 text-white rounded-tr-sm shadow-[0_2px_0_rgb(67,56,202)]' : 'bg-white dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded-tl-sm shadow-sm'}`}>
+                  <div className={`max-w-[85%] p-3 rounded-2xl text-sm font-medium transition-colors ${
+                    msg.sender === 'user' 
+                      ? (userRole === 'EMPLOYER' ? 'bg-amber-500 text-white rounded-tr-sm shadow-[0_2px_0_rgb(245,158,11)]' : 'bg-indigo-500 text-white rounded-tr-sm shadow-[0_2px_0_rgb(67,56,202)]') 
+                      : 'bg-white dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded-tl-sm shadow-sm'
+                  }`}>
                     {msg.sender === 'spark' ? renderFormattedText(msg.text) : <p className="whitespace-pre-wrap">{msg.text}</p>}
                   </div>
                 </div>
@@ -310,9 +337,9 @@ export default function SparkAIAssistant() {
               {mood === 'thinking' && (
                 <div className="flex justify-start">
                   <div className="bg-white dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 p-3 rounded-2xl rounded-tl-sm flex gap-1.5 shadow-sm transition-colors">
-                    <motion.div animate={{ y: [0, -5, 0] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0 }} className="w-2 h-2 bg-indigo-300 dark:bg-indigo-600 rounded-full" />
-                    <motion.div animate={{ y: [0, -5, 0] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0.2 }} className="w-2 h-2 bg-indigo-400 dark:bg-indigo-500 rounded-full" />
-                    <motion.div animate={{ y: [0, -5, 0] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0.4 }} className="w-2 h-2 bg-indigo-500 dark:bg-indigo-400 rounded-full" />
+                    <motion.div animate={{ y: [0, -5, 0] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0 }} className={`w-2 h-2 rounded-full ${userRole === 'EMPLOYER' ? 'bg-amber-300 dark:bg-amber-600' : 'bg-indigo-300 dark:bg-indigo-600'}`} />
+                    <motion.div animate={{ y: [0, -5, 0] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0.2 }} className={`w-2 h-2 rounded-full ${userRole === 'EMPLOYER' ? 'bg-amber-400 dark:bg-amber-500' : 'bg-indigo-400 dark:bg-indigo-500'}`} />
+                    <motion.div animate={{ y: [0, -5, 0] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0.4 }} className={`w-2 h-2 rounded-full ${userRole === 'EMPLOYER' ? 'bg-amber-500 dark:bg-amber-400' : 'bg-indigo-500 dark:bg-indigo-400'}`} />
                   </div>
                 </div>
               )}
@@ -328,12 +355,12 @@ export default function SparkAIAssistant() {
                   onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
                   placeholder={isCooldown ? "Spark is catching his breath..." : "Ask Spark anything..."}
                   disabled={isCooldown}
-                  className="flex-1 bg-slate-50 dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 dark:text-slate-200 focus:outline-none focus:border-indigo-400 dark:focus:border-indigo-500 focus:bg-white dark:focus:bg-slate-900 transition-all placeholder:text-slate-300 dark:placeholder:text-slate-500 disabled:opacity-60"
+                  className={`flex-1 bg-slate-50 dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 dark:text-slate-200 focus:outline-none transition-all placeholder:text-slate-300 dark:placeholder:text-slate-500 disabled:opacity-60 ${userRole === 'EMPLOYER' ? 'focus:border-amber-400 dark:focus:border-amber-500 focus:bg-white dark:focus:bg-slate-900' : 'focus:border-indigo-400 dark:focus:border-indigo-500 focus:bg-white dark:focus:bg-slate-900'}`}
                 />
                 <button 
                   onClick={handleSendMessage}
                   disabled={!inputText.trim() || isCooldown}
-                  className="bg-indigo-500 hover:bg-indigo-600 disabled:bg-slate-200 dark:disabled:bg-slate-700 disabled:text-slate-400 dark:disabled:text-slate-500 text-white p-3 rounded-xl transition-all shadow-[0_2px_0_rgb(67,56,202)] disabled:shadow-none active:translate-y-[2px] active:shadow-none"
+                  className={`text-white p-3 rounded-xl transition-all disabled:bg-slate-200 dark:disabled:bg-slate-700 disabled:text-slate-400 dark:disabled:text-slate-500 disabled:shadow-none active:translate-y-[2px] active:shadow-none ${userRole === 'EMPLOYER' ? 'bg-amber-500 hover:bg-amber-600 shadow-[0_2px_0_rgb(245,158,11)]' : 'bg-indigo-500 hover:bg-indigo-600 shadow-[0_2px_0_rgb(67,56,202)]'}`}
                 >
                   {isCooldown ? <Hourglass className="w-5 h-5 animate-spin"/> : <Send className="w-5 h-5"/>}
                 </button>
@@ -351,12 +378,14 @@ export default function SparkAIAssistant() {
         
         onDragStart={() => {
           setMood('dizzy')
-          const dragJokes = [
+          const dragJokes = userRole === 'EMPLOYER' ? [
+            "Whoa! Are we recruiting in zero gravity?! 🚀",
+            "Hey! Treat your AI talent scout gently! 👔",
+            "I'm scanning resumes, not flying planes! 🛸"
+          ] : [
             "Unhand me, cutie! 😤",
             "AI bots are not made for flinging! 🎢",
-            "Wheeeeee! Wait, no, put me down! 🛸",
-            "Do I look like a frisbee to you?! 🥏",
-            "Hey! Watch the digital paint job! 🎨"
+            "Do I look like a frisbee to you?! 🥏"
           ]
           const randomJoke = dragJokes[Math.floor(Math.random() * dragJokes.length)]
           
@@ -379,7 +408,7 @@ export default function SparkAIAssistant() {
           mood === 'excited' ? 'bg-gradient-to-br from-rose-400 to-amber-500' :
           mood === 'thinking' ? 'bg-gradient-to-br from-sky-400 to-indigo-500' :
           mood === 'dizzy' ? 'bg-gradient-to-br from-fuchsia-500 to-rose-500' :
-          'bg-gradient-to-br from-indigo-500 to-purple-500'
+          (userRole === 'EMPLOYER' ? 'bg-gradient-to-br from-amber-500 to-orange-500' : 'bg-gradient-to-br from-indigo-500 to-purple-500')
         }`}>
           
           <div className="flex gap-2 items-end justify-center w-full mt-2">

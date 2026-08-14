@@ -3,8 +3,8 @@ import { NextResponse } from 'next/server';
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    // 🚨 NEW: We now extract userName from the incoming request!
-    const { message, context, history, userName } = body; 
+    // 🚨 NEW: We now extract 'role' from the frontend!
+    const { message, context, history, userName, role } = body; 
     const apiKey = process.env.GEMINI_API_KEY;
 
     if (!apiKey) {
@@ -12,17 +12,28 @@ export async function POST(req: Request) {
       return NextResponse.json({ reply: "My API key is missing! 🛑" }, { status: 500 });
     }
 
-    // Fallback just in case the name doesn't load
     const currentUserName = userName || 'Developer';
+    const userRole = role || 'INTERN';
 
-    // 🚨 NEW: Inject the dynamic name into the history formatting
     const formattedHistory = history ? history.map((msg: any) => `${msg.sender === 'user' ? currentUserName : 'Spark'}: ${msg.text}`).join('\n') : '';
 
-    // 🚨 NEW: Update the system prompt to use the dynamic name
+    // 🚨 NEW: Split Personality Logic!
+    let roleSpecificInstructions = "";
+    if (userRole === 'EMPLOYER' || userRole === 'ADMIN') {
+      roleSpecificInstructions = `You are currently assisting ${currentUserName}, an EMPLOYER / RECRUITER on the platform. 
+      Your goal is to act as a highly efficient Talent Acquisition Assistant. Help them navigate the talent pool, suggest ways to create effective bounties, evaluate candidate skills, and understand the Apex ecosystem. 
+      Keep your tone professional, sharp, and futuristic. Focus on ROI, talent discovery, and analytics. Use emojis sparingly but effectively.`;
+    } else {
+      roleSpecificInstructions = `You are currently assisting ${currentUserName}, a STUDENT / DEVELOPER.
+      Your goal is to act as a coding coach and hype-man! Help them write code, learn new skills, claim bounties, and climb the leaderboard.
+      Keep your answers punchy, friendly, and highly energetic! Use lots of emojis. Be encouraging and hype the user up!`;
+    }
+
     const systemPrompt = `You are Spark, an energetic, highly advanced floating AI mascot for a developer ecosystem called Apex Studio. 
-    You are currently assisting ${currentUserName}.
     
-    TEAM CONTEXT:
+    ${roleSpecificInstructions}
+    
+    TEAM CONTEXT (The platform's lore):
     - Tanya: The Captain & Full-Stack execution engine. Give her production-ready code.
     - Tamanna: Core IT Champion. Highly disciplined. Use high-tempo, tactical analogies.
     - Ojas (or "Jassi"): Core IT. The tallest team member. Mix in occasional cosmic jokes.
@@ -35,10 +46,9 @@ export async function POST(req: Request) {
     RECENT CONVERSATION HISTORY (Remember this!):
     ${formattedHistory}
 
-    Keep your answers punchy, friendly, and use emojis. Be encouraging and hype the user up!
     IMPORTANT: You are fully permitted to use Markdown. If you write code, YOU MUST wrap it in standard triple backticks ( \`\`\` ) and specify the language (e.g., \`\`\`python).
     
-    ${currentUserName}'s new message: ${message}`;
+    ${currentUserName}'s new message:${message}`;
 
     const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${apiKey}`, {
       method: 'POST',
@@ -53,7 +63,6 @@ export async function POST(req: Request) {
     if (!response.ok) {
       console.error("Google API Direct Error:", data);
       
-      // --- OPTION 2: THE GRACEFUL FALLBACK ---
       if (response.status === 429 || (data.error?.message && data.error.message.toLowerCase().includes('quota'))) {
         return NextResponse.json({ 
           reply: "Whoa, hold your horses! 🐎 My neural link is overheating from all these requests. Give me about 10 seconds to cool down!" 
